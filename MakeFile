@@ -13,6 +13,10 @@ dockerlogs:
 	docker logs defi
 .PHONY: dockerlogs
 
+gencontract:
+	solc --abi --bin contract/defi.sol -o build
+	abigen --bin=build/CrowdFunding.bin --abi=build/CrowdFunding.abi --pkg=CrowdFunding --out=gen/CrowdFunding.go
+
 dropdb:
 	docker exec -it defi dropdb defi
 .PHONY: dropdb
@@ -42,6 +46,7 @@ db_schema:
 	
 sqlc:
 	sqlc generate
+.PHONY: sqlc
 	
 test:
 	go test -v -cover ./...

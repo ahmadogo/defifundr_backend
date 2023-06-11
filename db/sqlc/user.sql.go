@@ -60,9 +60,10 @@ INSERT INTO users (
     username,
     hashed_password,
     first_name,
+    avatar,
     email
     ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
     ) RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
 `
 
@@ -70,6 +71,7 @@ type CreateUserParams struct {
 	Username       string `json:"username"`
 	HashedPassword string `json:"hashed_password"`
 	FirstName      string `json:"first_name"`
+	Avatar         string `json:"avatar"`
 	Email          string `json:"email"`
 }
 
@@ -78,6 +80,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		arg.Username,
 		arg.HashedPassword,
 		arg.FirstName,
+		arg.Avatar,
 		arg.Email,
 	)
 	var i Users
@@ -102,6 +105,34 @@ LIMIT 1
 
 func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 	row := q.db.QueryRowContext(ctx, getUser, username)
+	var i Users
+	err := row.Scan(
+		&i.Username,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.Avatar,
+		&i.Email,
+		&i.IsEmailVerified,
+		&i.PasswordChangedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateAvatar = `-- name: UpdateAvatar :one
+UPDATE users
+SET avatar = $2
+WHERE username = $1
+RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+`
+
+type UpdateAvatarParams struct {
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+}
+
+func (q *Queries) UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) (Users, error) {
+	row := q.db.QueryRowContext(ctx, updateAvatar, arg.Username, arg.Avatar)
 	var i Users
 	err := row.Scan(
 		&i.Username,

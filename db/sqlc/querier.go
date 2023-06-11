@@ -13,6 +13,7 @@ type Querier interface {
 	CheckUsernameExists(ctx context.Context, username string) (bool, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
 	GetUser(ctx context.Context, username string) (Users, error)
+	UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) (Users, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
 }
 
