@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func GenerateAddress() (string, string, error) {
+func CreateAddress() (string, string, error) {
 	// Generate a new private key
 	privateKey, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	if err != nil {
