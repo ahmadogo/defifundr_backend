@@ -33,6 +33,11 @@ SELECT EXISTS (
     LIMIT 1
 );
 
+-- name: DeleteUser :one
+DELETE FROM users
+WHERE username = $1
+RETURNING *;
+
 -- name: UpdateUser :one
 UPDATE users
 SET first_name = COALESCE(sqlc.narg(first_name), first_name),
