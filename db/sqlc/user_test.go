@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/demola234/defiraise/utils"
@@ -36,7 +37,116 @@ func createRandomUser(t *testing.T) Users {
 	return user
 }
 
-
 func TestCreateUser(t *testing.T) {
 	createRandomUser(t)
+}
+
+func TestGetUser(t *testing.T) {
+	user := createRandomUser(t)
+
+	user2, err := testQueries.GetUser(context.Background(), user.Username)
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, user.Username, user2.Username)
+	require.Equal(t, user.HashedPassword, user2.HashedPassword)
+	require.Equal(t, user.FirstName, user2.FirstName)
+	require.Equal(t, user.Avatar, user2.Avatar)
+	require.Equal(t, user.Email, user2.Email)
+
+	require.NotZero(t, user2.Username)
+	require.NotZero(t, user2.CreatedAt)
+}
+
+func TestUpdateAvatar(t *testing.T) {
+	user := createRandomUser(t)
+
+	arg := UpdateAvatarParams{
+		Username: user.Username,
+		Avatar:   utils.RandomString(6),
+	}
+
+	user2, err := testQueries.UpdateAvatar(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, user.Username, user2.Username)
+	require.Equal(t, user.HashedPassword, user2.HashedPassword)
+	require.Equal(t, user.FirstName, user2.FirstName)
+	require.Equal(t, arg.Avatar, user2.Avatar)
+	require.Equal(t, user.Email, user2.Email)
+
+	require.NotZero(t, user2.Username)
+	require.NotZero(t, user2.CreatedAt)
+}
+
+func TestChangePassword(t *testing.T) {
+	user := createRandomUser(t)
+
+	arg := ChangePasswordParams{
+		Username:       user.Username,
+		HashedPassword: utils.RandomString(6),
+	}
+
+	user2, err := testQueries.ChangePassword(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, user.Username, user2.Username)
+	require.Equal(t, arg.HashedPassword, user2.HashedPassword)
+	require.Equal(t, user.FirstName, user2.FirstName)
+	require.Equal(t, user.Avatar, user2.Avatar)
+	require.Equal(t, user.Email, user2.Email)
+
+	require.NotZero(t, user2.Username)
+	require.NotZero(t, user2.CreatedAt)
+}
+
+func TestDeleteUser(t *testing.T) {
+	user := createRandomUser(t)
+
+	deleted, err := testQueries.DeleteUser(context.Background(), user.Username)
+	require.NoError(t, err)
+	require.NotEmpty(t, deleted)
+
+	user2, err := testQueries.GetUser(context.Background(), user.Username)
+	require.Error(t, err)
+	require.Empty(t, user2)
+}
+
+func TestUpdateUser(t *testing.T) {
+	user := createRandomUser(t)
+
+	arg := UpdateUserParams{
+		Username: user.Username,
+		FirstName: sql.NullString{
+			String: utils.RandomString(6),
+			Valid:  true,
+		},
+		Email: sql.NullString{
+			String: utils.RandomEmail(),
+			Valid:  true,
+		},
+	}
+
+	user2, err := testQueries.UpdateUser(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, user.Username, user2.Username)
+	require.Equal(t, user.HashedPassword, user2.HashedPassword)
+	require.Equal(t, arg.FirstName.String, user2.FirstName)
+	require.Equal(t, arg.Email.String, user2.Email)
+
+	require.NotZero(t, user2.Username)
+	require.NotZero(t, user2.CreatedAt)
+}
+
+func TestCheckUsernameExists(t *testing.T) {
+	user := createRandomUser(t)
+
+	exists, err := testQueries.CheckUsernameExists(context.Background(), user.Username)
+	require.NoError(t, err)
+	require.NotEmpty(t, exists)
+	require.Equal(t, true, exists)
 }
