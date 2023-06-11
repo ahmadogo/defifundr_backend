@@ -1,6 +1,3 @@
-# Git worktree files
-.worktrees/
-
 *.vscode
 .history
 *.env
