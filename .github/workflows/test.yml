@@ -32,6 +32,11 @@ jobs:
         with:
           go-version: 1.19
         id: go
+      - name: 'Create env file'
+        run: |
+          touch app.env
+          eecho "${{ secrets.ENV_FILE }}" > .env
+          cat .env
 
       - name: Install golang-migrate
         run: |
@@ -43,15 +48,4 @@ jobs:
         run: make migrateup
 
       - name: Test
-        env:
-          CRYPT_DEPLOY_URL: ${{ secrets.CRYPT_DEPLOY_URL }}
-          ENVIROMENT: ${{ secrets.ENVIROMENT }}
-          DB_SOURCE: ${{ secrets.DB_SOURCE }}
-          DB_DRIVER: ${{ secrets.DB_DRIVER }}
-          TOKEN_SYMMTRIC_KEY: ${{ secrets.TOKEN_SYMMTRIC_KEY }}
-          CONTRACT_PRIVATE_KEY: ${{ secrets.CONTRACT_PRIVATE_KEY }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CONTRACT_ADDRESS: ${{ secrets.CONTRACT_ADDRESS }}
-          ACCESS_TOKEN_DURATION: ${{ secrets.ACCESS_TOKEN_DURATION }}
-          REFRESH_TOKEN_DURATION: ${{ secrets.REFRESH_TOKEN_DURATION }}
         run: make test
