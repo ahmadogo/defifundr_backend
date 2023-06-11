@@ -12,7 +12,7 @@ import (
 )
 
 func GetBalance(address string) (string, error) {
-	configs, err := utils.LoadConfig(".")
+	configs, err := utils.LoadConfig("./../")
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
 	}
@@ -21,6 +21,7 @@ func GetBalance(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	defer client.Close()
 	account := common.HexToAddress(address)
 	balance, err := client.BalanceAt(context.Background(), account, nil)

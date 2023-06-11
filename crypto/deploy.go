@@ -11,45 +11,45 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/rs/zerolog/log"
 )
 
-func Deploy() {
-	configs, err := utils.LoadConfig(".")
+func Deploy() (string, error) {
+	configs, err := utils.LoadConfig("./../")
 	if err != nil {
-		log.Fatal().Msg("cannot load config")
+		return "", err
 	}
 
 	client, err := ethclient.Dial(configs.CryptoDeployURL)
 	if err != nil {
-		log.Fatal().Msg("cannot connect to ethereum network with the given url")
+		return "", err
+
 	}
 	defer client.Close()
 	account := common.HexToAddress(configs.ContractAddress)
 
 	nonce, err := client.PendingNonceAt(context.Background(), account)
 	if err != nil {
-		log.Fatal().Msg("cannot get nonce")
+		return "", err
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		log.Fatal().Msg("cannot get gas price")
+		return "", err
 	}
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		log.Fatal().Msg("cannot get chain id")
+		return "", err
 	}
 
 	key, err := crypto.HexToECDSA(configs.ContractPrivateKey)
 	if err != nil {
-		log.Fatal().Msg("cannot get private key")
+		return "", err
 	}
 
 	auth, err := bind.NewKeyedTransactorWithChainID(key, chainID)
 	if err != nil {
-		log.Fatal().Msg("cannot create auth")
+		return "", err
 	}
 	auth.GasPrice = gasPrice
 	auth.GasLimit = uint64(3000000)
@@ -57,12 +57,12 @@ func Deploy() {
 
 	hotel, ts, _, err := gen.DeployGen(auth, client)
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal().Msg("cannot deploy contract")
+		return "", err
 	}
 
 	fmt.Println("-----------------------------------")
 	fmt.Println(hotel.Hex())
 	fmt.Println(ts.Hash().Hex())
 	fmt.Println("-----------------------------------")
+	return hotel.Hex(), err
 }
