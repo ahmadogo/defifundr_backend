@@ -1,17 +1,47 @@
 package main
 
 import (
+	"database/sql"
 	"os"
 
-	"github.com/demola234/defiraise/crypto"
+	"github.com/demola234/defiraise/api"
+	db "github.com/demola234/defiraise/db/sqlc"
+	"github.com/demola234/defiraise/utils"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	configs, err := utils.LoadConfig(".")
+	if err != nil {
+		log.Fatal().Msg("cannot load config")
+	}
 
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	if configs.Environment == "developement" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	}
 
-	crypto.Deploy()
+	conn, err := sql.Open(configs.DBDriver, configs.DBSource)
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
+	store := db.NewStore(conn)
+	runGinServer(configs, store)
+
+}
+
+func runGinServer(configs utils.Config, store db.Store) {
+	server, err := api.NewServer(configs, store)
+
+	if err != nil {
+		log.Fatal().Msg("cannot create server")
+	}
+
+	err = server.Start(configs.HTTPServerAddress)
+	if err != nil {
+		log.Fatal().Msg("cannot start http server")
+	}
 }

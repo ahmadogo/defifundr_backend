@@ -17,8 +17,8 @@ func createRandomUser(t *testing.T) Users {
 		Username:       utils.RandomString(6),
 		HashedPassword: hashedPassword,
 		FirstName:      utils.RandomString(6),
-		Avatar:         utils.RandomString(6),
 		Email:          utils.RandomEmail(),
+		Avatar:         utils.RandomString(6),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
@@ -28,8 +28,8 @@ func createRandomUser(t *testing.T) Users {
 	require.Equal(t, arg.Username, user.Username)
 	require.Equal(t, arg.HashedPassword, user.HashedPassword)
 	require.Equal(t, arg.FirstName, user.FirstName)
-	require.Equal(t, arg.Avatar, user.Avatar)
 	require.Equal(t, arg.Email, user.Email)
+	require.Equal(t, arg.Avatar, user.Avatar)
 
 	require.NotZero(t, user.Username)
 	require.NotZero(t, user.CreatedAt)

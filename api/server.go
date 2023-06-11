@@ -2,6 +2,7 @@ package api
 
 import (
 	db "github.com/demola234/defiraise/db/sqlc"
+	"github.com/demola234/defiraise/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,7 +12,7 @@ type Server struct {
 }
 
 // NewServer creates a new HTTP server and setup routing
-func NewServer(store db.Store) *Server {
+func NewServer(config utils.Config, store db.Store) (*Server, error) {
 
 	server := &Server{
 		store:  store,
@@ -19,11 +20,12 @@ func NewServer(store db.Store) *Server {
 	}
 
 	server.setUpRouter()
-	return server
+	return server, nil
 }
 
 func (server *Server) setUpRouter() {
 	router := gin.Default()
+	router.POST("/users", server.createUser)
 
 	server.router = router
 }
