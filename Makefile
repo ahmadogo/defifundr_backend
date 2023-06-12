@@ -15,7 +15,7 @@ dockerlogs:
 
 gencontract:
 	solc --abi --bin contract/defi.sol -o build
-	abigen --bin=build/CrowdFunding.bin --abi=build/CrowdFunding.abi --pkg=CrowdFunding --out=gen/CrowdFunding.go
+	abigen --bin=build/CrowdFunding.bin --abi=build/CrowdFunding.abi --pkg=gen --out=gen/crowdFunding.go
 
 dropdb:
 	docker exec -it defi dropdb defi

@@ -14,7 +14,7 @@ import (
 )
 
 func Deploy() (string, error) {
-	configs, err := utils.LoadConfig("./../")
+	configs, err := utils.LoadConfig(".")
 	if err != nil {
 		return "", err
 	}
@@ -25,14 +25,14 @@ func Deploy() (string, error) {
 
 	}
 	defer client.Close()
-	account := common.HexToAddress(configs.ContractAddress)
+	account := common.HexToAddress(configs.DeployAddress)
 
 	nonce, err := client.PendingNonceAt(context.Background(), account)
 	if err != nil {
 		return "", err
 	}
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	gasPrice, err := client.SuggestGasTipCap(context.Background())
 	if err != nil {
 		return "", err
 	}
@@ -42,7 +42,7 @@ func Deploy() (string, error) {
 		return "", err
 	}
 
-	key, err := crypto.HexToECDSA(configs.ContractPrivateKey)
+	key, err := crypto.HexToECDSA(configs.DeployKey)
 	if err != nil {
 		return "", err
 	}
@@ -55,14 +55,14 @@ func Deploy() (string, error) {
 	auth.GasLimit = uint64(3000000)
 	auth.Nonce = big.NewInt(int64(nonce))
 
-	hotel, ts, _, err := gen.DeployGen(auth, client)
+	a, ts, _, err := gen.DeployGen(auth, client)
 	if err != nil {
 		return "", err
 	}
 
 	fmt.Println("-----------------------------------")
-	fmt.Println(hotel.Hex())
+	fmt.Println(a.Hex())
 	fmt.Println(ts.Hash().Hex())
 	fmt.Println("-----------------------------------")
-	return hotel.Hex(), err
+	return a.Hex(), err
 }

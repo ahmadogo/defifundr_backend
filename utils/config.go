@@ -18,6 +18,8 @@ type Config struct {
 	ContractPrivateKey   string        `mapstructure:"CONTRACT_PRIVATE_KEY"`
 	ContractAddress      string        `mapstructure:"CONTRACT_ADDRESS"`
 	CloudinaryURL        string        `mapstructure:"CLOUDINARY_API_KEY"`
+	DeployKey            string        `mapstructure:"DEPLOY_PRIVATE_KEY"`
+	DeployAddress        string        `mapstructure:"DEPLOY_ADDR"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

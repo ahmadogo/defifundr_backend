@@ -13,6 +13,7 @@ contract CrowdFunding {
         uint256 totalFunds;
         uint256 totalContributors;
         string image;
+        uint256 id;
         address[] donators;
         uint256[] donations;
     }
@@ -57,6 +58,7 @@ contract CrowdFunding {
         campaign.goal = _goal;
         campaign.deadline = _deadline;
         campaign.image = _image;
+        campaign.id = campaignCount;
 
         campaignCount++;
 
@@ -82,6 +84,7 @@ contract CrowdFunding {
         campaign.totalContributors += 1;
         campaign.donators.push(msg.sender);
         campaign.donations.push(msg.value);
+        campaign.id = _campaignId;
 
         (bool sent, ) = payable(campaign.owner).call{value: amount}("");
 
