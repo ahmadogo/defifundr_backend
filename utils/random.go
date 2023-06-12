@@ -33,7 +33,7 @@ func RandomOwner() string {
 
 // Generate Random Email Address for user
 func RandomEmail() string {
-	return fmt.Sprintf("%s@payzonex.com", RandomString(6))
+	return fmt.Sprintf("%s@defieth.com", RandomString(6))
 }
 
 // Split Strings

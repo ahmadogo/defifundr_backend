@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -86,13 +86,13 @@ func TestCreateUser(t *testing.T) {
 					Email:     users.Email,
 				}
 
-				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
+				store.EXPECT().
+					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
 					Return(users, nil)
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recoder.Code)
-				// requireBodyMatchUser(t, recoder.Body, users)
 			},
 		},
 	}
@@ -123,15 +123,15 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
-func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.Users) {
-	data, err := ioutil.ReadAll(body)
-	require.NoError(t, err)
+// func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.Users) {
+// 	data, err := os.ReadFile(body.String())
+// 	require.NoError(t, err)
 
-	var gotUser db.Users
-	err = json.Unmarshal(data, &gotUser)
+// 	var gotUser db.Users
+// 	err = json.Unmarshal(data, &gotUser)
 
-	require.NoError(t, err)
-	require.Equal(t, user.FirstName, gotUser.FirstName)
-	require.Equal(t, user.Email, gotUser.Email)
-	require.Empty(t, gotUser.HashedPassword)
-}
+// 	require.NoError(t, err)
+// 	require.Equal(t, user.FirstName, gotUser.FirstName)
+// 	require.Equal(t, user.Email, gotUser.Email)
+// 	require.Empty(t, gotUser.HashedPassword)
+// }
