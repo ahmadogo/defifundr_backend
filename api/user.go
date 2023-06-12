@@ -34,3 +34,20 @@ func (server *Server) createUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
 
 }
+
+func (server *Server) getUser(ctx *gin.Context) {
+	var req interfaces.GetUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	rsp := interfaces.NewUserResponse(user)
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
+}
