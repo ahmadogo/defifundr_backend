@@ -2,6 +2,8 @@ package utils
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -54,4 +56,11 @@ func Decode(pemEncoded string, pemEncodedPub string) (*ecdsa.PrivateKey, *ecdsa.
 	publicKey := genericPublicKey.(*ecdsa.PublicKey)
 
 	return privateKey, publicKey, nil
+}
+
+func GenerateKeyPair() (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	publicKey := &privateKey.PublicKey
+
+	return privateKey, publicKey
 }

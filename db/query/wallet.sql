@@ -5,10 +5,9 @@ INSERT INTO
         owner,
         balance,
         address,
-        pem_encoded,
-        pem_encoded_pub
+        file_path
     )
-VALUES ($1, $2, $3, $4, $5) RETURNING *;
+VALUES ($1, $2, $3, $4) RETURNING *;
 
 -- name: GetWallet :one
 

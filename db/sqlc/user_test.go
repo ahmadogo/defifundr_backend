@@ -9,14 +9,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomUser(t *testing.T) Users {
-	hashedPassword, err := utils.HashPassword(utils.RandomString(6))
+func CreateRandomUser(t *testing.T) Users {
+	password := "passphase"
+	hashedPassword, err := utils.HashPassword(password)
 	require.NoError(t, err)
 
+	name:= utils.RandomString(6)
+
 	arg := CreateUserParams{
-		Username:       utils.RandomString(6),
+		Username:       name,
 		HashedPassword: hashedPassword,
-		FirstName:      utils.RandomString(6),
+		FirstName:      name,
 		Email:          utils.RandomEmail(),
 		Avatar:         utils.RandomString(6),
 	}
@@ -38,11 +41,11 @@ func createRandomUser(t *testing.T) Users {
 }
 
 func TestCreateUser(t *testing.T) {
-	createRandomUser(t)
+	CreateRandomUser(t)
 }
 
 func TestGetUser(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	user2, err := testQueries.GetUser(context.Background(), user.Username)
 	require.NoError(t, err)
@@ -59,7 +62,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestUpdateAvatar(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	arg := UpdateAvatarParams{
 		Username: user.Username,
@@ -81,7 +84,7 @@ func TestUpdateAvatar(t *testing.T) {
 }
 
 func TestChangePassword(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	arg := ChangePasswordParams{
 		Username:       user.Username,
@@ -103,7 +106,7 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	deleted, err := testQueries.DeleteUser(context.Background(), user.Username)
 	require.NoError(t, err)
@@ -115,7 +118,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	arg := UpdateUserParams{
 		Username: user.Username,
@@ -143,7 +146,7 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestCheckUsernameExists(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	exists, err := testQueries.CheckUsernameExists(context.Background(), user.Username)
 	require.NoError(t, err)

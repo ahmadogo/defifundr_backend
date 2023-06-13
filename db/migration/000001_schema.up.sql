@@ -22,8 +22,7 @@ CREATE TABLE
         "owner" varchar NOT NULL,
         "balance" bigint NOT NULL,
         "address" varchar NOT NULL,
-        "pem_encoded" varchar NOT NULL,
-        "pem_encoded_pub" varchar NOT NULL,
+        "file_path" varchar NOT NULL,
         "created_at" timestamptz NOT NULL DEFAULT (now())
     );
 

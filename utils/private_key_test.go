@@ -1,9 +1,6 @@
 package utils
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,13 +17,6 @@ func TestEncode(t *testing.T) {
 	require.Equal(t, privateKey, privateKey2)
 	require.Equal(t, publicKey, publicKey2)
 	require.NoError(t, err)
-}
-
-func GenerateKeyPair() (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	publicKey := &privateKey.PublicKey
-
-	return privateKey, publicKey
 }
 
 func TestInvalidEncode(t *testing.T) {

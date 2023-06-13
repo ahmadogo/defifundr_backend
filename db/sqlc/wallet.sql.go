@@ -15,7 +15,7 @@ UPDATE wallet
 SET
     balance = balance + $1
 WHERE
-    id = $2 RETURNING id, owner, balance, address, pem_encoded, pem_encoded_pub, created_at
+    id = $2 RETURNING id, owner, balance, address, file_path, created_at
 `
 
 type AddAccountBalanceParams struct {
@@ -31,8 +31,7 @@ func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalancePa
 		&i.Owner,
 		&i.Balance,
 		&i.Address,
-		&i.PemEncoded,
-		&i.PemEncodedPub,
+		&i.FilePath,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -45,18 +44,16 @@ INSERT INTO
         owner,
         balance,
         address,
-        pem_encoded,
-        pem_encoded_pub
+        file_path
     )
-VALUES ($1, $2, $3, $4, $5) RETURNING id, owner, balance, address, pem_encoded, pem_encoded_pub, created_at
+VALUES ($1, $2, $3, $4) RETURNING id, owner, balance, address, file_path, created_at
 `
 
 type CreateWalletParams struct {
-	Owner         string `json:"owner"`
-	Balance       int64  `json:"balance"`
-	Address       string `json:"address"`
-	PemEncoded    string `json:"pem_encoded"`
-	PemEncodedPub string `json:"pem_encoded_pub"`
+	Owner    string `json:"owner"`
+	Balance  int64  `json:"balance"`
+	Address  string `json:"address"`
+	FilePath string `json:"file_path"`
 }
 
 func (q *Queries) CreateWallet(ctx context.Context, arg CreateWalletParams) (Wallet, error) {
@@ -64,8 +61,7 @@ func (q *Queries) CreateWallet(ctx context.Context, arg CreateWalletParams) (Wal
 		arg.Owner,
 		arg.Balance,
 		arg.Address,
-		arg.PemEncoded,
-		arg.PemEncodedPub,
+		arg.FilePath,
 	)
 	var i Wallet
 	err := row.Scan(
@@ -73,8 +69,7 @@ func (q *Queries) CreateWallet(ctx context.Context, arg CreateWalletParams) (Wal
 		&i.Owner,
 		&i.Balance,
 		&i.Address,
-		&i.PemEncoded,
-		&i.PemEncodedPub,
+		&i.FilePath,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -92,7 +87,7 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 
 const getWallet = `-- name: GetWallet :one
 
-SELECT id, owner, balance, address, pem_encoded, pem_encoded_pub, created_at FROM wallet WHERE owner = $1 LIMIT 1
+SELECT id, owner, balance, address, file_path, created_at FROM wallet WHERE owner = $1 LIMIT 1
 `
 
 func (q *Queries) GetWallet(ctx context.Context, owner string) (Wallet, error) {
@@ -103,8 +98,7 @@ func (q *Queries) GetWallet(ctx context.Context, owner string) (Wallet, error) {
 		&i.Owner,
 		&i.Balance,
 		&i.Address,
-		&i.PemEncoded,
-		&i.PemEncodedPub,
+		&i.FilePath,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -112,7 +106,7 @@ func (q *Queries) GetWallet(ctx context.Context, owner string) (Wallet, error) {
 
 const updateWallet = `-- name: UpdateWallet :one
 
-UPDATE wallet SET balance = $2 WHERE owner = $1 RETURNING id, owner, balance, address, pem_encoded, pem_encoded_pub, created_at
+UPDATE wallet SET balance = $2 WHERE owner = $1 RETURNING id, owner, balance, address, file_path, created_at
 `
 
 type UpdateWalletParams struct {
@@ -128,8 +122,7 @@ func (q *Queries) UpdateWallet(ctx context.Context, arg UpdateWalletParams) (Wal
 		&i.Owner,
 		&i.Balance,
 		&i.Address,
-		&i.PemEncoded,
-		&i.PemEncodedPub,
+		&i.FilePath,
 		&i.CreatedAt,
 	)
 	return i, err
