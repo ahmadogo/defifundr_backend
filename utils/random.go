@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -48,4 +49,8 @@ func SplitStrings(s string) []string {
 // RandomCryptoPublicKeyAddress generates a random User Eth Address
 func RandomCryptoPublicKeyAddress() string {
 	return fmt.Sprintf("0x%s", RandomString(10))
+}
+
+func RandomOtp() string {
+	return strconv.Itoa(rand.Intn(9999999))
 }
