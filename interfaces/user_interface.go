@@ -29,3 +29,7 @@ func NewUserResponse(user db.Users) UserResponse {
 		CreatedAt:         user.CreatedAt,
 	}
 }
+
+type GetUserRequest struct {
+	Username string `json:"username" binding:"required"`
+}

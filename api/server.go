@@ -1,22 +1,32 @@
 package api
 
 import (
+	"fmt"
+
 	db "github.com/demola234/defiraise/db/sqlc"
+	"github.com/demola234/defiraise/token"
 	"github.com/demola234/defiraise/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	config     utils.Config
+	store      db.Store
+	tokenMaker token.Maker
+	router     *gin.Engine
 }
 
 // NewServer creates a new HTTP server and setup routing
 func NewServer(config utils.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker %s", err.Error())
+	}
 
 	server := &Server{
-		store:  store,
-		router: gin.Default(),
+		store:      store,
+		tokenMaker: tokenMaker,
+		router:     gin.Default(),
 	}
 
 	server.setUpRouter()
@@ -26,7 +36,6 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 func (server *Server) setUpRouter() {
 	router := gin.Default()
 	router.POST("/users", server.createUser)
-
 	server.router = router
 }
 

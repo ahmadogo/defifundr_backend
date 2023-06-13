@@ -20,6 +20,8 @@ type Config struct {
 	CloudinaryURL        string        `mapstructure:"CLOUDINARY_API_KEY"`
 	DeployKey            string        `mapstructure:"DEPLOY_PRIVATE_KEY"`
 	DeployAddress        string        `mapstructure:"DEPLOY_ADDR"`
+	Email                string        `mapstructure:"EMAIL"`
+	EmailPass            string        `mapstructure:"EMAIL_PASS"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
