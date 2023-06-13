@@ -60,11 +60,10 @@ type VerifyEmails struct {
 }
 
 type Wallet struct {
-	ID            int64     `json:"id"`
-	Owner         string    `json:"owner"`
-	Balance       int64     `json:"balance"`
-	Address       string    `json:"address"`
-	PemEncoded    string    `json:"pem_encoded"`
-	PemEncodedPub string    `json:"pem_encoded_pub"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID        int64     `json:"id"`
+	Owner     string    `json:"owner"`
+	Balance   int64     `json:"balance"`
+	Address   string    `json:"address"`
+	FilePath  string    `json:"file_path"`
+	CreatedAt time.Time `json:"created_at"`
 }
