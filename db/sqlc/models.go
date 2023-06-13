@@ -12,14 +12,14 @@ import (
 
 type CampaignTypes struct {
 	ID            int64  `json:"id"`
-	CampaignTypes string `json:"campaignTypes"`
+	CampaignTypes string `json:"campaign_types"`
 }
 
 type Donations struct {
 	ID           int64     `json:"id"`
 	Owner        string    `json:"owner"`
 	Title        string    `json:"title"`
-	CampaignType string    `json:"campaignType"`
+	CampaignType string    `json:"campaign_type"`
 	Description  string    `json:"description"`
 	Goal         int64     `json:"goal"`
 	Deadline     time.Time `json:"deadline"`
@@ -27,7 +27,7 @@ type Donations struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-type Sessions struct {
+type UserSession struct {
 	ID           uuid.UUID `json:"id"`
 	Username     string    `json:"username"`
 	RefreshToken string    `json:"refresh_token"`
@@ -60,10 +60,11 @@ type VerifyEmails struct {
 }
 
 type Wallet struct {
-	ID               int64     `json:"id"`
-	Owner            string    `json:"owner"`
-	Balance          int64     `json:"balance"`
-	HashedPrivateKey string    `json:"hashed_private_key"`
-	PublicKey        string    `json:"public_key"`
-	CreatedAt        time.Time `json:"created_at"`
+	ID            int64     `json:"id"`
+	Owner         string    `json:"owner"`
+	Balance       int64     `json:"balance"`
+	Address       string    `json:"address"`
+	PemEncoded    string    `json:"pem_encoded"`
+	PemEncodedPub string    `json:"pem_encoded_pub"`
+	CreatedAt     time.Time `json:"created_at"`
 }

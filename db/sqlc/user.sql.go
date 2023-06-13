@@ -12,10 +12,12 @@ import (
 )
 
 const changePassword = `-- name: ChangePassword :one
+
 UPDATE users
-SET hashed_password = $2, password_changed_at = $3
-WHERE username = $1
-RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+SET
+    hashed_password = $2,
+    password_changed_at = $3
+WHERE username = $1 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
 `
 
 type ChangePasswordParams struct {
@@ -41,11 +43,13 @@ func (q *Queries) ChangePassword(ctx context.Context, arg ChangePasswordParams) 
 }
 
 const checkUsernameExists = `-- name: CheckUsernameExists :one
+
 SELECT EXISTS (
-    SELECT 1 FROM users
-    WHERE username = $1
-    LIMIT 1
-)
+        SELECT 1
+        FROM users
+        WHERE username = $1
+        LIMIT 1
+    )
 `
 
 func (q *Queries) CheckUsernameExists(ctx context.Context, username string) (bool, error) {
@@ -56,15 +60,15 @@ func (q *Queries) CheckUsernameExists(ctx context.Context, username string) (boo
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (
-    username,
-    hashed_password,
-    first_name,
-    avatar,
-    email
-    ) VALUES (
-    $1, $2, $3, $4, $5
-    ) RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+INSERT INTO
+    users (
+        username,
+        hashed_password,
+        first_name,
+        avatar,
+        email
+    )
+VALUES ($1, $2, $3, $4, $5) RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
 `
 
 type CreateUserParams struct {
@@ -98,9 +102,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 }
 
 const deleteUser = `-- name: DeleteUser :one
-DELETE FROM users
-WHERE username = $1
-RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+
+DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error) {
@@ -120,9 +123,8 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at FROM users
-WHERE username = $1 OR email = $1
-LIMIT 1
+
+SELECT username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
@@ -142,10 +144,8 @@ func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 }
 
 const updateAvatar = `-- name: UpdateAvatar :one
-UPDATE users
-SET avatar = $2
-WHERE username = $1
-RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+
+UPDATE users SET avatar = $2 WHERE username = $1 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
 `
 
 type UpdateAvatarParams struct {
@@ -170,13 +170,24 @@ func (q *Queries) UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) (Use
 }
 
 const updateUser = `-- name: UpdateUser :one
+
 UPDATE users
-SET first_name = COALESCE($1, first_name),
-    email =  COALESCE($2, email),
-    hashed_password = COALESCE($3, hashed_password),
-    password_changed_at = COALESCE($4, password_changed_at)
-WHERE username = $5
-RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+SET
+    first_name = COALESCE(
+        $1,
+        first_name
+    ),
+    email = COALESCE($2, email),
+    hashed_password = COALESCE(
+        $3,
+        hashed_password
+    ),
+    password_changed_at = COALESCE(
+        $4,
+        password_changed_at
+    )
+WHERE
+    username = $5 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
 `
 
 type UpdateUserParams struct {
