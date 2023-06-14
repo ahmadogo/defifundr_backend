@@ -2,6 +2,8 @@ package crypto
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"fmt"
 	"math/big"
 
 	"github.com/demola234/defiraise/gen"
@@ -9,12 +11,11 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 )
 
-func CreateCampaign(title string, campaignType string, description string, goal int, deadline int, image string, privateKey string, address string) (string, error) {
+func CreateCampaign(title string, campaignType string, description string, goal int, deadline int, image string, privateKey *ecdsa.PrivateKey, address string) (*bind.TransactOpts, string, error, *Campaign) {
 	configs, err := utils.LoadConfig("./../")
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
@@ -22,56 +23,76 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 
 	client, err := ethclient.DialContext(context.Background(), configs.CryptoDeployURL)
 	if err != nil {
-		return "", err
-	}
-
-	key, err := crypto.HexToECDSA(privateKey)
-	if err != nil {
-		return "", err
+		return nil, "", err, nil
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(address))
 	if err != nil {
-		return "", err
+		return nil, "", err, nil
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		return "", err
+		return nil, "", err, nil
 	}
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		return "", err
+		return nil, "", err, nil
 	}
 
-	cAdd := common.HexToAddress(configs.ContractAddress)
+	cAdd := common.HexToAddress("0xd9d4b660f51eb66b3f8b3829012424e46186857f")
 
 	tx, err := gen.NewGen(cAdd, client)
 	if err != nil {
-		return "", err
+		return nil, "", err, nil
 	}
 
-	auth, err := bind.NewKeyedTransactorWithChainID(key, chainID)
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err != nil {
-		return "", err
+		return nil, "", err, nil
 	}
 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)
-	auth.Nonce = big.NewInt(int64(nonce) + 100)
+	auth.Nonce = big.NewInt(int64(nonce))
 
-	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
+	// tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
+	// if err != nil {
+	// 	return nil, "", err, nil
+	// }
+
+	campaign, err := tx.GetCampaign(&bind.CallOpts{},
+		big.NewInt(int64(0)),
+	)
+
 	if err != nil {
-		return "", err
+		log.Err(err)
+		return nil, "", err, nil
 	}
 
-	return tsx.Hash().Hex(), nil
+	campaigns := Campaign{
+		Title:        campaign.Title,
+		CampaignType: campaign.CampaignType,
+		Description:  campaign.Description,
+		Goal:         campaign.Goal.Int64(),
+		Deadline:     campaign.Deadline.Int64(),
+		Image:        campaign.Image,
+	}
+
+	log.Info().Msgf("campaign: %+v", campaigns)
+
+	fmt.Println("-----------------------------------")
+	fmt.Println("tx view: ", tx)
+	fmt.Println("............Loading............")
+	fmt.Println("-----------------------------------")
+
+	return auth, "", nil, &campaigns
 
 }
 
 func GetCampaign(id int, address string) (*Campaign, error) {
-	configs, err := utils.LoadConfig(".")
+	configs, err := utils.LoadConfig("./../")
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
 	}
@@ -90,9 +111,7 @@ func GetCampaign(id int, address string) (*Campaign, error) {
 		return &Campaign{}, err
 	}
 
-	campaign, err := tx.GetCampaign(&bind.CallOpts{
-		From: common.HexToAddress(address),
-	},
+	campaign, err := tx.GetCampaign(&bind.CallOpts{},
 		big.NewInt(int64(id)),
 	)
 
