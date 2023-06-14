@@ -57,10 +57,10 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 	auth.GasLimit = uint64(3000000)
 	auth.Nonce = big.NewInt(int64(nonce))
 
-	// tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
-	// if err != nil {
-	// 	return nil, "", err, nil
-	// }
+	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
+	if err != nil {
+		return nil, "", err, nil
+	}
 
 	campaign, err := tx.GetCampaign(&bind.CallOpts{},
 		big.NewInt(int64(0)),
@@ -87,7 +87,7 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 	fmt.Println("............Loading............")
 	fmt.Println("-----------------------------------")
 
-	return auth, "", nil, &campaigns
+	return auth, tsx.Hash().Hex(), nil, &campaigns
 
 }
 

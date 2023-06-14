@@ -13,7 +13,7 @@ func createVerifyEmails(t *testing.T) VerifyEmails {
 
 	arg := CreateVerifyEmailParams{
 		Email:      users.Email,
-		Username:   utils.RandomString(6),
+		Username:   users.Username,
 		SecretCode: utils.RandomOtp(),
 	}
 
