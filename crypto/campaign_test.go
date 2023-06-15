@@ -15,10 +15,10 @@ func createCampaign(t *testing.T) (*bind.TransactOpts, string, error) {
 	require.NotEmpty(t, configs)
 
 	password := "pass"
-	// filepath, address, err := GenerateAccountKeyStone(password)
-	// require.NoError(t, err)
-	// require.NotEmpty(t, filepath)
-	// require.NotEmpty(t, address)
+	filepath, address, err := GenerateAccountKeyStone(password)
+	require.NoError(t, err)
+	require.NotEmpty(t, filepath)
+	require.NotEmpty(t, address)
 
 	private, public, err := DecryptPrivateKey("UTC--2023-06-13T20-30-13.183818000Z--0e0c554d2b37105838b45e8b5a49d0edc9b00a8f", password)
 	require.NoError(t, err)
@@ -32,7 +32,7 @@ func createCampaign(t *testing.T) (*bind.TransactOpts, string, error) {
 	deadline := int(1000000000000000000)
 	campaignType := "Test Campaign Type"
 
-	auth, campaign, err, c := CreateCampaign(title, campaignType, description, goal, deadline, image, private, "0x0e0c554d2b37105838b45e8b5a49d0edc9b00a8f")
+	auth, campaign, err, c := CreateCampaign(title, campaignType, description, goal, deadline, image, private, address)
 	if err != nil {
 		return nil, "", err
 	}
@@ -49,4 +49,23 @@ func TestCreateCampaign(t *testing.T) {
 	require.NotEmpty(t, a)
 
 }
- 
+
+func TestGetCampaign(t *testing.T) {
+	configs, err := utils.LoadConfig("./../")
+	require.NoError(t, err)
+	require.NotEmpty(t, configs)
+
+	campaign, err := GetCampaign(0, "0x0e0c554d2b37105838b45e8b5a49d0edc9b00a8f")
+	require.NoError(t, err)
+	require.NotEmpty(t, campaign)
+}
+
+func TestGetCampaigns(t *testing.T) {
+	configs, err := utils.LoadConfig("./../")
+	require.NoError(t, err)
+	require.NotEmpty(t, configs)
+
+	campaigns, err := GetCampaigns("0x0e0c554d2b37105838b45e8b5a49d0edc9b00a8f")
+	require.NoError(t, err)
+	require.NotEmpty(t, campaigns)
+}
