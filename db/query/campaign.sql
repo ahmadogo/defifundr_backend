@@ -5,5 +5,4 @@ INSERT INTO
 VALUES ($1) RETURNING *;
 
 -- name: GetAllCampaignType :many
-
 SELECT * FROM campaigns;
