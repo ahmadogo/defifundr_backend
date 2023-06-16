@@ -55,15 +55,15 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)
-	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Nonce = big.NewInt(int64(nonce)+100)
 
-	// tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
-	// if err != nil {
-	// 	return nil, "", err, nil
-	// }
+	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
+	if err != nil {
+		return nil, "", err, nil
+	}
 
 	campaign, err := tx.GetCampaign(&bind.CallOpts{},
-		big.NewInt(int64(0)),
+		big.NewInt(int64(3)),
 	)
 
 	if err != nil {
@@ -87,7 +87,7 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 	fmt.Println("............Loading............")
 	fmt.Println("-----------------------------------")
 
-	return auth, "", nil, &campaigns
+	return auth, tsx.Hash().Hex(), nil, &campaigns
 
 }
 
@@ -103,7 +103,7 @@ func GetCampaign(id int, address string) (*Campaign, error) {
 		return &Campaign{}, err
 	}
 
-	cAdd := common.HexToAddress(configs.ContractAddress)
+	cAdd := common.HexToAddress("0xd9d4b660f51eb66b3f8b3829012424e46186857f")
 
 	tx, err := gen.NewGen(cAdd, client)
 	if err != nil {
@@ -155,7 +155,7 @@ func GetCampaigns(address string) ([]Campaign, error) {
 
 	defer client.Close()
 
-	cAdd := common.HexToAddress(configs.ContractAddress)
+	cAdd := common.HexToAddress("0xd9d4b660f51eb66b3f8b3829012424e46186857f")
 
 	tx, err := gen.NewGen(cAdd, client)
 	if err != nil {

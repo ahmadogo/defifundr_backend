@@ -12,12 +12,11 @@ import (
 )
 
 const changePassword = `-- name: ChangePassword :one
-
 UPDATE users
 SET
     hashed_password = $2,
     password_changed_at = $3
-WHERE username = $1 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 type ChangePasswordParams struct {
@@ -32,12 +31,17 @@ func (q *Queries) ChangePassword(ctx context.Context, arg ChangePasswordParams) 
 	err := row.Scan(
 		&i.Username,
 		&i.HashedPassword,
-		&i.FirstName,
 		&i.Avatar,
 		&i.Email,
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
+		&i.Balance,
+		&i.Address,
+		&i.FilePath,
+		&i.SecretCode,
+		&i.IsUsed,
 		&i.CreatedAt,
+		&i.ExpiredAt,
 	)
 	return i, err
 }
@@ -60,50 +64,82 @@ func (q *Queries) CheckUsernameExists(ctx context.Context, username string) (boo
 }
 
 const createUser = `-- name: CreateUser :one
+
 INSERT INTO
     users (
-        username,
         hashed_password,
-        first_name,
+        username,
         avatar,
-        email
+        email,
+        balance,
+        address,
+        file_path,
+        secret_code,
+        is_used,
+        is_email_verified
     )
-VALUES ($1, $2, $3, $4, $5) RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10
+    ) RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 type CreateUserParams struct {
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
-	FirstName      string `json:"first_name"`
-	Avatar         string `json:"avatar"`
-	Email          string `json:"email"`
+	HashedPassword  string `json:"hashed_password"`
+	Username        string `json:"username"`
+	Avatar          string `json:"avatar"`
+	Email           string `json:"email"`
+	Balance         int64  `json:"balance"`
+	Address         string `json:"address"`
+	FilePath        string `json:"file_path"`
+	SecretCode      string `json:"secret_code"`
+	IsUsed          bool   `json:"is_used"`
+	IsEmailVerified bool   `json:"is_email_verified"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
-		arg.Username,
 		arg.HashedPassword,
-		arg.FirstName,
+		arg.Username,
 		arg.Avatar,
 		arg.Email,
+		arg.Balance,
+		arg.Address,
+		arg.FilePath,
+		arg.SecretCode,
+		arg.IsUsed,
+		arg.IsEmailVerified,
 	)
 	var i Users
 	err := row.Scan(
 		&i.Username,
 		&i.HashedPassword,
-		&i.FirstName,
 		&i.Avatar,
 		&i.Email,
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
+		&i.Balance,
+		&i.Address,
+		&i.FilePath,
+		&i.SecretCode,
+		&i.IsUsed,
 		&i.CreatedAt,
+		&i.ExpiredAt,
 	)
 	return i, err
 }
 
 const deleteUser = `-- name: DeleteUser :one
 
-DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error) {
@@ -112,19 +148,24 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 	err := row.Scan(
 		&i.Username,
 		&i.HashedPassword,
-		&i.FirstName,
 		&i.Avatar,
 		&i.Email,
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
+		&i.Balance,
+		&i.Address,
+		&i.FilePath,
+		&i.SecretCode,
+		&i.IsUsed,
 		&i.CreatedAt,
+		&i.ExpiredAt,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
 
-SELECT username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
+SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
@@ -133,38 +174,17 @@ func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 	err := row.Scan(
 		&i.Username,
 		&i.HashedPassword,
-		&i.FirstName,
 		&i.Avatar,
 		&i.Email,
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
+		&i.Balance,
+		&i.Address,
+		&i.FilePath,
+		&i.SecretCode,
+		&i.IsUsed,
 		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const updateAvatar = `-- name: UpdateAvatar :one
-
-UPDATE users SET avatar = $2 WHERE username = $1 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
-`
-
-type UpdateAvatarParams struct {
-	Username string `json:"username"`
-	Avatar   string `json:"avatar"`
-}
-
-func (q *Queries) UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) (Users, error) {
-	row := q.db.QueryRowContext(ctx, updateAvatar, arg.Username, arg.Avatar)
-	var i Users
-	err := row.Scan(
-		&i.Username,
-		&i.HashedPassword,
-		&i.FirstName,
-		&i.Avatar,
-		&i.Email,
-		&i.IsEmailVerified,
-		&i.PasswordChangedAt,
-		&i.CreatedAt,
+		&i.ExpiredAt,
 	)
 	return i, err
 }
@@ -173,49 +193,69 @@ const updateUser = `-- name: UpdateUser :one
 
 UPDATE users
 SET
-    first_name = COALESCE(
-        $1,
-        first_name
-    ),
-    email = COALESCE($2, email),
     hashed_password = COALESCE(
-        $3,
+        $1,
         hashed_password
     ),
     password_changed_at = COALESCE(
-        $4,
+        $2,
         password_changed_at
-    )
+    ),
+    email = COALESCE($3, email),
+    is_email_verified = COALESCE(
+        $4,
+        is_email_verified
+    ),
+    avatar = COALESCE($5, avatar),
+    balance = COALESCE($6, balance),
+    secret_code = COALESCE(
+        $7,
+        secret_code
+    ),
+    is_used = COALESCE($8, is_used)
 WHERE
-    username = $5 RETURNING username, hashed_password, first_name, avatar, email, is_email_verified, password_changed_at, created_at
+    username = $9 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 type UpdateUserParams struct {
-	FirstName         sql.NullString `json:"first_name"`
-	Email             sql.NullString `json:"email"`
 	HashedPassword    sql.NullString `json:"hashed_password"`
 	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
+	Email             sql.NullString `json:"email"`
+	IsEmailVerified   sql.NullBool   `json:"is_email_verified"`
+	Avatar            sql.NullString `json:"avatar"`
+	Balance           sql.NullInt64  `json:"balance"`
+	SecretCode        sql.NullString `json:"secret_code"`
+	IsUsed            sql.NullBool   `json:"is_used"`
 	Username          string         `json:"username"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error) {
 	row := q.db.QueryRowContext(ctx, updateUser,
-		arg.FirstName,
-		arg.Email,
 		arg.HashedPassword,
 		arg.PasswordChangedAt,
+		arg.Email,
+		arg.IsEmailVerified,
+		arg.Avatar,
+		arg.Balance,
+		arg.SecretCode,
+		arg.IsUsed,
 		arg.Username,
 	)
 	var i Users
 	err := row.Scan(
 		&i.Username,
 		&i.HashedPassword,
-		&i.FirstName,
 		&i.Avatar,
 		&i.Email,
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
+		&i.Balance,
+		&i.Address,
+		&i.FilePath,
+		&i.SecretCode,
+		&i.IsUsed,
 		&i.CreatedAt,
+		&i.ExpiredAt,
 	)
 	return i, err
 }

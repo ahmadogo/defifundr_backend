@@ -48,14 +48,13 @@ func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher
 
 func randomUser(t *testing.T) (user db.Users, password string) {
 	password = utils.RandomString(6)
-	firstName := utils.RandomOwner()
+	Username := utils.RandomOwner()
 
 	hashedPassword, err := utils.HashPassword(password)
 	require.NoError(t, err)
 
 	user = db.Users{
-		FirstName:      firstName,
-		Username:       firstName,
+		Username:      Username,
 		Avatar:         utils.RandomString(6),
 		Email:          utils.RandomEmail(),
 		HashedPassword: hashedPassword,
@@ -75,15 +74,13 @@ func TestCreateUser(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"username":   users.FirstName,
+				"username":   users.Username,
 				"email":      users.Email,
-				"first_name": users.FirstName,
 				"password":   password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateUserParams{
-					Username:  users.Username,
-					FirstName: users.FirstName,
+					Username: users.Username,
 					Email:     users.Email,
 				}
 
@@ -132,7 +129,7 @@ func TestCreateUser(t *testing.T) {
 // 	err = json.Unmarshal(data, &gotUser)
 
 // 	require.NoError(t, err)
-// 	require.Equal(t, user.FirstName, gotUser.FirstName)
+// 	require.Equal(t, user.Username, gotUser.Username)
 // 	require.Equal(t, user.Email, gotUser.Email)
 // 	require.Empty(t, gotUser.HashedPassword)
 // }

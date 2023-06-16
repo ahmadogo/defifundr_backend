@@ -11,24 +11,16 @@ import (
 )
 
 type Querier interface {
-	AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Wallet, error)
 	ChangePassword(ctx context.Context, arg ChangePasswordParams) (Users, error)
 	CheckUsernameExists(ctx context.Context, username string) (bool, error)
-	CreateCampaignType(ctx context.Context, campaignTypes string) (CampaignTypes, error)
+	CreateCampaignType(ctx context.Context, campaignName string) (Campaigns, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (UserSession, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
-	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmails, error)
-	CreateWallet(ctx context.Context, arg CreateWalletParams) (Wallet, error)
-	DeleteAccount(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, username string) (Users, error)
-	GetAllCampaignType(ctx context.Context) ([]CampaignTypes, error)
+	GetAllCampaignType(ctx context.Context) ([]Campaigns, error)
 	GetSession(ctx context.Context, id uuid.UUID) (UserSession, error)
 	GetUser(ctx context.Context, username string) (Users, error)
-	GetWallet(ctx context.Context, owner string) (Wallet, error)
-	UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) (Users, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
-	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmails, error)
-	UpdateWallet(ctx context.Context, arg UpdateWalletParams) (Wallet, error)
 }
 
 var _ Querier = (*Queries)(nil)

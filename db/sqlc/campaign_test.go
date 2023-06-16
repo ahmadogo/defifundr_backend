@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomCampaignType(t *testing.T) CampaignTypes {
+func createRandomCampaignType(t *testing.T) Campaigns {
 
 	campaignTypes := utils.RandomString(6)
 
@@ -16,7 +16,7 @@ func createRandomCampaignType(t *testing.T) CampaignTypes {
 	require.NoError(t, err)
 	require.NotEmpty(t, campaignType)
 
-	require.NotZero(t, campaignType.CampaignTypes)
+	require.NotZero(t, campaignType.CampaignName)
 	return campaignType
 }
 

@@ -15,14 +15,12 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	username := req.FirstName
+	username := req.Username
 
 	arg := db.CreateUserParams{
 		Username:       username,
 		HashedPassword: req.Password,
-		FirstName:      req.FirstName,
 		Email:          req.Email,
-		Avatar:         "",
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)
@@ -30,6 +28,8 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
+
+	// filepath, address, err := crypto.GenerateAccountKeyStone(password)
 
 	rsp := interfaces.NewUserResponse(user)
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
