@@ -8,28 +8,23 @@ CREATE TABLE
     "users" (
         "username" varchar PRIMARY KEY,
         "hashed_password" varchar NOT NULL,
-        "first_name" varchar NOT NULL,
         "avatar" varchar NOT NULL,
         "email" varchar UNIQUE NOT NULL,
         "is_email_verified" bool NOT NULL DEFAULT false,
         "password_changed_at" timestamptz NOT NULL DEFAULT '0001-01-01',
-        "created_at" timestamptz NOT NULL DEFAULT (now())
-    );
-
-CREATE TABLE
-    "wallet" (
-        "id" bigserial PRIMARY KEY,
-        "owner" varchar NOT NULL,
         "balance" bigint NOT NULL,
         "address" varchar NOT NULL,
         "file_path" varchar NOT NULL,
-        "created_at" timestamptz NOT NULL DEFAULT (now())
+        "secret_code" varchar NOT NULL,
+        "is_used" bool NOT NULL DEFAULT false,
+        "created_at" timestamptz NOT NULL DEFAULT (now()),
+        "expired_at" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
     );
 
 CREATE TABLE
-    "campaign_types" (
+    "campaigns" (
         "id" bigserial PRIMARY KEY,
-        "campaign_types" varchar NOT NULL
+        "campaign_name" varchar NOT NULL
     );
 
 CREATE TABLE
@@ -45,16 +40,6 @@ CREATE TABLE
         "created_at" timestamptz NOT NULL DEFAULT (now())
     );
 
-CREATE TABLE
-    "verify_emails" (
-        "id" bigserial PRIMARY KEY,
-        "username" varchar NOT NULL,
-        "email" varchar NOT NULL,
-        "secret_code" varchar NOT NULL,
-        "is_used" bool NOT NULL DEFAULT false,
-        "created_at" timestamptz NOT NULL DEFAULT (now()),
-        "expired_at" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
-    );
 
 CREATE TABLE
     "user_session" (
@@ -68,18 +53,8 @@ CREATE TABLE
         "created_at" timestamptz NOT NULL DEFAULT (now())
     );
 
-CREATE INDEX ON "wallet" ("owner");
 
-CREATE UNIQUE INDEX ON "wallet" ("owner");
-
-ALTER TABLE "wallet"
-ADD
-    FOREIGN KEY ("owner") REFERENCES "users" ("username");
 
 ALTER TABLE "donations"
 ADD
     FOREIGN KEY ("owner") REFERENCES "users" ("username");
-
-ALTER TABLE "verify_emails"
-ADD
-    FOREIGN KEY ("username") REFERENCES "users" ("username");

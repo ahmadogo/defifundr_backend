@@ -10,9 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type CampaignTypes struct {
-	ID            int64  `json:"id"`
-	CampaignTypes string `json:"campaign_types"`
+type Campaigns struct {
+	ID           int64  `json:"id"`
+	CampaignName string `json:"campaign_name"`
 }
 
 type Donations struct {
@@ -41,29 +41,15 @@ type UserSession struct {
 type Users struct {
 	Username          string    `json:"username"`
 	HashedPassword    string    `json:"hashed_password"`
-	FirstName         string    `json:"first_name"`
 	Avatar            string    `json:"avatar"`
 	Email             string    `json:"email"`
 	IsEmailVerified   bool      `json:"is_email_verified"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
+	Balance           int64     `json:"balance"`
+	Address           string    `json:"address"`
+	FilePath          string    `json:"file_path"`
+	SecretCode        string    `json:"secret_code"`
+	IsUsed            bool      `json:"is_used"`
 	CreatedAt         time.Time `json:"created_at"`
-}
-
-type VerifyEmails struct {
-	ID         int64     `json:"id"`
-	Username   string    `json:"username"`
-	Email      string    `json:"email"`
-	SecretCode string    `json:"secret_code"`
-	IsUsed     bool      `json:"is_used"`
-	CreatedAt  time.Time `json:"created_at"`
-	ExpiredAt  time.Time `json:"expired_at"`
-}
-
-type Wallet struct {
-	ID        int64     `json:"id"`
-	Owner     string    `json:"owner"`
-	Balance   int64     `json:"balance"`
-	Address   string    `json:"address"`
-	FilePath  string    `json:"file_path"`
-	CreatedAt time.Time `json:"created_at"`
+	ExpiredAt         time.Time `json:"expired_at"`
 }

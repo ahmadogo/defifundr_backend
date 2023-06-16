@@ -1,9 +1,9 @@
 -- name: CreateCampaignType :one
 
 INSERT INTO
-    campaign_types (campaign_types)
+    campaigns (campaign_name)
 VALUES ($1) RETURNING *;
 
 -- name: GetAllCampaignType :many
 
-SELECT * FROM campaign_types;
+SELECT * FROM campaigns;
