@@ -29,7 +29,7 @@ func CreateRandomUser(t *testing.T) Users {
 		Username:       name,
 		Email:          utils.RandomEmail(),
 		Avatar:         utils.RandomString(6),
-		Balance:        0,
+		Balance:        "0",
 		Address:        address,
 		SecretCode:     otpCode,
 		FilePath:       filepath,

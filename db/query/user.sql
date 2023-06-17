@@ -31,6 +31,7 @@ VALUES (
 SELECT * FROM users WHERE username = $1 OR email = $1 LIMIT 1;
 
 -- name: ChangePassword :one
+
 UPDATE users
 SET
     hashed_password = $2,
@@ -72,6 +73,10 @@ SET
     secret_code = COALESCE(
         sqlc.narg(secret_code),
         secret_code
+    ),
+    expired_at = COALESCE(
+        sqlc.narg(expired_at),
+        expired_at
     ),
     is_used = COALESCE(sqlc.narg(is_used), is_used)
 WHERE

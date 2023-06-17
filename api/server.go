@@ -36,6 +36,28 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 func (server *Server) setUpRouter() {
 	router := gin.Default()
 	router.POST("/user", server.createUser)
+	router.POST("/user/login", server.loginUser)
+	router.POST("/user/verify", server.verifyUser)
+	router.POST("/user/verify/resend", server.resendVerificationCode)
+	// router.POST("/user/password/reset", server.resetPassword)
+	// router.POST("/user/password/reset/verify", server.verifyPasswordResetCode)
+	// router.POST("/user/password/reset/verify/confirm", server.confirmPasswordReset)
+	// router.GET("/user/checkUsername/:username", server.checkUsername)
+	// router.POST("/token/renewAccess", server.renewAccessToken)
+	// authRoutes := router.Group("/").Use(authMiddleWare(server.tokenMaker))
+	// authRoutes.GET("/user", server.getUser)
+	// authRoutes.POST("/user/logout", server.logoutUser)
+	// authRoutes.POST("/user/password/change", server.changePassword)
+	// authRoutes.GET("/campaigns", server.getCampaigns)
+	// authRoutes.POST("/campaigns", server.createCampaign)
+	// authRoutes.GET("/campaigns/:id", server.getCampaign)
+	// authRoutes.POST("/campaignsTypes", server.getCampaignTypes)
+	// authRoutes.GET("/campaigns/getDonors", server.getCampaignDonors)
+	// authRoutes.POST("/campaigns/donate", server.donateToCampaign)
+	// authRoutes.POST("/campaigns/withdraw", server.withdrawFromCampaign)
+	// authRoutes.POST("/campaigns/withdraw/confirm", server.confirmWithdrawal)
+	// authRoutes.GET("/campaigns/myDonations", server.getMyDonations)
+	// authRoutes.GET("/campaigns/search", server.searchCampaigns)
 	server.router = router
 }
 

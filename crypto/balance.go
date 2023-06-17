@@ -23,15 +23,15 @@ func GetBalance(address string) (string, error) {
 	}
 
 	defer client.Close()
-	account := common.HexToAddress(address)
-	balance, err := client.BalanceAt(context.Background(), account, nil)
+	accountAt := common.HexToAddress(address)
+	balance, err := client.BalanceAt(context.Background(), accountAt, nil)
 	if err != nil {
 		return "", err
 	}
 	fbBalance := new(big.Float)
 	fbBalance.SetString(balance.String())
 
-	// Convert to ETH
+	// Convert from wei to eth
 	ethValue := new(big.Float).Quo(fbBalance, big.NewFloat(math.Pow10(18)))
 	return ethValue.String(), nil
 }

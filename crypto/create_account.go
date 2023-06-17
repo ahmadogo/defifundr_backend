@@ -46,8 +46,6 @@ func GenerateAccountKeyStone(password string) (string, string, error) {
 
 	filename := account.URL.Path[strings.LastIndex(account.URL.Path, "/")+1:]
 
-	fmt.Println(filename)
-	fmt.Println(account.Address.Hex())
 	accountName := account.Address.Hex()
 
 	return filename, accountName, nil
@@ -68,12 +66,10 @@ func DecryptPrivateKey(path string, passphrase string) (*ecdsa.PrivateKey, strin
 
 	pData := crypto.FromECDSA(key.PrivateKey)
 	privateKey := hexutil.Encode(pData)
-	fmt.Println(privateKey)
 	publicKey, err := GeneratePublicKeyFromPrivateKey(privateKey)
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(publicKey)
 
 	return key.PrivateKey, publicKey, nil
 }
@@ -90,7 +86,6 @@ func GeneratePublicKeyFromPrivateKey(privateKey string) (string, error) {
 	}
 
 	publicKey := crypto.PubkeyToAddress(privateKeyECDSA.PublicKey).Hex()
-	fmt.Println(publicKey)
 
 	return publicKey, nil
 }
