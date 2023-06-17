@@ -59,3 +59,24 @@ type LoginResponse struct {
 	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
 	User                  UserResponse `json:"user"`
 }
+
+
+type ResetPasswordRequest struct {
+	Username string `json:"username" binding:"required"`
+}
+
+
+type VerifyUserResetRequest struct {
+	Username string `json:"username" binding:"required"`
+	OtpCode  string `json:"otp_code" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type CheckUsernameExistsRequest struct {
+	Username string `json:"username" binding:"required"`
+}
+
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}

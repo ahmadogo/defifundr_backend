@@ -145,7 +145,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		Username:     user.Username,
 		RefreshToken: refreshToken,
 		ID:           refreshPayload.ID,
-		ExpiresAt:    refreshPayload.ExpiresAt,
+		ExpiresAt:    time.Now().Add(15 * time.Minute),
 		UserAgent:    ctx.GetHeader("User-Agent"),
 		ClientIp:     ctx.ClientIP(),
 		IsBlocked:    false,
@@ -282,4 +282,149 @@ func (server *Server) resendVerificationCode(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "OTP code resent"))
+}
+
+func (server *Server) resetPassword(ctx *gin.Context) {
+	var req interfaces.ResetPasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.Username)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		return
+	}
+
+	if !user.IsEmailVerified {
+		err := errors.New("user not verified")
+		ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		return
+	}
+
+	email := utils.EmailInfo{
+		Name:    req.Username,
+		Details: "Welcome to DefiRaise",
+		Otp:     utils.RandomOtp(),
+		Subject: "Welcome to DefiRaise",
+	}
+
+	_, err = utils.SendEmail(user.Email, req.Username, email, "./utils")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	arg := db.UpdateUserParams{
+		Username: user.Username,
+		SecretCode: sql.NullString{
+			String: email.Otp,
+			Valid:  true,
+		},
+		ExpiredAt: sql.NullTime{
+			Time:  time.Now().Add(15 * time.Minute),
+			Valid: true,
+		},
+		IsUsed: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+	}
+
+	_, err = server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Password reset successfully"))
+}
+
+func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
+	var req interfaces.VerifyUserResetRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.Username)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		return
+	}
+
+	if user.IsEmailVerified {
+		err := errors.New("user already verified")
+		ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		return
+	}
+
+	if user.IsUsed {
+		err := errors.New("user already used")
+		ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		return
+	}
+
+	if user.ExpiredAt.Before(time.Now()) {
+		err := errors.New("otp has expired")
+		ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		return
+	}
+
+	if user.SecretCode != req.OtpCode {
+		err := errors.New("invalid otp code")
+		ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		return
+	}
+
+	hashPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	arg := db.UpdateUserParams{
+		Username: user.Username,
+		IsUsed: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+		HashedPassword: sql.NullString{
+			String: hashPassword,
+			Valid:  true,
+		},
+		PasswordChangedAt: sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		},
+	}
+
+	_, err = server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "User Verified"))
+}
+
+func (server *Server) checkUsernameExists(ctx *gin.Context) {
+	var req interfaces.CheckUsernameExistsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	user, err := server.store.CheckUsernameExists(ctx, req.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
 }

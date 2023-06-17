@@ -16,6 +16,7 @@ type Querier interface {
 	CreateCampaignType(ctx context.Context, campaignName string) (Campaigns, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (UserSession, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
+	DeleteSession(ctx context.Context, id uuid.UUID) (UserSession, error)
 	DeleteUser(ctx context.Context, username string) (Users, error)
 	GetAllCampaignType(ctx context.Context) ([]Campaigns, error)
 	GetSession(ctx context.Context, id uuid.UUID) (UserSession, error)
