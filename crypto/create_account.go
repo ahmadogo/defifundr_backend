@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -56,7 +56,7 @@ func GenerateAccountKeyStone(password string) (string, string, error) {
 func DecryptPrivateKey(path string, passphrase string) (*ecdsa.PrivateKey, string, error) {
 	filePath := fmt.Sprintf("./../tmp/%s", path)
 
-	b, err := ioutil.ReadFile(filePath)
+	b, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, "", err
 	}

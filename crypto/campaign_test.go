@@ -33,7 +33,7 @@ func createCampaign(t *testing.T) (*bind.TransactOpts, *ecdsa.PrivateKey, string
 	deadline := int(1000000000000000000)
 	campaignType := "Test Campaign Type"
 
-	auth, campaign, err, c := CreateCampaign(title, campaignType, description, goal, deadline, image, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
+	auth, campaign, c, err := CreateCampaign(title, campaignType, description, goal, deadline, image, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
 	if err != nil {
 		return nil, nil, "", err
 	}

@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func CreateCampaign(title string, campaignType string, description string, goal int, deadline int, image string, privateKey *ecdsa.PrivateKey, address string) (*bind.TransactOpts, string, error, *Campaign) {
+func CreateCampaign(title string, campaignType string, description string, goal int, deadline int, image string, privateKey *ecdsa.PrivateKey, address string) (*bind.TransactOpts, string, *Campaign, error) {
 	configs, err := utils.LoadConfig("./../")
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
@@ -23,34 +23,34 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 
 	client, err := ethclient.DialContext(context.Background(), configs.CryptoDeployURL)
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(address))
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	cAdd := common.HexToAddress("0xd9d4b660f51eb66b3f8b3829012424e46186857f")
 
 	tx, err := gen.NewGen(cAdd, client)
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	auth.GasPrice = (gasPrice)
@@ -59,7 +59,7 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 
 	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
 	if err != nil {
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	campaign, err := tx.GetCampaign(&bind.CallOpts{},
@@ -68,7 +68,7 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 
 	if err != nil {
 		log.Err(err)
-		return nil, "", err, nil
+		return nil, "", nil, err
 	}
 
 	campaigns := Campaign{
@@ -87,7 +87,7 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 	fmt.Println("............Loading............")
 	fmt.Println("-----------------------------------")
 
-	return auth, tsx.Hash().Hex(), nil, &campaigns
+	return auth, tsx.Hash().Hex(),&campaigns, nil
 
 }
 
