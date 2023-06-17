@@ -20,13 +20,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	configs, err := utils.LoadConfig("./../")
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-		return
-	}
-
-	filepath, address, err := crypto.GenerateAccountKeyStone(configs.PassPhase)
+	filepath, address, err := crypto.GenerateAccountKeyStone(server.config.PassPhase)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return

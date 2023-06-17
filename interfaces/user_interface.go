@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrUserNotFound = "user not found"
+
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
