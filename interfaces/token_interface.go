@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"mime/multipart"
 	"time"
 )
 
@@ -20,4 +21,9 @@ type GetPrivateKeyRequest struct {
 type AddressResponse struct {
 	Address    string `json:"address"`
 	PrivateKey string `json:"private_key"`
+}
+
+type CreateCampaignTypeRequest struct {
+	Name  string          `json:"name" binding:"required"`
+	Image *multipart.File `json:"image" binding:"required"`
 }

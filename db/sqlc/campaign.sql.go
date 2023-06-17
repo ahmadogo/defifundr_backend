@@ -12,18 +12,24 @@ import (
 const createCampaignType = `-- name: CreateCampaignType :one
 
 INSERT INTO
-    campaigns (campaign_name)
-VALUES ($1) RETURNING id, image, campaign_name
+    campaigns (campaign_name, image)
+VALUES ($1, $2) RETURNING id, image, campaign_name
 `
 
-func (q *Queries) CreateCampaignType(ctx context.Context, campaignName string) (Campaigns, error) {
-	row := q.db.QueryRowContext(ctx, createCampaignType, campaignName)
+type CreateCampaignTypeParams struct {
+	CampaignName string `json:"campaign_name"`
+	Image        string `json:"image"`
+}
+
+func (q *Queries) CreateCampaignType(ctx context.Context, arg CreateCampaignTypeParams) (Campaigns, error) {
+	row := q.db.QueryRowContext(ctx, createCampaignType, arg.CampaignName, arg.Image)
 	var i Campaigns
 	err := row.Scan(&i.ID, &i.Image, &i.CampaignName)
 	return i, err
 }
 
 const getAllCampaignType = `-- name: GetAllCampaignType :many
+
 SELECT id, image, campaign_name FROM campaigns
 `
 

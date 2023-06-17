@@ -186,7 +186,7 @@ func GetCampaigns(address string) ([]Campaign, error) {
 	return campaignList, nil
 }
 
-func Donate(amount int, id int, privateKey *ecdsa.PrivateKey, address string) (string, error) {
+func Donate(amount float32, id int, privateKey *ecdsa.PrivateKey, address string) (string, error) {
 	configs, err := utils.LoadConfig("./../")
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
@@ -223,6 +223,11 @@ func Donate(amount int, id int, privateKey *ecdsa.PrivateKey, address string) (s
 	if err != nil {
 		return "", err
 	}
+
+	// convert amount to wei
+	amount = amount * 1000000000000000000
+
+	
 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)
