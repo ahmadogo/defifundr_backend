@@ -3,13 +3,13 @@ package crypto
 import (
 	"crypto/ecdsa"
 	"testing"
+	"time"
 
 	"github.com/demola234/defiraise/utils"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/stretchr/testify/require"
 )
 
-func createCampaign(t *testing.T) (*bind.TransactOpts, *ecdsa.PrivateKey, string, error) {
+func createCampaign(t *testing.T) (*ecdsa.PrivateKey, string, error) {
 	t.Parallel()
 	configs, err := utils.LoadConfig("./../")
 	require.NoError(t, err)
@@ -30,24 +30,22 @@ func createCampaign(t *testing.T) (*bind.TransactOpts, *ecdsa.PrivateKey, string
 	description := "Test Campaign Description"
 	image := "Test Campaign Image"
 	goal := int(1000000000000000000)
-	deadline := int(1000000000000000000)
+	deadline := time.Now().AddDate(0, 0, 7)
 	campaignType := "Test Campaign Type"
 
-	auth, campaign, c, err := CreateCampaign(title, campaignType, description, goal, deadline, image, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
+	campaign, err := CreateCampaign(title, campaignType, description, goal, deadline, image, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
-	t.Log(c)
 
-	return auth, private, campaign, nil
+	return private, campaign, nil
 }
 
 func TestCreateCampaign(t *testing.T) {
 
-	tc, c, rx, err := createCampaign(t)
+	c, rx, err := createCampaign(t)
 	require.NoError(t, err)
 	require.NotEmpty(t, c)
-	require.NotEmpty(t, tc)
 	require.NotEmpty(t, rx)
 
 }
@@ -77,11 +75,10 @@ func TestDonate(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, configs)
 
-	auth, private, tr, err := createCampaign(t)
+	private, tr, err := createCampaign(t)
 	require.NoError(t, err)
 	require.NotEmpty(t, private)
 	require.NotEmpty(t, tr)
-	require.NotEmpty(t, auth)
 
 	donate, err := Donate(100000000000, 1, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
 	require.NoError(t, err)

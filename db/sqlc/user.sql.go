@@ -12,11 +12,12 @@ import (
 )
 
 const changePassword = `-- name: ChangePassword :one
+
 UPDATE users
 SET
     hashed_password = $2,
     password_changed_at = $3
-WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
+WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 type ChangePasswordParams struct {
@@ -36,6 +37,7 @@ func (q *Queries) ChangePassword(ctx context.Context, arg ChangePasswordParams) 
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
+		&i.IsBiomatric,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
@@ -89,7 +91,7 @@ VALUES (
         $8,
         $9,
         $10
-    ) RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
+    ) RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 type CreateUserParams struct {
@@ -97,7 +99,7 @@ type CreateUserParams struct {
 	Username        string `json:"username"`
 	Avatar          string `json:"avatar"`
 	Email           string `json:"email"`
-	Balance         int64  `json:"balance"`
+	Balance         string `json:"balance"`
 	Address         string `json:"address"`
 	FilePath        string `json:"file_path"`
 	SecretCode      string `json:"secret_code"`
@@ -127,6 +129,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
+		&i.IsBiomatric,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
@@ -139,7 +142,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 
 const deleteUser = `-- name: DeleteUser :one
 
-DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
+DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error) {
@@ -153,6 +156,7 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
+		&i.IsBiomatric,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
@@ -165,7 +169,7 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 
 const getUser = `-- name: GetUser :one
 
-SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
+SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
@@ -179,6 +183,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
+		&i.IsBiomatric,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
@@ -212,9 +217,13 @@ SET
         $7,
         secret_code
     ),
-    is_used = COALESCE($8, is_used)
+    expired_at = COALESCE(
+        $8,
+        expired_at
+    ),
+    is_used = COALESCE($9, is_used)
 WHERE
-    username = $9 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, address, file_path, secret_code, is_used, created_at, expired_at
+    username = $10 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
 `
 
 type UpdateUserParams struct {
@@ -223,8 +232,9 @@ type UpdateUserParams struct {
 	Email             sql.NullString `json:"email"`
 	IsEmailVerified   sql.NullBool   `json:"is_email_verified"`
 	Avatar            sql.NullString `json:"avatar"`
-	Balance           sql.NullInt64  `json:"balance"`
+	Balance           sql.NullString `json:"balance"`
 	SecretCode        sql.NullString `json:"secret_code"`
+	ExpiredAt         sql.NullTime   `json:"expired_at"`
 	IsUsed            sql.NullBool   `json:"is_used"`
 	Username          string         `json:"username"`
 }
@@ -238,6 +248,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		arg.Avatar,
 		arg.Balance,
 		arg.SecretCode,
+		arg.ExpiredAt,
 		arg.IsUsed,
 		arg.Username,
 	)
@@ -250,6 +261,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
+		&i.IsBiomatric,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,

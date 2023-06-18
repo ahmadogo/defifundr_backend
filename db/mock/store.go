@@ -67,7 +67,7 @@ func (mr *MockStoreMockRecorder) CheckUsernameExists(arg0, arg1 interface{}) *go
 }
 
 // CreateCampaignType mocks base method.
-func (m *MockStore) CreateCampaignType(arg0 context.Context, arg1 string) (db.Campaigns, error) {
+func (m *MockStore) CreateCampaignType(arg0 context.Context, arg1 db.CreateCampaignTypeParams) (db.Campaigns, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCampaignType", arg0, arg1)
 	ret0, _ := ret[0].(db.Campaigns)
@@ -111,6 +111,21 @@ func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), arg0, arg1)
 }
 
+// DeleteSession mocks base method.
+func (m *MockStore) DeleteSession(arg0 context.Context, arg1 uuid.UUID) (db.UserSession, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSession", arg0, arg1)
+	ret0, _ := ret[0].(db.UserSession)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteSession indicates an expected call of DeleteSession.
+func (mr *MockStoreMockRecorder) DeleteSession(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*MockStore)(nil).DeleteSession), arg0, arg1)
+}
+
 // DeleteUser mocks base method.
 func (m *MockStore) DeleteUser(arg0 context.Context, arg1 string) (db.Users, error) {
 	m.ctrl.T.Helper()
@@ -124,6 +139,21 @@ func (m *MockStore) DeleteUser(arg0 context.Context, arg1 string) (db.Users, err
 func (mr *MockStoreMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockStore)(nil).DeleteUser), arg0, arg1)
+}
+
+// GetAllActiveDonations mocks base method.
+func (m *MockStore) GetAllActiveDonations(arg0 context.Context) ([]db.Donations, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllActiveDonations", arg0)
+	ret0, _ := ret[0].([]db.Donations)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllActiveDonations indicates an expected call of GetAllActiveDonations.
+func (mr *MockStoreMockRecorder) GetAllActiveDonations(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllActiveDonations", reflect.TypeOf((*MockStore)(nil).GetAllActiveDonations), arg0)
 }
 
 // GetAllCampaignType mocks base method.

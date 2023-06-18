@@ -25,7 +25,7 @@ func NewPayLoad(username string, duration time.Duration) (*Payload, error) {
 		return nil, err
 	} else {
 		payload := &Payload{
-			ID:    tokenId,
+			ID:        tokenId,
 			Username:  username,
 			IssuedAt:  time.Now(),
 			ExpiresAt: time.Now().Add(duration),
@@ -34,9 +34,8 @@ func NewPayLoad(username string, duration time.Duration) (*Payload, error) {
 	}
 }
 
-
 func (payload *Payload) Valid() error {
-	if time.Now().After(payload.ExpiresAt) {
+	if time.Now().Before(payload.ExpiresAt) {
 		return ErrExpiredToken
 	}
 	return nil

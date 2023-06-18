@@ -61,6 +61,27 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (U
 	return i, err
 }
 
+const deleteSession = `-- name: DeleteSession :one
+
+DELETE FROM user_session WHERE id = $1 RETURNING id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+`
+
+func (q *Queries) DeleteSession(ctx context.Context, id uuid.UUID) (UserSession, error) {
+	row := q.db.QueryRowContext(ctx, deleteSession, id)
+	var i UserSession
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.RefreshToken,
+		&i.UserAgent,
+		&i.ClientIp,
+		&i.IsBlocked,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getSession = `-- name: GetSession :one
 
 SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at FROM user_session WHERE id = $1 LIMIT 1

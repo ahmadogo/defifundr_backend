@@ -12,6 +12,7 @@ import (
 
 type Campaigns struct {
 	ID           int64  `json:"id"`
+	Image        string `json:"image"`
 	CampaignName string `json:"campaign_name"`
 }
 
@@ -45,7 +46,8 @@ type Users struct {
 	Email             string    `json:"email"`
 	IsEmailVerified   bool      `json:"is_email_verified"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
-	Balance           int64     `json:"balance"`
+	Balance           string    `json:"balance"`
+	IsBiomatric       bool      `json:"isBiomatric"`
 	Address           string    `json:"address"`
 	FilePath          string    `json:"file_path"`
 	SecretCode        string    `json:"secret_code"`

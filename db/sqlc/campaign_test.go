@@ -12,7 +12,12 @@ func createRandomCampaignType(t *testing.T) Campaigns {
 
 	campaignTypes := utils.RandomString(6)
 
-	campaignType, err := testQueries.CreateCampaignType(context.Background(), campaignTypes)
+	arg := CreateCampaignTypeParams{
+		CampaignName: campaignTypes,
+		Image: 	  utils.RandomString(6),
+	}
+
+	campaignType, err := testQueries.CreateCampaignType(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, campaignType)
 

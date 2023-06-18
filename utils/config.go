@@ -22,6 +22,7 @@ type Config struct {
 	DeployAddress        string        `mapstructure:"DEPLOY_ADDR"`
 	Email                string        `mapstructure:"EMAIL"`
 	EmailPass            string        `mapstructure:"EMAIL_PASS"`
+	PassPhase            string        `mapstructure:"PASS_PHASE"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

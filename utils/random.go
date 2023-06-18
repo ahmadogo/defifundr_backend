@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -52,5 +51,14 @@ func RandomCryptoPublicKeyAddress() string {
 }
 
 func RandomOtp() string {
-	return strconv.Itoa(rand.Intn(9999999))
+	return fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
+}
+
+
+func ConvertStringToInt(s string) int {
+	var r int
+	for _, v := range s {
+		r = int(v)
+	}
+	return r
 }

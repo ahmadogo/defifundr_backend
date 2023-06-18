@@ -2,17 +2,20 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 
 	"gopkg.in/gomail.v2"
 )
 
-type info struct {
+type EmailInfo struct {
 	Name    string
 	Details string
+	Otp     string
+	Subject string
 }
 
-func SendEmail(emailAddr string, username string, details string) (string, error) {
+func SendEmail(emailAddr string, username string, info EmailInfo, path string) (string, error) {
 
 	configs, err := LoadConfig("./../")
 	if err != nil {
@@ -20,25 +23,19 @@ func SendEmail(emailAddr string, username string, details string) (string, error
 	}
 
 	// load from file path
-	path := "./../files/html/template.html"
+	filePath := fmt.Sprintf("%s/html/template.html", path)
 
-
-	tp, err := template.ParseFiles(path)
+	tp, err := template.ParseFiles(filePath)
 
 	if err != nil {
 		return "", err
 	}
 
-	var i info
-
-	i.Name = username
-	i.Details = details
-
 	var tpl bytes.Buffer
 	err = tp.Execute(&tpl, struct {
 		Name string
 		Otp  string
-	}{Name: "demola234", Otp: "123456"})
+	}{Name: info.Name, Otp: info.Otp})
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +46,7 @@ func SendEmail(emailAddr string, username string, details string) (string, error
 	m := gomail.NewMessage()
 	m.SetHeader("From", fromEmail)
 	m.SetHeader("To", emailAddr)
-	m.SetHeader("Subject", "golang test")
+	m.SetHeader("Subject", "OTP for DefiRaise")
 	m.SetBody("text/html", tpl.String()) // attach whatever you want
 
 	d := gomail.NewDialer("smtp.gmail.com", 465, fromEmail, password)
