@@ -1,6 +1,9 @@
 package interfaces
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Campaigns struct {
 	CampaignType string    `json:"campaign_id"`
@@ -24,4 +27,24 @@ type Donation struct {
 
 type Withdraw struct {
 	CampaignId int `json:"campaign_id"`
+}
+
+func UnmarshalCurrentPrice(data []byte) (CurrentPrice, error) {
+	var r CurrentPrice
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+func (r *CurrentPrice) Marshal() ([]byte, error) {
+	return json.Marshal(r)
+}
+
+type CurrentPrice struct {
+	Data Data `json:"data"`
+}
+
+type Data struct {
+	Base     string `json:"base"`
+	Currency string `json:"currency"`
+	Amount   string `json:"amount"`
 }

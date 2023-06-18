@@ -347,6 +347,12 @@ func (server *Server) withdrawFromCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, msg))
 }
 
-func (server *Server) currentPrice(ctx *gin.Context) {
+func (server *Server) currentEthPrice(ctx *gin.Context) {
+	price, err := crypto.GetEthPrice()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
 
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, price))
 }

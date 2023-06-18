@@ -57,7 +57,7 @@ func (server *Server) setUpRouter() {
 	authRoutes.POST("/campaigns/donate", server.donateToCampaign)
 	authRoutes.POST("/campaigns/withdraw", server.withdrawFromCampaign)
 	authRoutes.GET("/campaigns/myDonations", server.getMyDonations)
-	authRoutes.GET("/campaigns/currentPrice", server.currentPrice)
+	authRoutes.GET("/campaigns/currentPrice", server.currentEthPrice)
 	// authRoutes.GET("/campaigns/search", server.searchCampaigns)
 	server.router = router
 }

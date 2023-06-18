@@ -18,9 +18,18 @@ contract CrowdFunding {
         uint256[] donations;
     }
 
+    struct Category {
+        string name;
+        string description;
+        string image;
+        uint256 id;
+    }
+
     mapping(uint256 => Campaign) public campaigns;
+    mapping(uint256 => Category) public categories;
 
     uint public campaignCount = 0;
+    uint public categoryCount = 0;
 
     modifier isTimePassed(uint256 _campaignId) {
         require(
@@ -246,5 +255,54 @@ contract CrowdFunding {
                 revert("Failed to send Ether");
             }
         }
+    }
+
+    function createCategory(
+        string memory _name,
+        string memory _description,
+        string memory _image
+    ) public returns (uint256) {
+        Category storage category = categories[categoryCount];
+
+        category.name = _name;
+        category.description = _description;
+        category.image = _image;
+        category.id = categoryCount;
+
+        categoryCount++;
+
+        return categoryCount - 1;
+    }
+
+    //? Get all catrgories
+    function getCategories() public view returns (Category[] memory) {
+        Category[] memory _categories = new Category[](categoryCount);
+
+        for (uint256 i = 0; i < categoryCount; i++) {
+            _categories[i] = categories[i];
+        }
+
+        return _categories;
+    }
+
+    //? Search Campaign by title
+    function searchCampaignByName(
+        string memory _name
+    ) public view returns (Campaign[] memory) {
+        Campaign[] memory _campaigns = new Campaign[](campaignCount);
+
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < campaignCount; i++) {
+            if (
+                keccak256(abi.encodePacked(campaigns[i].title)) ==
+                keccak256(abi.encodePacked(_name))
+            ) {
+                _campaigns[count] = campaigns[i];
+                count++;
+            }
+        }
+
+        return _campaigns;
     }
 }
