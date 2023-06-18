@@ -50,14 +50,14 @@ func (server *Server) setUpRouter() {
 	authRoutes.POST("/user/password/change", server.changePassword)
 	authRoutes.GET("/user/privatekey", server.getPrivateKey)
 	authRoutes.GET("/campaigns", server.getCampaigns)
-	// authRoutes.POST("/campaigns", server.createCampaign)
+	authRoutes.POST("/campaigns", server.createCampaign)
 	authRoutes.GET("/campaigns/:id", server.getCampaign)
 	authRoutes.GET("/campaignsTypes", server.getCampaignTypes)
 	authRoutes.GET("/campaigns/getDonors/:id", server.getCampaignDonors)
 	authRoutes.POST("/campaigns/donate", server.donateToCampaign)
-	// authRoutes.POST("/campaigns/withdraw", server.withdrawFromCampaign)
-	// authRoutes.POST("/campaigns/withdraw/confirm", server.confirmWithdrawal)
-	// authRoutes.GET("/campaigns/myDonations", server.getMyDonations)
+	authRoutes.POST("/campaigns/withdraw", server.withdrawFromCampaign)
+	authRoutes.GET("/campaigns/myDonations", server.getMyDonations)
+	authRoutes.GET("/campaigns/currentPrice", server.currentPrice)
 	// authRoutes.GET("/campaigns/search", server.searchCampaigns)
 	server.router = router
 }

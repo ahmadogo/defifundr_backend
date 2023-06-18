@@ -1,12 +1,14 @@
 package interfaces
 
+import "time"
+
 type Campaigns struct {
-	CampaignType string `json:"campaign_id"`
-	Title        string `json:"title"`
-	Description  string `json:"description"`
-	Goal         int64  `json:"goal"`
-	Deadline     int64  `json:"deadline"`
-	Image        string `json:"image"`
+	CampaignType string    `json:"campaign_id"`
+	Title        string    `json:"title"`
+	Description  string    `json:"description"`
+	Goal         int64     `json:"goal"`
+	Deadline     time.Time `json:"deadline"`
+	Image        string    `json:"image"`
 }
 
 type Donations struct {
@@ -15,9 +17,11 @@ type Donations struct {
 	Address   []string `json:"address"`
 }
 
-
 type Donation struct {
-	Amount float32 `json:"amount"`
-	CampaignId int `json:"campaign_id"`
+	Amount     float32 `json:"amount"`
+	CampaignId int     `json:"campaign_id"`
+}
 
+type Withdraw struct {
+	CampaignId int `json:"campaign_id"`
 }

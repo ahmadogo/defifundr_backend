@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/demola234/defiraise/gen"
 	"github.com/demola234/defiraise/utils"
@@ -15,7 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func CreateCampaign(title string, campaignType string, description string, goal int, deadline int, image string, privateKey *ecdsa.PrivateKey, address string) (*bind.TransactOpts, string, *Campaign, error) {
+func CreateCampaign(title string, campaignType string, description string, goal int, deadline time.Time, image string, privateKey *ecdsa.PrivateKey, address string) (string, error) {
 	configs, err := utils.LoadConfig("./../")
 	if err != nil {
 		log.Fatal().Msg("cannot load config")
@@ -23,71 +24,52 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 
 	client, err := ethclient.DialContext(context.Background(), configs.CryptoDeployURL)
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(address))
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
 
 	cAdd := common.HexToAddress("0xd9d4b660f51eb66b3f8b3829012424e46186857f")
 
 	tx, err := gen.NewGen(cAdd, client)
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
 
 	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)
-	auth.Nonce = big.NewInt(int64(nonce) + 100)
+	auth.Nonce = big.NewInt(int64(nonce))
 
-	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(int64(deadline)), image)
+
+	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(deadline.Unix()), image)
 	if err != nil {
-		return nil, "", nil, err
+		return "", err
 	}
-
-	campaign, err := tx.GetCampaign(&bind.CallOpts{},
-		big.NewInt(int64(3)),
-	)
-
-	if err != nil {
-		log.Err(err)
-		return nil, "", nil, err
-	}
-
-	campaigns := Campaign{
-		Title:        campaign.Title,
-		CampaignType: campaign.CampaignType,
-		Description:  campaign.Description,
-		Goal:         campaign.Goal.Int64(),
-		Deadline:     campaign.Deadline.Int64(),
-		Image:        campaign.Image,
-	}
-
-	log.Info().Msgf("campaign: %+v", campaigns)
 
 	fmt.Println("-----------------------------------")
 	fmt.Println("tx view: ", tx)
 	fmt.Println("............Loading............")
 	fmt.Println("-----------------------------------")
 
-	return auth, tsx.Hash().Hex(),&campaigns, nil
+	return tsx.Hash().Hex(), nil
 
 }
 
@@ -226,8 +208,6 @@ func Donate(amount float32, id int, privateKey *ecdsa.PrivateKey, address string
 
 	// convert amount to wei
 	amount = amount * 1000000000000000000
-
-	
 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)
