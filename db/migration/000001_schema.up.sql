@@ -13,7 +13,7 @@ CREATE TABLE
         "is_email_verified" bool NOT NULL DEFAULT false,
         "password_changed_at" timestamptz NOT NULL DEFAULT '0001-01-01',
         "balance" varchar NOT NULL,
-        "isBiomatric" bool NOT NULL DEFAULT false,
+        "biometrics" bool NOT NULL DEFAULT false,
         "address" varchar NOT NULL,
         "file_path" varchar NOT NULL,
         "secret_code" varchar NOT NULL,

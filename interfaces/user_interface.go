@@ -10,9 +10,10 @@ import (
 var ErrUserNotFound = "user not found"
 
 type CreateUserRequest struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
+	Username   string `json:"username" binding:"required"`
+	Email      string `json:"email" binding:"required,email"`
+	Password   string `json:"password" binding:"required,min=6"`
+	Biometrics bool   `json:"biometrics"`
 }
 
 type UserResponse struct {
@@ -21,7 +22,7 @@ type UserResponse struct {
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 	Address           string    `json:"address"`
-	Balance           string     `json:"balance"`
+	Balance           string    `json:"balance"`
 }
 
 func NewUserResponse(user db.Users) UserResponse {
@@ -62,11 +63,9 @@ type LoginResponse struct {
 	User                  UserResponse `json:"user"`
 }
 
-
 type ResetPasswordRequest struct {
 	Username string `json:"username" binding:"required"`
 }
-
 
 type VerifyUserResetRequest struct {
 	Username string `json:"username" binding:"required"`

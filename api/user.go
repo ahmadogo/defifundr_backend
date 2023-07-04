@@ -102,13 +102,13 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.Username, time.Minute*15)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
 
-	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.Username, server.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.Username, time.Hour*24)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -139,8 +139,8 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		Username:     user.Username,
 		RefreshToken: refreshToken,
 		ID:           refreshPayload.ID,
-		ExpiresAt:    time.Now().Add(15 * time.Minute),
-		UserAgent:    ctx.GetHeader("User-Agent"),
+		ExpiresAt:    refreshPayload.ExpiresAt,
+		UserAgent:    ctx.Request.UserAgent(),
 		ClientIp:     ctx.ClientIP(),
 		IsBlocked:    false,
 	})
@@ -420,5 +420,5 @@ func (server *Server) checkUsernameExists(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, user))
 }

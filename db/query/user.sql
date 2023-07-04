@@ -10,6 +10,7 @@ INSERT INTO
         address,
         file_path,
         secret_code,
+        isBiomatric,
         is_used,
         is_email_verified
     )
@@ -23,7 +24,8 @@ VALUES (
         $7,
         $8,
         $9,
-        $10
+        $10,
+        $11
     ) RETURNING *;
 
 -- name: GetUser :one
@@ -74,6 +76,10 @@ SET
         sqlc.narg(secret_code),
         secret_code
     ),
+    -- isBiomatric = COALESCE(
+    --     sqlc.narg(isBiomatric),
+    --     isBiomatric
+    -- ),
     expired_at = COALESCE(
         sqlc.narg(expired_at),
         expired_at

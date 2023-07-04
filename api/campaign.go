@@ -47,7 +47,7 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 		camps[i] = interfaces.Campaigns{
 			CampaignType: campaign.CampaignType,
 			Title:        campaign.Title,
-			Deadline:     time.Unix(int64(campaign.Deadline), 0),
+			Deadline:     time.Now().Add(time.Duration(campaign.Deadline) * time.Second),
 			Description:  campaign.Description,
 			Goal:         campaign.Goal,
 			Image:        campaign.Image,
