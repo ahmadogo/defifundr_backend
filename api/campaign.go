@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/demola234/defiraise/crypto"
-	crypt "github.com/demola234/defiraise/crypto"
+	"github.com/demola234/defiraise/defi"
+	crypt "github.com/demola234/defiraise/defi"
 	"github.com/demola234/defiraise/interfaces"
 	"github.com/demola234/defiraise/token"
 	"github.com/gin-gonic/gin"
@@ -34,7 +34,7 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 		return
 	}
 
-	campaigns, err := crypto.GetCampaigns(user.Address)
+	campaigns, err := defi.GetCampaigns(user.Address)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -84,7 +84,7 @@ func (server *Server) getCampaign(ctx *gin.Context) {
 		return
 	}
 
-	campaign, err := crypto.GetCampaign(idL, user.Address)
+	campaign, err := defi.GetCampaign(idL, user.Address)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
@@ -125,7 +125,7 @@ func (server *Server) getCampaignTypes(ctx *gin.Context) {
 		return
 	}
 
-	campaignTypes, err := crypto.GetCampaignTypes(user.Address)
+	campaignTypes, err := defi.GetCampaignTypes(user.Address)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -161,7 +161,7 @@ func (server *Server) getCampaignDonors(ctx *gin.Context) {
 		return
 	}
 
-	donators, donations, totalFunds, err := crypto.GetDonorsAddressesAndAmounts(idL, user.Address)
+	donators, donations, totalFunds, err := defi.GetDonorsAddressesAndAmounts(idL, user.Address)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -222,7 +222,7 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 		return
 	}
 
-	msg, err := crypto.Donate(donation.Amount, donation.CampaignId, privateKey, address)
+	msg, err := defi.Donate(donation.Amount, donation.CampaignId, privateKey, address)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -268,7 +268,7 @@ func (server *Server) createCampaign(ctx *gin.Context) {
 	// add deadline to current time
 	dl := time.Unix(int64(campaign.Deadline.Day()), 0)
 
-	campaigns, err := crypto.CreateCampaign(campaign.Title, campaign.CampaignType, campaign.Description, campaignGoal, dl, campaign.Image, privateKey, address)
+	campaigns, err := defi.CreateCampaign(campaign.Title, campaign.CampaignType, campaign.Description, campaignGoal, dl, campaign.Image, privateKey, address)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -296,7 +296,7 @@ func (server *Server) getMyDonations(ctx *gin.Context) {
 		return
 	}
 
-	donations, err := crypto.GetCampaignsByOwner(user.Address)
+	donations, err := defi.GetCampaignsByOwner(user.Address)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -338,7 +338,7 @@ func (server *Server) withdrawFromCampaign(ctx *gin.Context) {
 		return
 	}
 
-	msg, err := crypto.PayOut(withdraw.CampaignId, address, privateKey)
+	msg, err := defi.PayOut(withdraw.CampaignId, address, privateKey)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
@@ -348,7 +348,7 @@ func (server *Server) withdrawFromCampaign(ctx *gin.Context) {
 }
 
 func (server *Server) currentEthPrice(ctx *gin.Context) {
-	price, err := crypto.GetEthPrice()
+	price, err := defi.GetEthPrice()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return

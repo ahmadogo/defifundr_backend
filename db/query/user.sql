@@ -2,7 +2,6 @@
 
 INSERT INTO
     users (
-        hashed_password,
         username,
         avatar,
         email,
@@ -10,8 +9,8 @@ INSERT INTO
         address,
         file_path,
         secret_code,
-        isBiomatric,
         is_used,
+        is_first_time,
         is_email_verified
     )
 VALUES (
@@ -24,8 +23,7 @@ VALUES (
         $7,
         $8,
         $9,
-        $10,
-        $11
+        $10
     ) RETURNING *;
 
 -- name: GetUser :one
@@ -76,14 +74,18 @@ SET
         sqlc.narg(secret_code),
         secret_code
     ),
-    -- isBiomatric = COALESCE(
-    --     sqlc.narg(isBiomatric),
-    --     isBiomatric
-    -- ),
+    biometrics = COALESCE(
+        sqlc.narg(biometrics),
+        biometrics
+    ),
     expired_at = COALESCE(
         sqlc.narg(expired_at),
         expired_at
     ),
-    is_used = COALESCE(sqlc.narg(is_used), is_used)
+    is_used = COALESCE(sqlc.narg(is_used), is_used),
+    is_first_time = COALESCE(
+        sqlc.narg(is_first_time),
+        is_first_time
+    )
 WHERE
     username = sqlc.arg(username) RETURNING *;

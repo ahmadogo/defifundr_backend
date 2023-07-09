@@ -7,7 +7,7 @@
 CREATE TABLE
     "users" (
         "username" varchar PRIMARY KEY,
-        "hashed_password" varchar NOT NULL,
+        "hashed_password" varchar NOT NULL DEFAULT '',
         "avatar" varchar NOT NULL,
         "email" varchar UNIQUE NOT NULL,
         "is_email_verified" bool NOT NULL DEFAULT false,
@@ -18,6 +18,7 @@ CREATE TABLE
         "file_path" varchar NOT NULL,
         "secret_code" varchar NOT NULL,
         "is_used" bool NOT NULL DEFAULT false,
+        "is_first_time" bool NOT NULL DEFAULT false,
         "created_at" timestamptz NOT NULL DEFAULT (now()),
         "expired_at" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
     );

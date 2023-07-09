@@ -1,5 +1,4 @@
-package crypto
-
+package defi
 import (
 	"context"
 	"math"

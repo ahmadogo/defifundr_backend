@@ -11,7 +11,6 @@ import (
 
 const getAllActiveDonations = `-- name: GetAllActiveDonations :many
 
-
 SELECT id, owner, title, campaign_type, description, goal, deadline, image, created_at
 FROM donations
 WHERE deadline > now()
@@ -20,7 +19,6 @@ LIMIT 10
 OFFSET 0
 `
 
-// Add Pagination
 func (q *Queries) GetAllActiveDonations(ctx context.Context) ([]Donations, error) {
 	rows, err := q.db.QueryContext(ctx, getAllActiveDonations)
 	if err != nil {

@@ -30,7 +30,7 @@ migrateup:
 
 migrateup1:
 	migrate -path db/migration -database "$(DB_URL)" -verbose up 1
-.PHONY: migrateup1
+.PHONY: migrateup1 migratedown migratedown1 db_docs db_schema
 
 migratedown:
 	migrate -path db/migration -database "$(DB_URL)" -verbose down

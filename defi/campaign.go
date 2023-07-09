@@ -1,4 +1,4 @@
-package crypto
+package defi
 
 import (
 	"context"
@@ -57,7 +57,6 @@ func CreateCampaign(title string, campaignType string, description string, goal 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)
 	auth.Nonce = big.NewInt(int64(nonce))
-
 
 	tsx, err := tx.CreateCampaign(auth, campaignType, title, description, big.NewInt(int64(goal)), big.NewInt(deadline.Unix()), image)
 	if err != nil {
@@ -207,7 +206,7 @@ func Donate(amount float32, id int, privateKey *ecdsa.PrivateKey, address string
 	}
 
 	// convert amount to wei
-	amount = amount * 1000000000000000000
+	amount = amount * 10000000000000000
 
 	auth.GasPrice = (gasPrice)
 	auth.GasLimit = uint64(3000000)

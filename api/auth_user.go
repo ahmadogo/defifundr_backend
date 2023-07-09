@@ -6,8 +6,8 @@ import (
 	"errors"
 	"net/http"
 
-	crypt "github.com/demola234/defiraise/crypto"
 	db "github.com/demola234/defiraise/db/sqlc"
+	crypt "github.com/demola234/defiraise/defi"
 	"github.com/demola234/defiraise/interfaces"
 	"github.com/demola234/defiraise/token"
 	"github.com/demola234/defiraise/utils"
@@ -197,6 +197,10 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 			String: imageURL,
 			Valid:  true,
 		},
+		IsFirstTime: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
 	}
 
 	_, err = server.store.UpdateUser(ctx, arg)
@@ -206,4 +210,43 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Image uploaded successfully"))
+}
+
+func (server *Server) selectAvatar(ctx *gin.Context) {
+	var req interfaces.Image
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if authPayload == nil {
+		err := errors.New(interfaces.ErrUserNotFound)
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		return
+	}
+
+	imageURL := utils.GetAvatarUrl(req.ImageId - 1)
+
+	arg := db.UpdateUserParams{
+		Username: authPayload.Username,
+		Avatar: sql.NullString{
+			String: imageURL,
+			Valid:  true,
+		},
+		IsFirstTime: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+	}
+
+	_, err := server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Image uploaded successfully"))
+
 }

@@ -1,4 +1,4 @@
-package crypto
+package defi
 
 import (
 	"io/ioutil"
