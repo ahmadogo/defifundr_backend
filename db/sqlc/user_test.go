@@ -3,20 +3,20 @@ package db
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/demola234/defiraise/crypto"
 	"github.com/demola234/defiraise/utils"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
 func CreateRandomUser(t *testing.T) Users {
 	password := "passphase"
-	hashedPassword, err := utils.HashPassword(password)
-	require.NoError(t, err)
 
-	filepath, address, err := crypto.GenerateAccountKeyStone(password)
+	filepath, address, err := GenerateAccountKeyStone(password)
 	require.NoError(t, err)
 	require.NotEmpty(t, address)
 	require.NotEmpty(t, filepath)
@@ -25,14 +25,14 @@ func CreateRandomUser(t *testing.T) Users {
 	name := utils.RandomString(6)
 
 	arg := CreateUserParams{
-		HashedPassword: hashedPassword,
-		Username:       name,
-		Email:          utils.RandomEmail(),
-		Avatar:         utils.RandomString(6),
-		Balance:        "0",
-		Address:        address,
-		SecretCode:     otpCode,
-		FilePath:       filepath,
+
+		Username:   name,
+		Email:      utils.RandomEmail(),
+		Avatar:     utils.RandomString(6),
+		Balance:    "0",
+		Address:    address,
+		SecretCode: otpCode,
+		FilePath:   filepath,
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
@@ -40,7 +40,6 @@ func CreateRandomUser(t *testing.T) Users {
 	require.NotEmpty(t, user)
 
 	require.Equal(t, arg.Username, user.Username)
-	require.Equal(t, arg.HashedPassword, user.HashedPassword)
 	require.Equal(t, arg.Email, user.Email)
 	require.Equal(t, arg.Avatar, user.Avatar)
 
@@ -212,3 +211,44 @@ func TestCheckUsernameExist(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, true, exist)
 }
+
+func GenerateAccountKeyStone(password string) (string, string, error) {
+	// Generate a new random private key
+	key := keystore.NewKeyStore("./../tmp", keystore.StandardScryptN, keystore.StandardScryptP)
+
+	// Create a new account with the specified encryption passphrase
+	passwordKey := password
+	account, err := key.NewAccount(passwordKey)
+
+	if err != nil {
+		log.Error().Err(err).Msg("cannot create account")
+	}
+
+	filename := account.URL.Path[strings.LastIndex(account.URL.Path, "/")+1:]
+
+	accountName := account.Address.Hex()
+
+	return filename, accountName, nil
+}
+
+// func TestCreateUserPassword(t *testing.T) {
+// 	user := CreateRandomUser(t)
+
+// 	arg := CreateUserPasswordParams{
+// 		Username:          user.Username,
+// 		HashedPassword:    utils.RandomString(6),
+// 		PasswordChangedAt: time.Now(),
+// 		IsUsed:            true,
+// 	}
+
+// 	user2, err := testQueries.CreateUserPassword(context.Background(), arg)
+// 	require.NoError(t, err)
+// 	require.NotEmpty(t, user2)
+
+// 	require.Equal(t, arg.HashedPassword, user2.HashedPassword)
+// 	require.Equal(t, arg.Username, user2.Username)
+// 	require.Equal(t, arg.IsUsed, user2.IsUsed)
+
+// 	require.NotZero(t, user2.Username)
+// 	require.NotZero(t, user2.CreatedAt)
+// }

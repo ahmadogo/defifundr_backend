@@ -18,7 +18,6 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) (UserSession, error)
 	DeleteUser(ctx context.Context, username string) (Users, error)
-	// Add Pagination
 	GetAllActiveDonations(ctx context.Context) ([]Donations, error)
 	GetAllCampaignType(ctx context.Context) ([]Campaigns, error)
 	GetSession(ctx context.Context, id uuid.UUID) (UserSession, error)

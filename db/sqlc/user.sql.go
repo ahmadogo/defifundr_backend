@@ -17,7 +17,7 @@ UPDATE users
 SET
     hashed_password = $2,
     password_changed_at = $3
-WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
+WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at
 `
 
 type ChangePasswordParams struct {
@@ -37,11 +37,12 @@ func (q *Queries) ChangePassword(ctx context.Context, arg ChangePasswordParams) 
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
-		&i.IsBiomatric,
+		&i.Biometrics,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
 		&i.IsUsed,
+		&i.IsFirstTime,
 		&i.CreatedAt,
 		&i.ExpiredAt,
 	)
@@ -69,7 +70,6 @@ const createUser = `-- name: CreateUser :one
 
 INSERT INTO
     users (
-        hashed_password,
         username,
         avatar,
         email,
@@ -78,6 +78,7 @@ INSERT INTO
         file_path,
         secret_code,
         is_used,
+        is_first_time,
         is_email_verified
     )
 VALUES (
@@ -91,11 +92,10 @@ VALUES (
         $8,
         $9,
         $10
-    ) RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
+    ) RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at
 `
 
 type CreateUserParams struct {
-	HashedPassword  string `json:"hashed_password"`
 	Username        string `json:"username"`
 	Avatar          string `json:"avatar"`
 	Email           string `json:"email"`
@@ -104,12 +104,12 @@ type CreateUserParams struct {
 	FilePath        string `json:"file_path"`
 	SecretCode      string `json:"secret_code"`
 	IsUsed          bool   `json:"is_used"`
+	IsFirstTime     bool   `json:"is_first_time"`
 	IsEmailVerified bool   `json:"is_email_verified"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
-		arg.HashedPassword,
 		arg.Username,
 		arg.Avatar,
 		arg.Email,
@@ -118,6 +118,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		arg.FilePath,
 		arg.SecretCode,
 		arg.IsUsed,
+		arg.IsFirstTime,
 		arg.IsEmailVerified,
 	)
 	var i Users
@@ -129,11 +130,12 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
-		&i.IsBiomatric,
+		&i.Biometrics,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
 		&i.IsUsed,
+		&i.IsFirstTime,
 		&i.CreatedAt,
 		&i.ExpiredAt,
 	)
@@ -142,7 +144,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 
 const deleteUser = `-- name: DeleteUser :one
 
-DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
+DELETE FROM users WHERE username = $1 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error) {
@@ -156,11 +158,12 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
-		&i.IsBiomatric,
+		&i.Biometrics,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
 		&i.IsUsed,
+		&i.IsFirstTime,
 		&i.CreatedAt,
 		&i.ExpiredAt,
 	)
@@ -169,7 +172,7 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 
 const getUser = `-- name: GetUser :one
 
-SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
+SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
@@ -183,11 +186,12 @@ func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
-		&i.IsBiomatric,
+		&i.Biometrics,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
 		&i.IsUsed,
+		&i.IsFirstTime,
 		&i.CreatedAt,
 		&i.ExpiredAt,
 	)
@@ -217,13 +221,21 @@ SET
         $7,
         secret_code
     ),
-    expired_at = COALESCE(
+    biometrics = COALESCE(
         $8,
+        biometrics
+    ),
+    expired_at = COALESCE(
+        $9,
         expired_at
     ),
-    is_used = COALESCE($9, is_used)
+    is_used = COALESCE($10, is_used),
+    is_first_time = COALESCE(
+        $11,
+        is_first_time
+    )
 WHERE
-    username = $10 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, "isBiomatric", address, file_path, secret_code, is_used, created_at, expired_at
+    username = $12 RETURNING username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at
 `
 
 type UpdateUserParams struct {
@@ -234,8 +246,10 @@ type UpdateUserParams struct {
 	Avatar            sql.NullString `json:"avatar"`
 	Balance           sql.NullString `json:"balance"`
 	SecretCode        sql.NullString `json:"secret_code"`
+	Biometrics        sql.NullBool   `json:"biometrics"`
 	ExpiredAt         sql.NullTime   `json:"expired_at"`
 	IsUsed            sql.NullBool   `json:"is_used"`
+	IsFirstTime       sql.NullBool   `json:"is_first_time"`
 	Username          string         `json:"username"`
 }
 
@@ -248,8 +262,10 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		arg.Avatar,
 		arg.Balance,
 		arg.SecretCode,
+		arg.Biometrics,
 		arg.ExpiredAt,
 		arg.IsUsed,
+		arg.IsFirstTime,
 		arg.Username,
 	)
 	var i Users
@@ -261,11 +277,12 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		&i.IsEmailVerified,
 		&i.PasswordChangedAt,
 		&i.Balance,
-		&i.IsBiomatric,
+		&i.Biometrics,
 		&i.Address,
 		&i.FilePath,
 		&i.SecretCode,
 		&i.IsUsed,
+		&i.IsFirstTime,
 		&i.CreatedAt,
 		&i.ExpiredAt,
 	)

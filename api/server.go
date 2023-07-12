@@ -41,11 +41,13 @@ func (server *Server) setUpRouter() {
 	router.POST("/user/verify/resend", server.resendVerificationCode)
 	router.POST("/user/password/reset", server.resetPassword)
 	router.POST("/user/password/reset/verify", server.verifyPasswordResetCode)
-	router.GET("/user/checkUsername/:username", server.checkUsernameExists)
+	router.POST("/user/password", server.createPassword)
+	router.POST("/user/checkUsername", server.checkUsernameExists)
 	router.POST("/token/renewAccess", server.renewAccessToken)
 	authRoutes := router.Group("/").Use(authMiddleWare(server.tokenMaker))
 	authRoutes.GET("/user", server.getUser)
 	authRoutes.GET("/user/avatar", server.setProfileAvatar)
+	authRoutes.POST("/user/avatar/set", server.selectAvatar)
 	authRoutes.POST("/user/logout", server.logoutUser)
 	authRoutes.POST("/user/password/change", server.changePassword)
 	authRoutes.GET("/user/privatekey", server.getPrivateKey)
@@ -57,7 +59,7 @@ func (server *Server) setUpRouter() {
 	authRoutes.POST("/campaigns/donate", server.donateToCampaign)
 	authRoutes.POST("/campaigns/withdraw", server.withdrawFromCampaign)
 	authRoutes.GET("/campaigns/myDonations", server.getMyDonations)
-	authRoutes.GET("/campaigns/currentPrice", server.currentPrice)
+	authRoutes.GET("/campaigns/currentPrice", server.currentEthPrice)
 	// authRoutes.GET("/campaigns/search", server.searchCampaigns)
 	server.router = router
 }

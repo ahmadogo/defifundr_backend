@@ -2,7 +2,6 @@
 
 INSERT INTO
     users (
-        hashed_password,
         username,
         avatar,
         email,
@@ -11,6 +10,7 @@ INSERT INTO
         file_path,
         secret_code,
         is_used,
+        is_first_time,
         is_email_verified
     )
 VALUES (
@@ -74,10 +74,18 @@ SET
         sqlc.narg(secret_code),
         secret_code
     ),
+    biometrics = COALESCE(
+        sqlc.narg(biometrics),
+        biometrics
+    ),
     expired_at = COALESCE(
         sqlc.narg(expired_at),
         expired_at
     ),
-    is_used = COALESCE(sqlc.narg(is_used), is_used)
+    is_used = COALESCE(sqlc.narg(is_used), is_used),
+    is_first_time = COALESCE(
+        sqlc.narg(is_first_time),
+        is_first_time
+    )
 WHERE
     username = sqlc.arg(username) RETURNING *;

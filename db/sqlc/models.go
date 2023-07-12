@@ -47,11 +47,12 @@ type Users struct {
 	IsEmailVerified   bool      `json:"is_email_verified"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	Balance           string    `json:"balance"`
-	IsBiomatric       bool      `json:"isBiomatric"`
+	Biometrics        bool      `json:"biometrics"`
 	Address           string    `json:"address"`
 	FilePath          string    `json:"file_path"`
 	SecretCode        string    `json:"secret_code"`
 	IsUsed            bool      `json:"is_used"`
+	IsFirstTime       bool      `json:"is_first_time"`
 	CreatedAt         time.Time `json:"created_at"`
 	ExpiredAt         time.Time `json:"expired_at"`
 }

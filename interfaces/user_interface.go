@@ -12,7 +12,6 @@ var ErrUserNotFound = "user not found"
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
 }
 
 type UserResponse struct {
@@ -21,7 +20,10 @@ type UserResponse struct {
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 	Address           string    `json:"address"`
-	Balance           string     `json:"balance"`
+	Balance           string    `json:"balance"`
+	IsFirstTime       bool      `json:"is_first_time"`
+	Avatar            string    `json:"avatar"`
+	Biometrics        bool      `json:"biometrics"`
 }
 
 func NewUserResponse(user db.Users) UserResponse {
@@ -32,11 +34,20 @@ func NewUserResponse(user db.Users) UserResponse {
 		CreatedAt:         user.CreatedAt,
 		Address:           user.Address,
 		Balance:           user.Balance,
+		Avatar:            user.Avatar,
+		IsFirstTime:       user.IsFirstTime,
+		Biometrics:        user.Biometrics,
 	}
 }
 
 type GetUserRequest struct {
 	Username string `json:"username" binding:"required"`
+}
+
+type GetPasswordRequest struct {
+	Username   string `json:"username" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	Biometrics bool   `json:"biometrics"`
 }
 
 type VerifyUserRequest struct {
@@ -62,11 +73,9 @@ type LoginResponse struct {
 	User                  UserResponse `json:"user"`
 }
 
-
 type ResetPasswordRequest struct {
 	Username string `json:"username" binding:"required"`
 }
-
 
 type VerifyUserResetRequest struct {
 	Username string `json:"username" binding:"required"`
@@ -81,4 +90,8 @@ type CheckUsernameExistsRequest struct {
 type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password" binding:"required"`
 	NewPassword string `json:"new_password" binding:"required"`
+}
+
+type Image struct {
+	ImageId int `json:"image_id" binding:"required"`
 }

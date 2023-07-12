@@ -1,4 +1,4 @@
-package crypto
+package defi
 
 import (
 	"crypto/ecdsa"
@@ -80,7 +80,7 @@ func TestDonate(t *testing.T) {
 	require.NotEmpty(t, private)
 	require.NotEmpty(t, tr)
 
-	donate, err := Donate(100000000000, 1, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
+	donate, err := Donate(0.1, 1, private, "0xa487ff39ac2de30c0105b60dc3e51e377ae95985")
 	require.NoError(t, err)
 	require.NotEmpty(t, donate)
 }
