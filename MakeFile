@@ -1,4 +1,5 @@
-DB_URL=postgresql://root:secret@localhost:5433/defi?sslmode=disable
+# DB_URL=postgresql://root:secret@localhost:5433/defi?sslmode=disable
+DB_URL=postgresql://udgpz4e5w1mnxqvkrdhi:IKzeaTwHuY3Vr37pbJsLlN5rsY29IG@beq4vc79mq25behmeov8-postgresql.services.clever-cloud.com:5432/beq4vc79mq25behmeov8
 
 postgres:
 	docker run --name defi -p 5433:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15-alpine

@@ -247,6 +247,16 @@ func (server *Server) selectAvatar(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Image uploaded successfully"))
+	user, err := server.store.GetUser(ctx, authPayload.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, interfaces.NewUserResponse(user)))
 
 }

@@ -79,7 +79,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+			newErr := errors.New("incorrect login credentials")
+
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
@@ -94,7 +96,8 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	err = utils.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, interfaces.ErrorResponse(err, http.StatusUnauthorized))
+		newErr := errors.New("incorrect login credentials")
+		ctx.JSON(http.StatusUnauthorized, interfaces.ErrorResponse(newErr, http.StatusUnauthorized))
 		return
 	}
 
@@ -124,10 +127,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		Balance: sql.NullString{
 			String: balance,
 			Valid:  true,
-		},
-		IsFirstTime: sql.NullBool{
-			Bool:  true,
-			Valid: true,
 		},
 	})
 	if err != nil {

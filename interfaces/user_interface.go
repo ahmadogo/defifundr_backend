@@ -23,6 +23,7 @@ type UserResponse struct {
 	Balance           string    `json:"balance"`
 	IsFirstTime       bool      `json:"is_first_time"`
 	Avatar            string    `json:"avatar"`
+	Biometrics        bool      `json:"biometrics"`
 }
 
 func NewUserResponse(user db.Users) UserResponse {
@@ -35,6 +36,7 @@ func NewUserResponse(user db.Users) UserResponse {
 		Balance:           user.Balance,
 		Avatar:            user.Avatar,
 		IsFirstTime:       user.IsFirstTime,
+		Biometrics:        user.Biometrics,
 	}
 }
 
