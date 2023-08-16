@@ -1,6 +1,6 @@
 *.vscode
 .history
-*.env
+# *.env
 *.log
 
 

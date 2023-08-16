@@ -5,24 +5,42 @@ import (
 	"time"
 )
 
-type Campaigns struct {
-	CampaignType string    `json:"campaign_id"`
-	Title        string    `json:"title"`
-	Description  string    `json:"description"`
-	Goal         int64     `json:"goal"`
-	Deadline     time.Time `json:"deadline"`
-	Image        string    `json:"image"`
+type UserResponseInfo struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Address  string `json:"address"`
+	Avatar   string `json:"avatar"`
 }
 
-type Donations struct {
-	Amount    int64    `json:"amount"`
-	Donations []string `json:"donations"`
-	Address   []string `json:"address"`
+type Campaigns struct {
+	CampaignType       string             `json:"campaign_id"`
+	Title              string             `json:"title"`
+	Description        string             `json:"description"`
+	Goal               float64            `json:"goal"`
+	Deadline           time.Time          `json:"deadline"`
+	TotalAmountDonated float64            `json:"total_amount_donated"`
+	ID                 int                `json:"id"`
+	Image              string             `json:"image"`
+	Owner              string             `json:"owner"`
+	TotalNumber        int64              `json:"total_number"`
+	User               []UserResponseInfo `json:"user"`
+	Donations          []DonorDetails     `json:"donations"`
+}
+
+type SearchCampaignRequest struct {
+	Name string `json:"name"`
+}
+
+type DonorDetails struct {
+	Amount   float64 `json:"amount"`
+	Donor    string  `json:"donor"`
+	Image    string  `json:"image"`
+	Username string  `json:"username"`
 }
 
 type Donation struct {
-	Amount     float32 `json:"amount"`
-	CampaignId int     `json:"campaign_id"`
+	Amount     string `json:"amount"`
+	CampaignId string     `json:"campaign_id"`
 }
 
 type Withdraw struct {
@@ -47,4 +65,11 @@ type Data struct {
 	Base     string `json:"base"`
 	Currency string `json:"currency"`
 	Amount   string `json:"amount"`
+}
+
+type CampaignCategory struct {
+	Name        string `json:"name"`
+	Image       string `json:"image"`
+	Description string `json:"description"`
+	Id          string `json:"id"`
 }

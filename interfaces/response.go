@@ -9,3 +9,13 @@ func Response(status int, data interface{}) gin.H {
 		"data":    data,
 	}
 }
+
+
+func CampaignResponse(status int, data interface{}, user interface{}) gin.H {
+	return gin.H{
+		"status":  status,
+		"message": "success",
+		"data":    data,
+		"user":    user,
+	}
+}

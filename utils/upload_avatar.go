@@ -16,7 +16,11 @@ func UploadAvatar(ctx context.Context, image multipart.File, username string) (s
 		return "", err
 	}
 
-	cld, _ := cloudinary.NewFromURL(configs.CloudinaryURL)
+	cld, err := cloudinary.NewFromURL(configs.CloudinaryURL)
+
+	if err != nil {
+		return "", err
+	}
 
 	// Get the preferred name of the file if its not supplied
 	fileName := username
@@ -28,6 +32,6 @@ func UploadAvatar(ctx context.Context, image multipart.File, username string) (s
 		return "", err
 	}
 
-	return result.SecureURL, err
+	return result.URL, err
 
 }

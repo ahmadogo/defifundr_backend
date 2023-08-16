@@ -32,10 +32,10 @@ func Deploy() (string, error) {
 		return "", err
 	}
 
-	gasPrice, err := client.SuggestGasTipCap(context.Background())
-	if err != nil {
-		return "", err
-	}
+	// gasPrice, err := client.SuggestGasPrice(context.Background())
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
@@ -51,9 +51,10 @@ func Deploy() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	auth.GasPrice = gasPrice
-	auth.GasLimit = uint64(3000000)
 	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)      // in wei
+	auth.GasLimit = uint64(3000000) // in units
+	auth.GasPrice = big.NewInt(1000000)
 
 	a, ts, _, err := gen.DeployGen(auth, client)
 	if err != nil {
@@ -64,5 +65,5 @@ func Deploy() (string, error) {
 	fmt.Println(a.Hex())
 	fmt.Println(ts.Hash().Hex())
 	fmt.Println("-----------------------------------")
-	return a.Hex(), err
+	return a.Hex(), nil
 }

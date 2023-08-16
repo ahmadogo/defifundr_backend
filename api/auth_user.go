@@ -41,10 +41,78 @@ func (server *Server) getUser(ctx *gin.Context) {
 	}
 
 	rsp := interfaces.UserResponse{
-		Username: user.Username,
-		Email:    user.Email,
-		Balance:  balance,
-		Address:  user.Address,
+		Username:    user.Username,
+		Email:       user.Email,
+		Balance:     balance,
+		Address:     user.Address,
+		Biometrics:  user.Biometrics,
+		Avatar:      user.Avatar,
+		IsFirstTime: user.IsUsed,
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
+}
+
+func (server *Server) updateUser(ctx *gin.Context) {
+	var req interfaces.CheckUsernameExistsRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if authPayload == nil {
+		err := errors.New(interfaces.ErrUserNotFound)
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		return
+	}
+
+	arg := db.UpdateUserParams{
+		Username: authPayload.Username,
+	}
+
+	if req.Username != "" {
+		arg.Username = req.Username
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, nil))
+}
+
+func (server *Server) getUserByAddress(ctx *gin.Context) {
+	var req interfaces.GetUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	user, err := server.store.GetUserByAddress(ctx, req.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	balance, err := crypt.GetBalance(user.Address)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	rsp := interfaces.UserResponse{
+		Username:    user.Username,
+		Email:       user.Email,
+		Balance:     balance,
+		Address:     user.Address,
+		Biometrics:  user.Biometrics,
+		Avatar:      user.Avatar,
+		IsFirstTime: user.IsUsed,
 	}
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
@@ -210,6 +278,38 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Image uploaded successfully"))
+}
+
+func (server *Server) setBiometrics(ctx *gin.Context) {
+	var req interfaces.SetBiometricsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if authPayload == nil {
+		err := errors.New(interfaces.ErrUserNotFound)
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		return
+	}
+
+	arg := db.UpdateUserParams{
+		Username: authPayload.Username,
+		Biometrics: sql.NullBool{
+			Bool:  req.Biometrics,
+			Valid: true,
+		},
+	}
+
+	_, err := server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Biometrics set successfully"))
 }
 
 func (server *Server) selectAvatar(ctx *gin.Context) {

@@ -172,11 +172,38 @@ func (q *Queries) DeleteUser(ctx context.Context, username string) (Users, error
 
 const getUser = `-- name: GetUser :one
 
-SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at FROM users WHERE username = $1 OR email = $1 LIMIT 1
+SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at FROM users WHERE username = $1 OR email = $1 OR address = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 	row := q.db.QueryRowContext(ctx, getUser, username)
+	var i Users
+	err := row.Scan(
+		&i.Username,
+		&i.HashedPassword,
+		&i.Avatar,
+		&i.Email,
+		&i.IsEmailVerified,
+		&i.PasswordChangedAt,
+		&i.Balance,
+		&i.Biometrics,
+		&i.Address,
+		&i.FilePath,
+		&i.SecretCode,
+		&i.IsUsed,
+		&i.IsFirstTime,
+		&i.CreatedAt,
+		&i.ExpiredAt,
+	)
+	return i, err
+}
+
+const getUserByAddress = `-- name: GetUserByAddress :one
+SELECT username, hashed_password, avatar, email, is_email_verified, password_changed_at, balance, biometrics, address, file_path, secret_code, is_used, is_first_time, created_at, expired_at FROM users WHERE address = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByAddress(ctx context.Context, address string) (Users, error) {
+	row := q.db.QueryRowContext(ctx, getUserByAddress, address)
 	var i Users
 	err := row.Scan(
 		&i.Username,
