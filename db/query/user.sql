@@ -28,7 +28,11 @@ VALUES (
 
 -- name: GetUser :one
 
-SELECT * FROM users WHERE username = $1 OR email = $1 LIMIT 1;
+SELECT * FROM users WHERE username = $1 OR email = $1 OR address = $1 LIMIT 1;
+
+
+-- name: GetUserByAddress :one
+SELECT * FROM users WHERE address = $1 LIMIT 1;
 
 -- name: ChangePassword :one
 

@@ -16,6 +16,8 @@ contract CrowdFunding {
         uint256 id;
         address[] donators;
         uint256[] donations;
+        bool goalReached;
+        bool isDeleted;
     }
 
     struct Category {
@@ -68,7 +70,8 @@ contract CrowdFunding {
         campaign.deadline = _deadline;
         campaign.image = _image;
         campaign.id = campaignCount;
-
+        campaign.isDeleted = false;
+        campaign.goalReached = false;
         campaignCount++;
 
         return campaignCount - 1;
@@ -88,19 +91,47 @@ contract CrowdFunding {
 
         require(campaign.deadline > block.timestamp, "Deadline is passed");
         require(msg.value > 0, "Donation amount must be greater than 0");
+        require(campaign.isDeleted == false, "Campaign is deleted");
+        if (campaign.goalReached) {
+            revert("Campaign goal is reached, you can't donate");
+        }
 
         campaign.totalFunds += msg.value;
         campaign.totalContributors += 1;
         campaign.donators.push(msg.sender);
         campaign.donations.push(msg.value);
         campaign.id = _campaignId;
+        campaign.owner = campaign.owner;
 
-        (bool sent, ) = payable(campaign.owner).call{value: amount}("");
+        // check if campaign goal is reached
+        if (campaign.totalFunds + msg.value >= campaign.goal) {
+            campaign.goalReached = true;
+        }
 
-        if (sent) {
-            campaign.totalFunds += amount;
-        } else {
-            revert("Failed to send Ether");
+        // make sure the amount plus the totalFunds is less than the goal amount if not refund the difference
+        if (campaign.totalFunds > campaign.goal) {
+            uint256 difference = campaign.totalFunds - campaign.goal;
+            (bool sent, ) = payable(msg.sender).call{value: difference}("");
+            if (sent) {
+                campaign.totalFunds -= difference;
+            } else {
+                revert("Failed to send Ether");
+            }
+        }
+
+        // pay donation to campaign owner
+        if (campaign.goalReached) {
+            (bool sent, ) = payable(campaign.owner).call{value: amount}("");
+            if (sent) {
+                campaign.totalFunds += amount;
+            } else {
+                revert("Failed to send Ether");
+            }
+        }
+
+        // if goals is reached set goalReached to true
+        if (campaign.totalFunds >= campaign.goal) {
+            campaign.goalReached = true;
         }
     }
 
@@ -150,6 +181,15 @@ contract CrowdFunding {
         return campaignCount;
     }
 
+    //? Get total donations by campaign id
+    function getTotalDonationsByCampaignId(
+        uint256 _campaignId
+    ) public view returns (uint256) {
+        // number of donations
+        uint256 donationsCount = campaigns[_campaignId].donations.length;
+        return donationsCount;
+    }
+
     //? Get campaign donations count
     function getCampaigns() public view returns (Campaign[] memory) {
         Campaign[] memory _campaigns = new Campaign[](campaignCount);
@@ -181,7 +221,7 @@ contract CrowdFunding {
 
     //? Get campaign By Type
     function getCampaignsByType(
-        string memory _campaignType
+        uint256 _categoryId
     ) public view returns (Campaign[] memory) {
         Campaign[] memory _campaigns = new Campaign[](campaignCount);
 
@@ -190,7 +230,7 @@ contract CrowdFunding {
         for (uint256 i = 0; i < campaignCount; i++) {
             if (
                 keccak256(abi.encodePacked(campaigns[i].campaignType)) ==
-                keccak256(abi.encodePacked(_campaignType))
+                keccak256(abi.encodePacked(categories[_categoryId].name))
             ) {
                 _campaigns[count] = campaigns[i];
                 count++;
@@ -289,14 +329,139 @@ contract CrowdFunding {
     function searchCampaignByName(
         string memory _name
     ) public view returns (Campaign[] memory) {
+        string[] memory keywords = splitString(_name, " ");
+
+        Campaign[] memory _campaigns = new Campaign[](campaignCount);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < campaignCount; i++) {
+            if (matchesKeywords(campaigns[i], keywords)) {
+                _campaigns[count] = campaigns[i];
+                count++;
+            }
+        }
+
+        return resizeCampaignArray(_campaigns, count);
+    }
+
+    function resizeCampaignArray(
+        Campaign[] memory _array,
+        uint256 _size
+    ) internal pure returns (Campaign[] memory) {
+        Campaign[] memory result = new Campaign[](_size);
+        for (uint256 i = 0; i < _size; i++) {
+            result[i] = _array[i];
+        }
+        return result;
+    }
+
+    function splitString(
+        string memory _text,
+        string memory _delimiter
+    ) internal pure returns (string[] memory) {
+        bytes memory bytesText = bytes(_text);
+        bytes memory bytesDelimiter = bytes(_delimiter);
+
+        uint256 count = 1;
+        for (uint256 i = 0; i < bytesText.length; i++) {
+            if (bytesText[i] == bytesDelimiter[0]) {
+                count++;
+            }
+        }
+
+        string[] memory parts = new string[](count);
+        uint256 startIndex = 0;
+        count = 0;
+        for (uint256 i = 0; i < bytesText.length; i++) {
+            if (bytesText[i] == bytesDelimiter[0]) {
+                parts[count] = string(bytesSubstring(bytesText, startIndex, i));
+                startIndex = i + 1;
+                count++;
+            }
+        }
+        parts[count] = string(
+            bytesSubstring(bytesText, startIndex, bytesText.length)
+        );
+
+        return parts;
+    }
+
+    function bytesSubstring(
+        bytes memory _bytes,
+        uint256 _start,
+        uint256 _length
+    ) internal pure returns (bytes memory) {
+        require(_start + _length <= _bytes.length, "Invalid substring range");
+        bytes memory result = new bytes(_length);
+        for (uint256 i = 0; i < _length; i++) {
+            result[i] = _bytes[_start + i];
+        }
+        return result;
+    }
+
+    function matchesKeywords(
+        Campaign memory _campaign,
+        string[] memory _keywords
+    ) internal pure returns (bool) {
+        for (uint256 i = 0; i < _keywords.length; i++) {
+            if (
+                containsKeyword(_campaign.title, _keywords[i]) ||
+                containsKeyword(_campaign.description, _keywords[i]) ||
+                containsKeyword(_campaign.campaignType, _keywords[i])
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function containsKeyword(
+        string memory _text,
+        string memory _keyword
+    ) internal pure returns (bool) {
+        return
+            (bytes(_text).length > 0) &&
+            (bytes(_keyword).length > 0) &&
+            (bytes(_text).length >= bytes(_keyword).length) &&
+            (keccak256(abi.encodePacked(_text)) ==
+                keccak256(abi.encodePacked(_keyword)));
+    }
+
+    function deleteCampaign(
+        uint256 _campaignId
+    ) public isCampaignOwner(_campaignId) {
+        campaigns[_campaignId].isDeleted = true;
+    }
+
+    function deleteCategory(uint256 _categoryId) public {
+        delete categories[_categoryId];
+    }
+
+    function deleteAllCampaigns() public {
+        for (uint256 i = 0; i < campaignCount; i++) {
+            // set isDeleted to true
+            campaigns[i].isDeleted = true;
+        }
+    }
+
+    function deleteAllCategories() public {
+        for (uint256 i = 0; i < categoryCount; i++) {
+            delete categories[i];
+        }
+    }
+
+    // get Campaigns by category
+    function getCampaignsByCategory(
+        uint256 _categoryId
+    ) public view returns (Campaign[] memory) {
         Campaign[] memory _campaigns = new Campaign[](campaignCount);
 
         uint256 count = 0;
 
         for (uint256 i = 0; i < campaignCount; i++) {
             if (
-                keccak256(abi.encodePacked(campaigns[i].title)) ==
-                keccak256(abi.encodePacked(_name))
+                keccak256(abi.encodePacked(campaigns[i].campaignType)) ==
+                keccak256(abi.encodePacked(categories[_categoryId].name))
             ) {
                 _campaigns[count] = campaigns[i];
                 count++;

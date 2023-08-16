@@ -22,6 +22,7 @@ type Querier interface {
 	GetAllCampaignType(ctx context.Context) ([]Campaigns, error)
 	GetSession(ctx context.Context, id uuid.UUID) (UserSession, error)
 	GetUser(ctx context.Context, username string) (Users, error)
+	GetUserByAddress(ctx context.Context, address string) (Users, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
 }
 

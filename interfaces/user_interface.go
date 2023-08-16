@@ -40,6 +40,9 @@ func NewUserResponse(user db.Users) UserResponse {
 	}
 }
 
+
+
+
 type GetUserRequest struct {
 	Username string `json:"username" binding:"required"`
 }
@@ -94,4 +97,8 @@ type ChangePasswordRequest struct {
 
 type Image struct {
 	ImageId int `json:"image_id" binding:"required"`
+}
+
+type SetBiometricsRequest struct {
+	Biometrics bool `json:"biometrics" binding:"required"`
 }
