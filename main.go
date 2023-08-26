@@ -12,6 +12,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// @title          DefiRaise API
+// @version         1.0
+// @description     Decentralized Crowdfunding Platform for DeFi Projects
+// @contact.name   DefiRaise
+// @schemes        http
+// @contact.url    http://www.swagger.io/support
+// @contact.email  kolawoleoluwasegun567@gmail
+// @host localhost:8080
+
 func main() {
 	configs, err := utils.LoadConfig(".")
 	if err != nil {
@@ -29,13 +38,13 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
+
 	runGinServer(configs, store)
 
 }
 
 func runGinServer(configs utils.Config, store db.Store) {
 	server, err := api.NewServer(configs, store)
-	
 
 	if err != nil {
 		log.Fatal().Msg("cannot create server")

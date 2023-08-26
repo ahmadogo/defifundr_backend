@@ -16,6 +16,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Get campaigns
+// @Description Get campaigns
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
+// @Router /campaigns [get]
 func (server *Server) getCampaigns(ctx *gin.Context) {
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -141,6 +149,15 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, camps))
 }
+
+// @Summary Get latest active campaigns
+// @Description Get latest active campaigns
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
+// @Router /campaigns/latestCampaigns [get]
 func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -271,6 +288,15 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, latestActiveCampaigns))
 }
 
+// @Summary Get Campaigns by category
+// @Description Get Campaigns by category
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param id path int true "Category ID"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
+// @Router /campaigns/categories/{id} [get]
 func (server *Server) getCampaignsByCategory(ctx *gin.Context) {
 	id := ctx.Param("id")
 	// convert string id to int
@@ -413,6 +439,14 @@ func (server *Server) getCampaignsByCategory(ctx *gin.Context) {
 
 }
 
+// @Summary Get Campaigns by owner
+// @Description Get Campaigns by owner
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
+// @Router /campaigns/owner [get]
 func (server *Server) getCampaignsByOwner(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -626,6 +660,7 @@ func (server *Server) getCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, camp))
 }
 
+
 func (server *Server) getCampaignTypes(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -654,6 +689,15 @@ func (server *Server) getCampaignTypes(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, campaignTypes))
 }
 
+// @Summary Get Campaign Donors
+// @Description Get Campaign Donors
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param id path int true "Campaign ID"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.DonorDetails}	"success"
+// @Router /campaigns/donors/{id} [get]
 func (server *Server) getCampaignDonors(ctx *gin.Context) {
 	id := ctx.Param("id")
 	// convert string id to int
@@ -706,6 +750,15 @@ func (server *Server) getCampaignDonors(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, dons))
 }
 
+// @Summary Donate to campaign
+// @Description Donate to campaign
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.Donation[types.Post]    true  "Donation"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
+// @Router /campaigns/donate [post]
 func (server *Server) donateToCampaign(ctx *gin.Context) {
 	var donation interfaces.Donation
 
@@ -808,6 +861,20 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, msg))
 }
 
+// @Summary Create campaign
+// @Description Create campaign
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   title        formData   string    true  "Title"
+// @Param   description        formData   string    true  "Description"
+// @Param   goal        formData   string    true  "Goal"
+// @Param   deadline        formData   string    true  "Deadline"
+// @Param   category        formData   string    true  "Category"
+// @Param   image        formData   file    true  "Image"
+// @Success		200				{object}   string "hex"
+// @Router /campaigns/create [post]
 func (server *Server) createCampaign(ctx *gin.Context) {
 	campaignImage, _, err := ctx.Request.FormFile("image")
 	if err != nil {
@@ -887,6 +954,14 @@ func (server *Server) createCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, campaigns))
 }
 
+// @Summary Get My Donations
+// @Description Get My Donations
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]crypt.Campaign}	"success"
+// @Router /campaigns/donations [get]
 func (server *Server) getMyDonations(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -915,6 +990,15 @@ func (server *Server) getMyDonations(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, donations))
 }
 
+// @Summary Withdraw from campaign
+// @Description Withdraw from campaign
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.Withdraw[types.Post]    true  "Withdraw"
+// @Success		200				{object}    string	"success"
+// @Router /campaigns/withdraw [post]
 func (server *Server) withdrawFromCampaign(ctx *gin.Context) {
 	var withdraw interfaces.Withdraw
 
@@ -957,6 +1041,13 @@ func (server *Server) withdrawFromCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, msg))
 }
 
+// @Summary Get Current ETH Price
+// @Description Get Current ETH Price
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
+// @Router /currentPrice [get]
 func (server *Server) currentEthPrice(ctx *gin.Context) {
 	price, err := defi.GetEthPrice()
 	if err != nil {
@@ -967,6 +1058,13 @@ func (server *Server) currentEthPrice(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, price))
 }
 
+// @Summary Get Campaign Categories
+// @Description Get Campaign Categories
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
+// @Router /categories [get]
 func (server *Server) getCategories(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -1007,6 +1105,15 @@ func (server *Server) getCategories(ctx *gin.Context) {
 
 }
 
+// @Summary Search Campaign by name
+// @Description Search Campaign by name
+// @Accept  json
+// @Produce  json
+// @Tags Campaigns
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.SearchCampaignRequest[types]    true  "SearchCampaignRequest"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
+// @Router /search [post]
 func (server *Server) searchCampaignByName(ctx *gin.Context) {
 	var req interfaces.SearchCampaignRequest
 

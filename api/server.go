@@ -4,9 +4,12 @@ import (
 	"fmt"
 
 	db "github.com/demola234/defiraise/db/sqlc"
+	"github.com/demola234/defiraise/docs"
 	"github.com/demola234/defiraise/token"
 	"github.com/demola234/defiraise/utils"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Server struct {
@@ -30,12 +33,24 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	}
 
 	server.setUpRouter()
+	// programmatically set swagger info
+	docs.SwaggerInfo.Title = "DefiRaise API"
+	docs.SwaggerInfo.Description = "Decentralized Crowdfunding Platform for DeFi Projects"
+	docs.SwaggerInfo.Version = "1.0"
+	if config.Environment == "production" {
+		docs.SwaggerInfo.Host = "defifundr-hyper.koyeb.app"
+	} else {
+		docs.SwaggerInfo.Host = "localhost:8080"
+	}
+	docs.SwaggerInfo.Schemes = []string{"https"}
 	return server, nil
 }
 
 func (server *Server) setUpRouter() {
 	router := gin.Default()
-	gin.SetMode(gin.ReleaseMode)
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.SetTrustedProxies(nil)
 	router.POST("/user", server.createUser)
 	router.POST("/user/login", server.loginUser)
 	router.POST("/user/verify", server.verifyUser)
@@ -54,7 +69,7 @@ func (server *Server) setUpRouter() {
 	authRoutes.POST("/user/biometrics", server.setBiometrics)
 	authRoutes.POST("/user/logout", server.logoutUser)
 	authRoutes.POST("/user/password/change", server.changePassword)
-	authRoutes.GET("/user/privatekey", server.getPrivateKey)
+	authRoutes.POST("/user/privatekey", server.getPrivateKey)
 	authRoutes.GET("/campaigns/latestCampaigns", server.getLatestActiveCampaigns)
 	authRoutes.GET("/campaigns", server.getCampaigns)
 	authRoutes.POST("/campaigns", server.createCampaign)
