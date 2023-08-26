@@ -192,7 +192,7 @@ const docTemplate = `{
                     "200": {
                         "description": "hex",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -613,7 +613,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -657,7 +657,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -711,7 +711,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -761,9 +761,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Biometrics set successfully",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -795,9 +795,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "boolean"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -911,9 +911,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -973,7 +973,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -1005,9 +1005,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -1069,7 +1069,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1119,9 +1119,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User updated successfully",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -1153,9 +1153,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -1205,9 +1205,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OTP code resent",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {

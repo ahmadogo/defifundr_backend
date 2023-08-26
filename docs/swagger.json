@@ -187,7 +187,7 @@
                     "200": {
                         "description": "hex",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -608,7 +608,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -652,7 +652,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -706,7 +706,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -756,9 +756,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Biometrics set successfully",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -790,9 +790,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "boolean"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -906,9 +906,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -968,7 +968,7 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -1000,9 +1000,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -1064,7 +1064,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1114,9 +1114,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User updated successfully",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     }
                 }
@@ -1148,9 +1148,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User Verified",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {
@@ -1200,9 +1200,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OTP code resent",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
                         }
                     },
                     "400": {

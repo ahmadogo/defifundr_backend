@@ -359,7 +359,7 @@ paths:
         "200":
           description: hex
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
       summary: Create campaign
       tags:
       - Campaigns
@@ -624,7 +624,7 @@ paths:
           description: success
           schema:
             allOf:
-            - $ref: '#/definitions/interfaces.UserResponse'
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/interfaces.UserResponse'
@@ -650,7 +650,7 @@ paths:
           description: success
           schema:
             allOf:
-            - $ref: '#/definitions/interfaces.UserResponse'
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/interfaces.UserResponse'
@@ -683,7 +683,7 @@ paths:
           description: success
           schema:
             allOf:
-            - $ref: '#/definitions/interfaces.UserResponse'
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/interfaces.UserResponse'
@@ -713,9 +713,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Biometrics set successfully
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
       summary: Get Biometrics Settings
       tags:
       - Profile
@@ -735,9 +735,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: User Verified
+          description: success
           schema:
-            type: boolean
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
         "400":
           description: Bad request
           schema:
@@ -809,9 +809,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: User Verified
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
         "400":
           description: Bad request
           schema:
@@ -851,7 +851,7 @@ paths:
         "200":
           description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
       summary: Change Password
       tags:
       - Profile
@@ -871,9 +871,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: User Verified
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
         "400":
           description: Bad request
           schema:
@@ -914,7 +914,7 @@ paths:
           description: success
           schema:
             allOf:
-            - $ref: '#/definitions/interfaces.UserResponse'
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/interfaces.AddressResponse'
@@ -944,9 +944,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: User updated successfully
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
       summary: Update User
       tags:
       - Profile
@@ -966,9 +966,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: User Verified
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
         "400":
           description: Bad request
           schema:
@@ -1000,9 +1000,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OTP code resent
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
         "400":
           description: Bad request
           schema:

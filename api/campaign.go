@@ -873,7 +873,7 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 // @Param   deadline        formData   string    true  "Deadline"
 // @Param   category        formData   string    true  "Category"
 // @Param   image        formData   file    true  "Image"
-// @Success		200				{object}   string "hex"
+// @Success		200				{object}   interfaces.DocSuccessResponse "hex"
 // @Router /campaigns/create [post]
 func (server *Server) createCampaign(ctx *gin.Context) {
 	campaignImage, _, err := ctx.Request.FormFile("image")

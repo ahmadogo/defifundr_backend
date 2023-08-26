@@ -19,7 +19,7 @@ import (
 // @Produce  json
 // @Tags Authentication
 // @Param   data        body   interfaces.CreateUserRequest[types.Post]    true  "CreateUser Request body"
-// @Success		200				{object}    interfaces.UserResponse{data=interfaces.UserResponse}	"success"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=interfaces.UserResponse}	"success"
 // @Router /user [post]
 func (server *Server) createUser(ctx *gin.Context) {
 	var req interfaces.CreateUserRequest
@@ -188,7 +188,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 // @Tags Authentication
 // @Produce  json
 // @Param   data        body   interfaces.VerifyUserRequest[types.Post]    true  "Verify User Request  body"
-// @Success		200				{object}    string "User Verified"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Failure		400				{object}   string	"Bad request"
 // @Failure      404  {object}  string	"Not found"
 // @Failure      500  {object}  string	"Internal server error"
@@ -261,7 +261,7 @@ func (server *Server) verifyUser(ctx *gin.Context) {
 // @Tags Authentication
 // @Produce  json
 // @Param   data        body   interfaces.ResendVerificationCodeRequest[types.Post]    true  "Resend Verification Code Request  body"
-// @Success		200				{object}    string "OTP code resent"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Failure		400				{object}   string	"Bad request"
 // @Failure      404  {object}  string	"Not found"
 // @Failure      500  {object}  string	"Internal server error"
@@ -388,7 +388,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 // @Tags Authentication
 // @Produce  json
 // @Param   data        body   interfaces.VerifyUserResetRequest[types.Post]    true  "Verify User Reset Request  body"
-// @Success		200				{object}    string "User Verified"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Failure		400				{object}   string	"Bad request"
 // @Failure      404  {object}  string	"Not found"
 // @Failure      500  {object}  string	"Internal server error"
@@ -458,7 +458,7 @@ func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 // @Tags Authentication
 // @Produce  json
 // @Param   data        body   interfaces.GetPasswordRequest[types.Post]    true  "Get Password Request  body"
-// @Success		200				{object}    string "User Verified"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Failure		400				{object}   string	"Bad request"
 // @Failure      404  {object}  string	"Not found"
 // @Failure      500  {object}  string	"Internal server error"
@@ -533,7 +533,7 @@ func (server *Server) createPassword(ctx *gin.Context) {
 // @Tags Authentication
 // @Produce  json
 // @Param   data        body   interfaces.CheckUsernameExistsRequest[types.Post]    true  "Check Username Exists Request  body"
-// @Success		200				{object}    bool "User Verified"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Failure		400				{object}   string	"Bad request"
 // @Failure      404  {object}  string	"Not found"
 // @Failure      500  {object}  string	"Internal server error"

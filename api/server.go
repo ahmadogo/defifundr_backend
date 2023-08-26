@@ -37,11 +37,10 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	docs.SwaggerInfo.Title = "DefiRaise API"
 	docs.SwaggerInfo.Description = "Decentralized Crowdfunding Platform for DeFi Projects"
 	docs.SwaggerInfo.Version = "1.0"
-	if config.Environment == "production" {
-		docs.SwaggerInfo.Host = "defifundr-hyper.koyeb.app"
-	} else {
-		docs.SwaggerInfo.Host = "localhost:8080"
-	}
+	docs.SwaggerInfo.Host = "defifundr-hyper.koyeb.app"
+
+	// docs.SwaggerInfo.Host = "localhost:8080"
+
 	docs.SwaggerInfo.Schemes = []string{"https"}
 	return server, nil
 }
