@@ -26,9 +26,10 @@ type Config struct {
 }
 
 func LoadConfig(path string) (config Config, err error) {
+	viper.SetConfigName(".env")
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
 	viper.SetConfigType("env")
+	viper.AllowEmptyEnv(true)
 
 	viper.AutomaticEnv()
 
@@ -45,11 +46,10 @@ func LoadConfig(path string) (config Config, err error) {
 	return
 }
 
-// convert timestamp to unix for solidity 
+// convert timestamp to unix for solidity
 func ConvertToUnix(timestamp time.Time) int64 {
 	return timestamp.Unix()
 }
-
 
 // convert unix to timestamp golang
 func ConvertToTime(unix int64) time.Time {

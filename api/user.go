@@ -13,6 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Create a new user
+// @Description Creates a new user account with a unique username and email
+// @Accept  json
+// @Produce  json
+// @Tags Authentication
+// @Param   data        body   interfaces.CreateUserRequest[types.Post]    true  "CreateUser Request body"
+// @Success		200				{object}    interfaces.UserResponse{data=interfaces.UserResponse}	"success"
+// @Router /user [post]
 func (server *Server) createUser(ctx *gin.Context) {
 	var req interfaces.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -69,6 +77,17 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 }
 
+// @Summary Login a user
+// @Description Login a user with a unique username and password and returns a token
+// @Accept  json
+// @Tags Authentication
+// @Produce  json
+// @Param   data        body   interfaces.LoginUserRequest[types.Post]    true  "Login Request body"
+// @Success		200				{object}    interfaces.UserResponse{data=interfaces.LoginResponse}	"success"
+// @Failure		400				{object}   string	"Bad request"
+// @Failure      404  {object}  string	"Not found"
+// @Failure      500  {object}  string	"Internal server error"
+// @Router /user/login [post]
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req interfaces.LoginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -123,7 +142,10 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	// update user balance
 	user, err = server.store.UpdateUser(ctx, db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		Balance: sql.NullString{
 			String: balance,
 			Valid:  true,
@@ -160,6 +182,17 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
 }
 
+// @Summary Verify Users
+// @Description  Verify Users with a unique username and otp code
+// @Accept  json
+// @Tags Authentication
+// @Produce  json
+// @Param   data        body   interfaces.VerifyUserRequest[types.Post]    true  "Verify User Request  body"
+// @Success		200				{object}    string "User Verified"
+// @Failure		400				{object}   string	"Bad request"
+// @Failure      404  {object}  string	"Not found"
+// @Failure      500  {object}  string	"Internal server error"
+// @Router /user/verify [post]
 func (server *Server) verifyUser(ctx *gin.Context) {
 	var req interfaces.VerifyUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -198,7 +231,10 @@ func (server *Server) verifyUser(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		IsEmailVerified: sql.NullBool{
 			Bool:  true,
 			Valid: true,
@@ -218,6 +254,18 @@ func (server *Server) verifyUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "User Verified"))
 }
 
+
+// @Summary Resend Verification Code
+// @Description Resend Verification Code with a unique username
+// @Accept  json
+// @Tags Authentication
+// @Produce  json
+// @Param   data        body   interfaces.ResendVerificationCodeRequest[types.Post]    true  "Resend Verification Code Request  body"
+// @Success		200				{object}    string "OTP code resent"
+// @Failure		400				{object}   string	"Bad request"
+// @Failure      404  {object}  string	"Not found"
+// @Failure      500  {object}  string	"Internal server error"
+// @Router /user/verify/resend [post]
 func (server *Server) resendVerificationCode(ctx *gin.Context) {
 	var req interfaces.ResendVerificationCodeRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -251,7 +299,10 @@ func (server *Server) resendVerificationCode(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		SecretCode: sql.NullString{
 			String: email.Otp,
 			Valid:  true,
@@ -304,7 +355,10 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		SecretCode: sql.NullString{
 			String: email.Otp,
 			Valid:  true,
@@ -328,6 +382,17 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Password reset successfully"))
 }
 
+// @Summary Verify Reset Password Code
+// @Description  Verify Reset Password Code with a unique username and otp code
+// @Accept  json
+// @Tags Authentication
+// @Produce  json
+// @Param   data        body   interfaces.VerifyUserResetRequest[types.Post]    true  "Verify User Reset Request  body"
+// @Success		200				{object}    string "User Verified"
+// @Failure		400				{object}   string	"Bad request"
+// @Failure      404  {object}  string	"Not found"
+// @Failure      500  {object}  string	"Internal server error"
+// @Router /user/password/reset/verify [post]
 func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 	var req interfaces.VerifyUserResetRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -360,7 +425,10 @@ func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		IsUsed: sql.NullBool{
 			Bool:  true,
 			Valid: true,
@@ -384,6 +452,17 @@ func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "User Verified"))
 }
 
+// @Summary Create Password
+// @Description  Create Password with a unique username and password
+// @Accept  json
+// @Tags Authentication
+// @Produce  json
+// @Param   data        body   interfaces.GetPasswordRequest[types.Post]    true  "Get Password Request  body"
+// @Success		200				{object}    string "User Verified"
+// @Failure		400				{object}   string	"Bad request"
+// @Failure      404  {object}  string	"Not found"
+// @Failure      500  {object}  string	"Internal server error"
+// @Router /user/password [post]
 func (server *Server) createPassword(ctx *gin.Context) {
 	var req interfaces.GetPasswordRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -416,7 +495,10 @@ func (server *Server) createPassword(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		IsUsed: sql.NullBool{
 			Bool:  true,
 			Valid: true,
@@ -445,6 +527,17 @@ func (server *Server) createPassword(ctx *gin.Context) {
 
 }
 
+// @Summary Check Username Exists
+// @Description  Check Username Exists with a unique username
+// @Accept  json
+// @Tags Authentication
+// @Produce  json
+// @Param   data        body   interfaces.CheckUsernameExistsRequest[types.Post]    true  "Check Username Exists Request  body"
+// @Success		200				{object}    bool "User Verified"
+// @Failure		400				{object}   string	"Bad request"
+// @Failure      404  {object}  string	"Not found"
+// @Failure      500  {object}  string	"Internal server error"
+// @Router /user/checkUsername [post]
 func (server *Server) checkUsernameExists(ctx *gin.Context) {
 	var req interfaces.CheckUsernameExistsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -463,4 +556,5 @@ func (server *Server) checkUsernameExists(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, user))
+
 }

@@ -75,7 +75,10 @@ func TestUpdateAvatar(t *testing.T) {
 		String: utils.RandomEmail(),
 		Valid:  true,
 	},
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 	}
 
 	user2, err := testQueries.UpdateUser(context.Background(), arg)
@@ -128,7 +131,10 @@ func TestUpdateUser(t *testing.T) {
 
 	arg := UpdateUserParams{
 
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		Email: sql.NullString{
 			String: utils.RandomEmail(),
 			Valid:  true,
@@ -155,7 +161,10 @@ func TestUpdateUserOnlyPassword(t *testing.T) {
 	require.NoError(t, err)
 
 	updatedUser, err := testQueries.UpdateUser(context.Background(), UpdateUserParams{
-		Username: oldUser.Username,
+		Username: sql.NullString{
+			String: oldUser.Username,
+			Valid:  true,
+		},
 		HashedPassword: sql.NullString{
 			String: newHashedPassword,
 			Valid:  true,
@@ -173,7 +182,10 @@ func TestUpdateUserOnlyEmail(t *testing.T) {
 
 	newEmail := utils.RandomEmail()
 	updatedUser, err := testQueries.UpdateUser(context.Background(), UpdateUserParams{
-		Username: oldUser.Username,
+		Username: sql.NullString{
+			String: oldUser.Username,
+			Valid:  true,
+		},
 		Email: sql.NullString{
 			String: newEmail,
 			Valid:  true,
@@ -191,7 +203,10 @@ func TestUpdateUserOnlyAvatar(t *testing.T) {
 
 	newAvatar := utils.RandomString(6)
 	updatedUser, err := testQueries.UpdateUser(context.Background(), UpdateUserParams{
-		Username: oldUser.Username,
+		Username: sql.NullString{
+			String: oldUser.Username,
+			Valid:  true,
+		},
 		Avatar: sql.NullString{
 			String: newAvatar,
 			Valid:  true,

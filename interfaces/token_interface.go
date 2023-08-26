@@ -15,7 +15,7 @@ type RenewAccessTokenResponse struct {
 }
 
 type GetPrivateKeyRequest struct {
-	Password string `json:"password" binding:"required"`
+	Password string `json:"password"`
 }
 
 type AddressResponse struct {
