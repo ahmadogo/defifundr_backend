@@ -20,7 +20,7 @@ import (
 // @Produce  json
 // @Tags Profile
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Success		200				{object}    interfaces.UserResponse{data=interfaces.UserResponse}	"success" 
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=interfaces.UserResponse}	"success" 
 // @Router /user [get]
 func (server *Server) getUser(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -68,7 +68,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 // @Tags Profile
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param   data        body   interfaces.CheckUsernameExistsRequest[types.Post]    true  "Get private key"
-// @Success		200				string 	"User updated successfully"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success" 
 // @Router /user/update [post]
 func (server *Server) updateUser(ctx *gin.Context) {
 	var req interfaces.CheckUsernameExistsRequest
@@ -108,7 +108,7 @@ func (server *Server) updateUser(ctx *gin.Context) {
 // @Tags Profile
 // @Param   data        body   interfaces.GetUserRequest[types.Post]    true  "Get private key"
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Success		200				{object}    interfaces.UserResponse{data=interfaces.UserResponse}	"success" 
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=interfaces.UserResponse}	"success" 
 // @Router /user/address [post]
 func (server *Server) getUserByAddress(ctx *gin.Context) {
 	var req interfaces.GetUserRequest
@@ -173,7 +173,7 @@ func (server *Server) logoutUser(ctx *gin.Context) {
 // @Tags Profile
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param   data        body   interfaces.ChangePasswordRequest[types.Post]    true  "Get private key"
-// @Success		200				string 	"success"
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Router /user/password/change [post]
 func (server *Server) changePassword(ctx *gin.Context) {
 	var req interfaces.ChangePasswordRequest
@@ -239,7 +239,7 @@ func (server *Server) changePassword(ctx *gin.Context) {
 // @Tags Profile
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param   data        body   interfaces.GetPrivateKeyRequest[types.Post]    true  "Get private key"
-// @Success		200				{object}    interfaces.UserResponse{data=interfaces.AddressResponse}	"success"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=interfaces.AddressResponse}	"success"
 // @Router /user/privatekey [post]
 func (server *Server) getPrivateKey(ctx *gin.Context) {
 	var req interfaces.GetPrivateKeyRequest
@@ -341,7 +341,7 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 // @Tags Profile
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param   data        body   interfaces.SetBiometricsRequest[types.Post]    true  "Get private key"
-// @Success		200				{object}   string "Biometrics set successfully" 
+// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
 // @Router /user/biometrics [post]
 func (server *Server) setBiometrics(ctx *gin.Context) {
 	var req interfaces.SetBiometricsRequest
