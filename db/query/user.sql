@@ -59,6 +59,7 @@ DELETE FROM users WHERE username = $1 RETURNING *;
 
 UPDATE users
 SET
+    username = COALESCE(sqlc.narg(username), username),
     hashed_password = COALESCE(
         sqlc.narg(hashed_password),
         hashed_password

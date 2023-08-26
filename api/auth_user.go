@@ -14,6 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Get User
+// @Description Get user details
+// @Accept  json
+// @Produce  json
+// @Tags Profile
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success		200				{object}    interfaces.UserResponse{data=interfaces.UserResponse}	"success" 
+// @Router /user [get]
 func (server *Server) getUser(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -53,6 +61,15 @@ func (server *Server) getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
 }
 
+// @Summary Update User
+// @Description Update user details
+// @Accept  json
+// @Produce  json
+// @Tags Profile
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.CheckUsernameExistsRequest[types.Post]    true  "Get private key"
+// @Success		200				string 	"User updated successfully"
+// @Router /user/update [post]
 func (server *Server) updateUser(ctx *gin.Context) {
 	var req interfaces.CheckUsernameExistsRequest
 
@@ -69,17 +86,30 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.UpdateUserParams{
-		Username: authPayload.Username,
+	_, err := server.store.UpdateUser(ctx, db.UpdateUserParams{
+		Username: sql.NullString{
+			String: authPayload.Username,
+			Valid:  true,
+		},
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
 	}
 
-	if req.Username != "" {
-		arg.Username = req.Username
-	}
-
-	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, nil))
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "User updated successfully"))
 }
 
+// @Summary Get User By Address
+// @Description Get user details by address
+// @Accept  json
+// @Produce  json
+// @Tags Profile
+// @Param   data        body   interfaces.GetUserRequest[types.Post]    true  "Get private key"
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success		200				{object}    interfaces.UserResponse{data=interfaces.UserResponse}	"success" 
+// @Router /user/address [post]
 func (server *Server) getUserByAddress(ctx *gin.Context) {
 	var req interfaces.GetUserRequest
 
@@ -136,6 +166,15 @@ func (server *Server) logoutUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, nil))
 }
 
+// @Summary Change Password
+// @Description Change password of user
+// @Accept  json
+// @Produce  json
+// @Tags Profile
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.ChangePasswordRequest[types.Post]    true  "Get private key"
+// @Success		200				string 	"success"
+// @Router /user/password/change [post]
 func (server *Server) changePassword(ctx *gin.Context) {
 	var req interfaces.ChangePasswordRequest
 
@@ -174,7 +213,10 @@ func (server *Server) changePassword(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: user.Username,
+		Username: sql.NullString{
+			String: user.Username,
+			Valid:  true,
+		},
 		HashedPassword: sql.NullString{
 			String: hashedPassword,
 			Valid:  true,
@@ -187,9 +229,18 @@ func (server *Server) changePassword(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, nil))
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Password changed successfully"))
 }
 
+// @Summary Get Private Key
+// @Description Get private key of user
+// @Accept  json
+// @Produce  json
+// @Tags Profile
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.GetPrivateKeyRequest[types.Post]    true  "Get private key"
+// @Success		200				{object}    interfaces.UserResponse{data=interfaces.AddressResponse}	"success"
+// @Router /user/privatekey [post]
 func (server *Server) getPrivateKey(ctx *gin.Context) {
 	var req interfaces.GetPrivateKeyRequest
 
@@ -260,7 +311,10 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: authPayload.Username,
+		Username: sql.NullString{
+			String: authPayload.Username,
+			Valid:  true,
+		},
 		Avatar: sql.NullString{
 			String: imageURL,
 			Valid:  true,
@@ -280,8 +334,18 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "Image uploaded successfully"))
 }
 
+// @Summary Get Biometrics Settings
+// @Description Get biometrics settings
+// @Accept  json
+// @Produce  json
+// @Tags Profile
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param   data        body   interfaces.SetBiometricsRequest[types.Post]    true  "Get private key"
+// @Success		200				{object}   string "Biometrics set successfully" 
+// @Router /user/biometrics [post]
 func (server *Server) setBiometrics(ctx *gin.Context) {
 	var req interfaces.SetBiometricsRequest
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
 		return
@@ -296,7 +360,10 @@ func (server *Server) setBiometrics(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateUserParams{
-		Username: authPayload.Username,
+		Username: sql.NullString{
+			String: authPayload.Username,
+			Valid:  true,
+		},
 		Biometrics: sql.NullBool{
 			Bool:  req.Biometrics,
 			Valid: true,
@@ -330,7 +397,10 @@ func (server *Server) selectAvatar(ctx *gin.Context) {
 	imageURL := utils.GetAvatarUrl(req.ImageId - 1)
 
 	arg := db.UpdateUserParams{
-		Username: authPayload.Username,
+		Username: sql.NullString{
+			String: authPayload.Username,
+			Valid:  true,
+		},
 		Avatar: sql.NullString{
 			String: imageURL,
 			Valid:  true,

@@ -26,6 +26,12 @@ type UserResponse struct {
 	Biometrics        bool      `json:"biometrics"`
 }
 
+type DocSuccessResponse struct {
+	Status  int         `json:"status" example:"200"`
+	Message string      `json:"message" example:"success"`
+	Data    interface{} `json:"data"`
+}
+
 func NewUserResponse(user db.Users) UserResponse {
 	return UserResponse{
 		Username:          user.Username,
@@ -39,9 +45,6 @@ func NewUserResponse(user db.Users) UserResponse {
 		Biometrics:        user.Biometrics,
 	}
 }
-
-
-
 
 type GetUserRequest struct {
 	Username string `json:"username" binding:"required"`
@@ -91,8 +94,8 @@ type CheckUsernameExistsRequest struct {
 }
 
 type ChangePasswordRequest struct {
-	OldPassword string `json:"old_password" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 type Image struct {
@@ -100,5 +103,5 @@ type Image struct {
 }
 
 type SetBiometricsRequest struct {
-	Biometrics bool `json:"biometrics" binding:"required"`
+	Biometrics bool `json:"biometrics"`
 }
