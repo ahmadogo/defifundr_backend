@@ -493,7 +493,22 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/defi.CampaignCategory"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -846,7 +861,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1260,6 +1275,23 @@
                 },
                 "totalNumberOfDonations": {
                     "type": "integer"
+                }
+            }
+        },
+        "defi.CampaignCategory": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

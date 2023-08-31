@@ -498,7 +498,22 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/defi.CampaignCategory"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -851,7 +866,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/interfaces.UserResponse"
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1265,6 +1280,23 @@ const docTemplate = `{
                 },
                 "totalNumberOfDonations": {
                     "type": "integer"
+                }
+            }
+        },
+        "defi.CampaignCategory": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

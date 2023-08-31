@@ -34,7 +34,7 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 
 	server.setUpRouter()
 	// programmatically set swagger info
-	docs.SwaggerInfo.Title = "DefiRaise API"
+	docs.SwaggerInfo.Title = "DefiFundr API"
 	docs.SwaggerInfo.Description = "Decentralized Crowdfunding Platform for DeFi Projects"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = "defifundr-hyper.koyeb.app"

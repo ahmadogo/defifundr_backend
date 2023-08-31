@@ -83,7 +83,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 // @Tags Authentication
 // @Produce  json
 // @Param   data        body   interfaces.LoginUserRequest[types.Post]    true  "Login Request body"
-// @Success		200				{object}    interfaces.UserResponse{data=interfaces.LoginResponse}	"success"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=interfaces.LoginResponse}	"success"
 // @Failure		400				{object}   string	"Bad request"
 // @Failure      404  {object}  string	"Not found"
 // @Failure      500  {object}  string	"Internal server error"

@@ -1063,7 +1063,8 @@ func (server *Server) currentEthPrice(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Tags Campaigns
-// @Success		200				{object}    interfaces.DocSuccessResponse	"success"
+// @Success		200				{object}    interfaces.DocSuccessResponse{data=[]crypt.CampaignCategory}	"success"
+// @Failure		404				{object}    interfaces.DocSuccessResponse
 // @Router /categories [get]
 func (server *Server) getCategories(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)

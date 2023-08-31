@@ -1,23 +1,21 @@
 package api
 
-// import (
-// 	"bytes"
-// 	"database/sql"
-// 	"encoding/json"
-// 	"fmt"
+import (
+	"bytes"
+	"database/sql"
+	"encoding/json"
 
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"reflect"
-// 	"testing"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-// 	mockdb "github.com/demola234/defiraise/db/mock"
-// 	db "github.com/demola234/defiraise/db/sqlc"
-// 	"github.com/demola234/defiraise/utils"
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/golang/mock/gomock"
-// 	"github.com/stretchr/testify/require"
-// )
+	mockdb "github.com/demola234/defiraise/db/mock"
+	db "github.com/demola234/defiraise/db/sqlc"
+	"github.com/demola234/defiraise/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+)
 
 // type eqCreateUserParamsMatcher struct {
 // 	arg      db.CreateUserParams
@@ -47,21 +45,21 @@ package api
 // 	return eqCreateUserParamsMatcher{arg, password}
 // }
 
-// func randomUser(t *testing.T) (user db.Users, password string) {
-// 	password = utils.RandomString(6)
-// 	Username := utils.RandomOwner()
+func randomUser(t *testing.T) (user db.Users, password string) {
+	password = utils.RandomString(6)
+	Username := utils.RandomOwner()
 
-// 	hashedPassword, err := utils.HashPassword(password)
-// 	require.NoError(t, err)
+	hashedPassword, err := utils.HashPassword(password)
+	require.NoError(t, err)
 
-// 	user = db.Users{
-// 		Username:       Username,
-// 		Avatar:         utils.RandomString(6),
-// 		Email:          utils.RandomEmail(),
-// 		HashedPassword: hashedPassword,
-// 	}
-// 	return user, password
-// }
+	user = db.Users{
+		Username:       Username,
+		Avatar:         utils.RandomString(6),
+		Email:          utils.RandomEmail(),
+		HashedPassword: hashedPassword,
+	}
+	return user, password
+}
 
 // func TestCreateUser(t *testing.T) {
 // 	users, password := randomUser(t)
@@ -570,90 +568,89 @@ package api
 // 	}
 // }
 
-// func TestCheckUsernameExists(t *testing.T) {
-// 	users, _ := randomUser(t)
+func TestCheckUsernameExists(t *testing.T) {
+	users, _ := randomUser(t)
 
-// 	testCases := []struct {
-// 		name          string
-// 		buildStubs    func(store *mockdb.MockStore)
-// 		body          gin.H
-// 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
-// 	}{
-// 		{
-// 			name: "OK",
-// 			body: gin.H{
-// 				"username": users.Username,
-// 			},
-// 			buildStubs: func(store *mockdb.MockStore) {
+	testCases := []struct {
+		name          string
+		buildStubs    func(store *mockdb.MockStore)
+		body          gin.H
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			body: gin.H{
+				"username": users.Username,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
 
-// 				store.EXPECT().
-// 					GetUser(gomock.Any(), gomock.Eq(users.Username)).
-// 					Times(1).
-// 					Return(users, nil)
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(users.Username)).
+					Times(1).
+					Return(users, nil)
 
-// 			},
-// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusOK, recorder.Code)
-// 				require.Equal(t, "{\"exists\":true}", recorder.Body.String())
-// 			},
-// 		},
-// 		{
-// 			name: "NoUser",
-// 			body: gin.H{
-// 				"username": users.Username,
-// 			},
-// 			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "NoUser",
+			body: gin.H{
+				"username": users.Username,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
 
-// 				store.EXPECT().
-// 					GetUser(gomock.Any(), gomock.Eq(users.Username)).
-// 					Times(1).
-// 					Return(db.Users{}, sql.ErrNoRows)
-// 			},
-// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusOK, recorder.Code)
-// 				require.Equal(t, "{\"exists\":false}", recorder.Body.String())
-// 			},
-// 		},
-// 		{
-// 			name: "InvalidPassword",
-// 			body: gin.H{
-// 				"username": users.Username,
-// 			},
-// 			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(users.Username)).
+					Times(1).
+					Return(db.Users{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, "{\"exists\":false}", recorder.Body.String())
+			},
+		},
+		{
+			name: "InvalidPassword",
+			body: gin.H{
+				"username": users.Username,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
 
-// 				store.EXPECT().
-// 					GetUser(gomock.Any(), gomock.Eq(users.Username)).
-// 					Times(1).
-// 					Return(users, nil)
-// 			},
-// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusOK, recorder.Code)
-// 				require.Equal(t, "{\"exists\":true}", recorder.Body.String())
-// 			},
-// 		},
-// 	}
-// 	for i := range testCases {
-// 		tc := testCases[i]
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			ctrl := gomock.NewController(t)
-// 			defer ctrl.Finish()
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(users.Username)).
+					Times(1).
+					Return(users, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, "{\"exists\":true}", recorder.Body.String())
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-// 			store := mockdb.NewMockStore(ctrl)
-// 			tc.buildStubs(store)
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
 
-// 			server := newTestServer(t, store)
-// 			recorder := httptest.NewRecorder()
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
 
-// 			data, err := json.Marshal(tc.body)
-// 			require.NoError(t, err)
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
 
-// 			url := "/users/checkUsername/:username"
-// 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
-// 			require.NoError(t, err)
+			url := "/users/checkUsername/:username"
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
 
-// 			server.router.ServeHTTP(recorder, request)
-// 			tc.checkResponse(t, recorder)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(t, recorder)
 
-// 		})
-// 	}
-// }
+		})
+	}
+}
