@@ -22,6 +22,17 @@ definitions:
       totalNumberOfDonations:
         type: integer
     type: object
+  defi.CampaignCategory:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+    type: object
   interfaces.AddressResponse:
     properties:
       address:
@@ -551,7 +562,14 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/interfaces.DocSuccessResponse'
+            allOf:
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/defi.CampaignCategory'
+                  type: array
+              type: object
       summary: Get Campaign Categories
       tags:
       - Campaigns
@@ -773,7 +791,7 @@ paths:
           description: success
           schema:
             allOf:
-            - $ref: '#/definitions/interfaces.UserResponse'
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/interfaces.LoginResponse'

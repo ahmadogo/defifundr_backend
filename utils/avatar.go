@@ -16,3 +16,4 @@ var avatarList = []string{
 func GetAvatarUrl(index int) string {
 	return avatarList[index]
 }
+
