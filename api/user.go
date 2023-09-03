@@ -24,30 +24,8 @@ import (
 func (server *Server) createUser(ctx *gin.Context) {
 	var req interfaces.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		newError := errors.New("please enter valid credentials")
-		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newError, http.StatusBadRequest))
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
 		return
-	}
-
-	new, err := server.store.GetUser(ctx, req.Username)
-	if !new.IsEmailVerified {
-		if err == nil {
-			newErr := errors.New("incomplete registration")
-			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
-
-			email := utils.EmailInfo{
-				Name:    req.Username,
-				Details: "Welcome to DefiRaise",
-				Otp:     utils.RandomOtp(),
-				Subject: "Welcome to DefiRaise",
-			}
-			_, err = utils.SendEmail(req.Email, req.Username, email, "./utils")
-			if err != nil {
-				ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-				return
-			}
-			return
-		}
 	}
 
 	filepath, address, err := defi.GenerateAccountKeyStone(server.config.PassPhase)
@@ -66,7 +44,8 @@ func (server *Server) createUser(ctx *gin.Context) {
 	// // hash password
 
 	arg := db.CreateUserParams{
-		Username:        req.Username,
+		Username: req.Username,
+		// HashedPassword:  hashPassword,
 		Email:           req.Email,
 		Address:         address,
 		FilePath:        filepath,
@@ -76,32 +55,25 @@ func (server *Server) createUser(ctx *gin.Context) {
 		IsEmailVerified: false,
 		IsFirstTime:     false,
 	}
-	if !new.IsEmailVerified {
-		user, err := server.store.CreateUser(ctx, arg)
-		if err != nil {
-			if db.ErrorCode(err) == db.UniqueViolation {
-				newErr := errors.New("user already exists")
-				ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusForbidden))
-				return
-			}
-			newErr := errors.New("user already exists")
-			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
-			return
 
-		}
-		_, err = utils.SendEmail(req.Email, req.Username, email, "./utils")
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+	user, err := server.store.CreateUser(ctx, arg)
+	if err != nil {
+		if db.ErrorCode(err) == db.UniqueViolation {
+			ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
 			return
 		}
-
-		rsp := interfaces.NewUserResponse(user)
-		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
-	} else {
-		newErr := errors.New("user already exists")
-		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusForbidden))
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
+
+	_, err = utils.SendEmail(req.Email, req.Username, email, "./utils")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	rsp := interfaces.NewUserResponse(user)
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
 
 }
 
