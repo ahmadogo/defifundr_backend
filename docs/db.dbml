@@ -1,7 +1,7 @@
-Project DeFIRaise {
+Project DefiFundr {
   database_type: 'PostgreSQL'
   Note: '''
-    **DeFIRaise is a decentralized blockchain application for crowd funding different projects**
+    **DefiFundr is a decentralized blockchain application for crowd funding different projects**
     '''
 }
 
@@ -28,23 +28,6 @@ Table wallet as W {
     owner
     (owner) [unique]
   }
-}
-Table campaignTypes as C {
-  id bigserial [pk]
-  campaignTypes varchar [not null]
-
-}
-
-Table donations as D {
-   id bigserial [pk]
-   owner varchar [ref: > U.username, not null]
-   title varchar [not null]
-   campaignType varchar [not null]
-   description varchar [not null]
-   goal bigint [not null]
-   deadline timestamptz [not null]
-   image varchar [not null]
-   created_at timestamptz [not null, default: `now()`]
 }
 
 Table verify_emails {

@@ -24,8 +24,30 @@ import (
 func (server *Server) createUser(ctx *gin.Context) {
 	var req interfaces.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		newError := errors.New("please enter valid credentials")
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newError, http.StatusBadRequest))
 		return
+	}
+
+	new, err := server.store.GetUser(ctx, req.Username)
+	if !new.IsEmailVerified {
+		if err == nil {
+			newErr := errors.New("incomplete registration")
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
+
+			email := utils.EmailInfo{
+				Name:    req.Username,
+				Details: "Welcome to DefiRaise",
+				Otp:     utils.RandomOtp(),
+				Subject: "Welcome to DefiRaise",
+			}
+			_, err = utils.SendEmail(req.Email, req.Username, email, "./utils")
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+				return
+			}
+			return
+		}
 	}
 
 	filepath, address, err := defi.GenerateAccountKeyStone(server.config.PassPhase)
@@ -44,8 +66,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	// // hash password
 
 	arg := db.CreateUserParams{
-		Username: req.Username,
-		// HashedPassword:  hashPassword,
+		Username:        req.Username,
 		Email:           req.Email,
 		Address:         address,
 		FilePath:        filepath,
@@ -55,25 +76,32 @@ func (server *Server) createUser(ctx *gin.Context) {
 		IsEmailVerified: false,
 		IsFirstTime:     false,
 	}
+	if !new.IsEmailVerified {
+		user, err := server.store.CreateUser(ctx, arg)
+		if err != nil {
+			if db.ErrorCode(err) == db.UniqueViolation {
+				newErr := errors.New("user already exists")
+				ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusForbidden))
+				return
+			}
+			newErr := errors.New("user already exists")
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
+			return
 
-	user, err := server.store.CreateUser(ctx, arg)
-	if err != nil {
-		if db.ErrorCode(err) == db.UniqueViolation {
-			ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		}
+		_, err = utils.SendEmail(req.Email, req.Username, email, "./utils")
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
+
+		rsp := interfaces.NewUserResponse(user)
+		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
+	} else {
+		newErr := errors.New("user already exists")
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusForbidden))
 		return
 	}
-
-	_, err = utils.SendEmail(req.Email, req.Username, email, "./utils")
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-		return
-	}
-
-	rsp := interfaces.NewUserResponse(user)
-	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, rsp))
 
 }
 
@@ -91,7 +119,8 @@ func (server *Server) createUser(ctx *gin.Context) {
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req interfaces.LoginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		newError := errors.New("please enter valid credentials")
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newError, http.StatusBadRequest))
 		return
 	}
 
@@ -116,7 +145,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	err = utils.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
 		newErr := errors.New("incorrect login credentials")
-		ctx.JSON(http.StatusUnauthorized, interfaces.ErrorResponse(newErr, http.StatusUnauthorized))
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newErr, http.StatusBadRequest))
 		return
 	}
 
@@ -202,6 +231,12 @@ func (server *Server) verifyUser(ctx *gin.Context) {
 
 	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			newErr := errors.New("user not found")
+
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
+			return
+		}
 		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
 		return
 	}
@@ -253,7 +288,6 @@ func (server *Server) verifyUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, "User Verified"))
 }
-
 
 // @Summary Resend Verification Code
 // @Description Resend Verification Code with a unique username
@@ -331,13 +365,20 @@ func (server *Server) resendVerificationCode(ctx *gin.Context) {
 func (server *Server) resetPassword(ctx *gin.Context) {
 	var req interfaces.ResetPasswordRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		newErr := errors.New("please enter username")
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newErr, http.StatusBadRequest))
 		return
 	}
 
 	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		if err == sql.ErrNoRows {
+			newErr := errors.New("incorrect username")
+
+			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(newErr, http.StatusNotFound))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -396,7 +437,9 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 	var req interfaces.VerifyUserResetRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		// all verifyUserResetRequest are required
+		newErr := errors.New("please enter username, password and otp code")
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newErr, http.StatusBadRequest))
 		return
 	}
 
@@ -405,6 +448,8 @@ func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
 		return
 	}
+
+	// check if password is same as previous password
 
 	if user.ExpiredAt.Before(time.Now()) {
 		err := errors.New("otp has expired")
@@ -415,6 +460,13 @@ func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 	if user.SecretCode != req.OtpCode {
 		err := errors.New("invalid otp code")
 		ctx.JSON(http.StatusForbidden, interfaces.ErrorResponse(err, http.StatusForbidden))
+		return
+	}
+
+	err = utils.CheckPassword(req.Password, user.HashedPassword)
+	if err == nil {
+		newErr := errors.New("Password cannot be same as previous password")
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newErr, http.StatusBadRequest))
 		return
 	}
 

@@ -62,11 +62,17 @@ go test -v -cover ./...
 ![Swagger](https://img.shields.io/badge/-Swagger-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white&link=https://defifundr-hyper.koyeb.app/swagger/index.html)
 [View API Documentation](https://defifundr-hyper.koyeb.app/swagger/index.html)
 
+## Database Documentation
+
+<!-- dbdiagram logo and link to view -->
+
+[DB Diagram](https://dbdocs.io/kolawoleoluwasegun567/DefiFundr)
+
 ## Smart Contract Address
 
 <!-- etherscan logo and link to view -->
 
-[View on Sepolia Etherscan](https://sepolia.etherscan.io/address/0x574Bc33136180f0734fc3fa55379e9e28701395E#code)
+![Ethereum](https://img.shields.io/badge/Ethereum-3C3C3D?style=for-the-badge&logo=Ethereum&logoColor=white)(https://sepolia.etherscan.io/address/0x574Bc33136180f0734fc3fa55379e9e28701395E#code)
 
 ## API Endpoints
 
