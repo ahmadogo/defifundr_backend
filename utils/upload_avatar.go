@@ -10,7 +10,7 @@ import (
 	"github.com/cloudinary/cloudinary-go/api/uploader"
 )
 
-func UploadAvatar(ctx context.Context, image multipart.File, username string) (string, error) {
+func UploadImage(ctx context.Context, image multipart.File, username string) (string, error) {
 	configs, err := LoadConfig("./../")
 	if err != nil {
 		return "", err

@@ -16,7 +16,7 @@ func TestUploadAvatar(t *testing.T) {
 
 	username := RandomString(6)
 
-	imageURL, err := UploadAvatar(ctx, image, username)
+	imageURL, err := UploadImage(ctx, image, username)
 	require.NoError(t, err)
 	require.NotEmpty(t, imageURL)
 

@@ -87,32 +87,32 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 					Image:    getUser.Avatar,
 					Username: getUser.Username,
 				}
+			}
 
-				// wei to either
+			// wei to either
 
-				// if the deadline has been reached and skipped remove the campaign from the list of campaigns
+			// if the deadline has been reached and skipped remove the campaign from the list of campaigns
 
-				camps[i] = interfaces.Campaigns{
-					CampaignType:       campaign.CampaignType,
-					Title:              campaign.Title,
-					Deadline:           time.Unix(int64(campaign.Deadline), 0),
-					Description:        campaign.Description,
-					Goal:               float64(campaign.Goal),
-					Image:              campaign.Image,
-					TotalAmountDonated: float64(campaign.TotalFunds),
-					TotalNumber:        totalNumber.Int64(),
-					Owner:              campaign.Owner,
-					ID:                 int(campaign.ID),
-					Donations:          dons,
-					User: []interfaces.UserResponseInfo{
-						{
-							Username: userInfo.Username,
-							Email:    userInfo.Email,
-							Address:  userInfo.Address,
-							Avatar:   userInfo.Avatar,
-						},
+			camps[i] = interfaces.Campaigns{
+				CampaignType:       campaign.CampaignType,
+				Title:              campaign.Title,
+				Deadline:           time.Unix(int64(campaign.Deadline), 0),
+				Description:        campaign.Description,
+				Goal:               float64(campaign.Goal),
+				Image:              campaign.Image,
+				TotalAmountDonated: float64(campaign.TotalFunds),
+				TotalNumber:        totalNumber.Int64(),
+				Owner:              campaign.Owner,
+				ID:                 int(campaign.ID),
+				Donations:          dons,
+				User: []interfaces.UserResponseInfo{
+					{
+						Username: userInfo.Username,
+						Email:    userInfo.Email,
+						Address:  userInfo.Address,
+						Avatar:   userInfo.Avatar,
 					},
-				}
+				},
 			}
 		} else {
 			// skip the current iteration and remove empty campaign with empty description and title from list of campaigns to be displayed to the user on the frontend side of the application
@@ -216,30 +216,29 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 						Image:    getUser.Avatar,
 						Username: getUser.Username,
 					}
-
-					activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-						CampaignType:       campaign.CampaignType,
-						Title:              campaign.Title,
-						Deadline:           deadline,
-						Description:        campaign.Description,
-						Goal:               float64(campaign.Goal),
-						Image:              campaign.Image,
-						TotalAmountDonated: float64(campaign.TotalFunds),
-						TotalNumber:        totalNumber.Int64(),
-						Owner:              campaign.Owner,
-						ID:                 int(campaign.ID),
-						Donations:          dons,
-						User: []interfaces.UserResponseInfo{
-							{
-								Username: userInfo.Username,
-								Email:    userInfo.Email,
-								Address:  userInfo.Address,
-								Avatar:   userInfo.Avatar,
-							},
-						},
-					})
-
 				}
+
+				activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
+					CampaignType:       campaign.CampaignType,
+					Title:              campaign.Title,
+					Deadline:           deadline,
+					Description:        campaign.Description,
+					Goal:               float64(campaign.Goal),
+					Image:              campaign.Image,
+					TotalAmountDonated: float64(campaign.TotalFunds),
+					TotalNumber:        totalNumber.Int64(),
+					Owner:              campaign.Owner,
+					ID:                 int(campaign.ID),
+					Donations:          dons,
+					User: []interfaces.UserResponseInfo{
+						{
+							Username: userInfo.Username,
+							Email:    userInfo.Email,
+							Address:  userInfo.Address,
+							Avatar:   userInfo.Avatar,
+						},
+					},
+				})
 			} else {
 				activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
 					CampaignType:       campaign.CampaignType,
@@ -660,7 +659,6 @@ func (server *Server) getCampaign(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, camp))
 }
 
-
 func (server *Server) getCampaignTypes(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -808,7 +806,9 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 	}
 
 	// convert balance from string to float64
-	balance, err := strconv.ParseFloat(user.Balance, 64)
+	balance, err := defi.GetBalance(user.Address)
+	bal, err := strconv.ParseFloat(balance, 64)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
 		return
@@ -830,7 +830,7 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 	}
 
 	// check if user has enough balance
-	if float64(amount) > balance {
+	if float64(amount) > bal {
 		newErr := errors.New("insufficient balance")
 		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newErr, http.StatusBadRequest))
 		return
@@ -908,7 +908,7 @@ func (server *Server) createCampaign(ctx *gin.Context) {
 		return
 	}
 
-	uploadResult, err := utils.UploadAvatar(ctx, campaignImage, user.Username)
+	uploadResult, err := utils.UploadImage(ctx, campaignImage, user.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return

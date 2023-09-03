@@ -515,6 +515,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                        }
                     }
                 }
             }

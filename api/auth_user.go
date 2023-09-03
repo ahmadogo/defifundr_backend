@@ -268,7 +268,8 @@ func (server *Server) getPrivateKey(ctx *gin.Context) {
 	}
 
 	if err := utils.CheckPassword(req.Password, user.HashedPassword); err != nil {
-		ctx.JSON(http.StatusUnauthorized, interfaces.ErrorResponse(err, http.StatusUnauthorized))
+		newErr := errors.New("Incorrect password")
+		ctx.JSON(http.StatusUnauthorized, interfaces.ErrorResponse(newErr, http.StatusUnauthorized))
 		return
 	}
 
@@ -303,7 +304,7 @@ func (server *Server) setProfileAvatar(ctx *gin.Context) {
 		return
 	}
 
-	imageURL, err := utils.UploadAvatar(ctx, file, authPayload.Username)
+	imageURL, err := utils.UploadImage(ctx, file, authPayload.Username)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))

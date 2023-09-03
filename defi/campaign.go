@@ -18,7 +18,7 @@ import (
 
 var (
 	// DeployedContractAddress is the address of the deployed contract
-	Address = "0x574Bc33136180f0734fc3fa55379e9e28701395E"
+	Address = "0x1554d6aA4f1189A36De9b3B33564b10126Ac266d"
 )
 
 func CreateCampaign(title string, campaignType string, description string, goal float64, deadline time.Time, image string, privateKey *ecdsa.PrivateKey, address string) (string, error) {

@@ -570,6 +570,10 @@ paths:
                     $ref: '#/definitions/defi.CampaignCategory'
                   type: array
               type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/interfaces.DocSuccessResponse'
       summary: Get Campaign Categories
       tags:
       - Campaigns
