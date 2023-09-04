@@ -42,6 +42,8 @@ func GenerateAccountKeyStone(password string) (string, string, error) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("cannot create account")
+		return "", "", err
+
 	}
 
 	filename := account.URL.Path[strings.LastIndex(account.URL.Path, "/")+1:]
