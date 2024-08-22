@@ -268,7 +268,7 @@ func (server *Server) getPrivateKey(ctx *gin.Context) {
 	}
 
 	if err := utils.CheckPassword(req.Password, user.HashedPassword); err != nil {
-		newErr := errors.New("Incorrect password")
+		newErr := errors.New("incorrect password")
 		ctx.JSON(http.StatusUnauthorized, interfaces.ErrorResponse(newErr, http.StatusUnauthorized))
 		return
 	}

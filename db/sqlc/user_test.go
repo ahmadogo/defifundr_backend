@@ -245,28 +245,3 @@ func GenerateAccountKeyStone(password string) (string, string, error) {
 
 	return filename, accountName, nil
 }
-
-
-
-
-// func TestCreateUserPassword(t *testing.T) {
-// 	user := CreateRandomUser(t)
-
-// 	arg := CreateUserPasswordParams{
-// 		Username:          user.Username,
-// 		HashedPassword:    utils.RandomString(6),
-// 		PasswordChangedAt: time.Now(),
-// 		IsUsed:            true,
-// 	}
-
-// 	user2, err := testQueries.CreateUserPassword(context.Background(), arg)
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, user2)
-
-// 	require.Equal(t, arg.HashedPassword, user2.HashedPassword)
-// 	require.Equal(t, arg.Username, user2.Username)
-// 	require.Equal(t, arg.IsUsed, user2.IsUsed)
-
-// 	require.NotZero(t, user2.Username)
-// 	require.NotZero(t, user2.CreatedAt)
-// }

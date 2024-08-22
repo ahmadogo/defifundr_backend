@@ -63,8 +63,6 @@ func (server *Server) createUser(ctx *gin.Context) {
 		Subject: "Welcome to DefiRaise",
 	}
 
-	// // hash password
-
 	arg := db.CreateUserParams{
 		Username:        req.Username,
 		Email:           req.Email,
@@ -465,7 +463,7 @@ func (server *Server) verifyPasswordResetCode(ctx *gin.Context) {
 
 	err = utils.CheckPassword(req.Password, user.HashedPassword)
 	if err == nil {
-		newErr := errors.New("Password cannot be same as previous password")
+		newErr := errors.New("password cannot be same as previous password")
 		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(newErr, http.StatusBadRequest))
 		return
 	}

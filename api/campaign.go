@@ -78,7 +78,7 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 		dons := make([]interfaces.DonorDetails, len(donators))
 
 		if len(donators) != 0 {
-			for k, _ := range donators {
+			for k := range donators {
 				getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 				dons[k] = interfaces.DonorDetails{
@@ -116,7 +116,6 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 			}
 		} else {
 			// skip the current iteration and remove empty campaign with empty description and title from list of campaigns to be displayed to the user on the frontend side of the application
-
 			// remove campaign if deadline is less than current time do not display to the user
 			// if deadline is less than current time
 
@@ -207,7 +206,7 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 
 		if deadline.After(time.Now()) {
 			if len(donators) != 0 {
-				for k, _ := range donators {
+				for k := range donators {
 					getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 					dons[k] = interfaces.DonorDetails{
@@ -275,6 +274,7 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 			}
 		}
 	}
+
 	latestActiveCampaigns := []interfaces.Campaigns{}
 
 	// Get the latest 10 campaigns or all active campaigns if less than 10
@@ -313,16 +313,6 @@ func (server *Server) getCampaignsByCategory(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
 		return
 	}
-
-	// _, err := server.store.GetUser(ctx, authPayload.Username)
-	// if err != nil {
-	// 	if err == sql.ErrNoRows {
-	// 		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
-	// 		return
-	// 	}
-	// 	ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-	// 	return
-	// }
 
 	campaigns, err := defi.GetCampaignByCategory(int64(idL))
 
@@ -366,7 +356,7 @@ func (server *Server) getCampaignsByCategory(ctx *gin.Context) {
 		// deadline := time.Unix(int64(campaign.Deadline), 0)
 
 		if len(donators) != 0 {
-			for k, _ := range donators {
+			for k := range donators {
 				getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 				dons[k] = interfaces.DonorDetails{
@@ -500,7 +490,7 @@ func (server *Server) getCampaignsByOwner(ctx *gin.Context) {
 
 		if deadline.After(time.Now()) {
 			if len(donators) != 0 {
-				for k, _ := range donators {
+				for k := range donators {
 					getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 					dons[k] = interfaces.DonorDetails{
@@ -618,7 +608,7 @@ func (server *Server) getCampaign(ctx *gin.Context) {
 	dons := make([]interfaces.DonorDetails, len(donators))
 
 	if len(donators) != 0 {
-		for k, _ := range donators {
+		for k := range donators {
 			getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 			dons[k] = interfaces.DonorDetails{
@@ -732,7 +722,7 @@ func (server *Server) getCampaignDonors(ctx *gin.Context) {
 	dons := make([]interfaces.DonorDetails, len(donators))
 
 	if len(donators) != 0 {
-		for k, _ := range donators {
+		for k := range donators {
 			getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 			dons[k] = interfaces.DonorDetails{
@@ -807,6 +797,11 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 
 	// convert balance from string to float64
 	balance, err := defi.GetBalance(user.Address)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
+		return
+	}
+	
 	bal, err := strconv.ParseFloat(balance, 64)
 
 	if err != nil {
@@ -1164,7 +1159,7 @@ func (server *Server) searchCampaignByName(ctx *gin.Context) {
 			continue
 		} else {
 			if len(donators) != 0 {
-				for k, _ := range donators {
+				for k := range donators {
 					getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
 					dons[k] = interfaces.DonorDetails{

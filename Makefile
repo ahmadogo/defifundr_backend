@@ -1,4 +1,10 @@
-DB_URL=postgresql://root:secret@localhost:5433/defi?sslmode=disable
+# Load .env file if it exists
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+
+DB_URL = ${DB_SOURCE}
 
 postgres:
 	docker run --name defi -p 5433:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15-alpine
@@ -46,7 +52,7 @@ db_schema:
 	
 sqlc:
 	sqlc generate
-.PHONY: sqlc
+.PHONY: sqlc, build
 	
 test:
 	go test -v -cover ./...
