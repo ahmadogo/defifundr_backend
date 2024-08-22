@@ -40,7 +40,6 @@ func main() {
 	store := db.NewStore(conn)
 
 	runGinServer(configs, store)
-
 }
 
 func runGinServer(configs utils.Config, store db.Store) {
