@@ -840,11 +840,9 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 
 	// if goal is reached, close campaign
 	if float64(campaign.TotalFunds) >= float64(campaign.Goal) {
-		if err != nil {
 			newErr := errors.New("campaign has closed")
 			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(newErr, http.StatusInternalServerError))
 			return
-		}
 	}
 
 	msg, err := defi.Donate(amount, idL, privateKey, address)

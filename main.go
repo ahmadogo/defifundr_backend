@@ -27,7 +27,7 @@ func main() {
 		log.Fatal().Msg("cannot load config")
 	}
 
-	if configs.Environment == "developement" {
+	if configs.Environment == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	}

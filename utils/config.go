@@ -12,9 +12,9 @@ type Config struct {
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	CryptoDeployURL      string        `mapstructure:"CRYPT_DEPLOY_URL"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMTRIC_KEY"`
+	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	Environment          string        `mapstructure:"ENVIROMENT"`
+	Environment          string        `mapstructure:"ENVIRONMENT"`
 	ContractPrivateKey   string        `mapstructure:"CONTRACT_PRIVATE_KEY"`
 	ContractAddress      string        `mapstructure:"CONTRACT_ADDRESS"`
 	CloudinaryURL        string        `mapstructure:"CLOUDINARY_API_KEY"`
