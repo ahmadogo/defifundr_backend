@@ -1,5 +1,5 @@
 # DB_URL=postgresql://root:secret@localhost:5433/defi?sslmode=disable
-DB_URL=postgresql://udgpz4e5w1mnxqvkrdhi:IKzeaTwHuY3Vr37pbJsLlN5rsY29IG@beq4vc79mq25behmeov8-postgresql.services.clever-cloud.com:5432/beq4vc79mq25behmeov8
+DB_URL=postgresql://ualxsakaax49i7x90cwk:gv8qRs0tH8ernsr2HaEmXvLMfnQMyx@bbttjw98gs7aswfibtrt-postgresql.services.clever-cloud.com:50013/bbttjw98gs7aswfibtrt
 
 postgres:
 	docker run --name defi -p 5433:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15-alpine
@@ -54,6 +54,9 @@ test:
 
 server:
 	go run main.go
+
+air:
+	air
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/demola234/defiraise/db/sqlc Store

@@ -46,7 +46,7 @@ func SendEmail(emailAddr string, username string, info EmailInfo, path string) (
 	m := gomail.NewMessage()
 	m.SetHeader("From", fromEmail)
 	m.SetHeader("To", emailAddr)
-	m.SetHeader("Subject", "OTP for DefiRaise")
+	m.SetHeader("Subject", "OTP for DefiFundr")
 	m.SetBody("text/html", tpl.String()) // attach whatever you want
 
 	d := gomail.NewDialer("smtp.gmail.com", 465, fromEmail, password)
