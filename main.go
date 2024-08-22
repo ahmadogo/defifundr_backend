@@ -12,10 +12,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// @title          DefiRaise API
+// @title          DefiFundr API
 // @version         1.0
 // @description     Decentralized Crowdfunding Platform for DeFi Projects
-// @contact.name   DefiRaise
+// @contact.name   DefiFundr
 // @schemes        http
 // @contact.url    http://www.swagger.io/support
 // @contact.email  kolawoleoluwasegun567@gmail

@@ -1,6 +1,7 @@
 *.vscode
 .history
 .env
+*.DS_Store
 *.log
 
 
