@@ -185,7 +185,7 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 	activeCampaigns := []interfaces.Campaigns{} // Slice to store active campaigns
 
 	for i, campaign := range campaigns {
-		deadline := time.Unix(int64(campaign.Deadline), 0)
+		// deadline := time.Unix(int64(campaign.Deadline), 0)
 		userInfo, _ := server.store.GetUserByAddress(ctx, campaign.Owner)
 
 		totalNumber, err := defi.GetTotalDonationsByCampaignId(i)
@@ -196,7 +196,7 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 		}
 
 		//  Loop through the donators and amounts
-		donators, amounts, _, err := defi.GetDonorsAddressesAndAmounts(i)
+		donators, _, _, err := defi.GetDonorsAddressesAndAmounts(i)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 			return
@@ -204,76 +204,77 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 
 		dons := make([]interfaces.DonorDetails, len(donators))
 
-		if deadline.After(time.Now()) {
-			if len(donators) != 0 {
-				for k := range donators {
-					getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
+		// if deadline.After(time.Now()) {
+		// 	if len(donators) != 0 {
+		// 		for k := range donators {
+		// 			getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
 
-					dons[k] = interfaces.DonorDetails{
-						Amount:   (float64(amounts[k]) / 1e18),
-						Donor:    donators[k],
-						Image:    getUser.Avatar,
-						Username: getUser.Username,
-					}
-				}
+		// 			dons[k] = interfaces.DonorDetails{
+		// 				Amount:   (float64(amounts[k]) / 1e18),
+		// 				Donor:    donators[k],
+		// 				Image:    getUser.Avatar,
+		// 				Username: getUser.Username,
+		// 			}
+		// 		}
 
-				activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-					CampaignType:       campaign.CampaignType,
-					Title:              campaign.Title,
-					Deadline:           deadline,
-					Description:        campaign.Description,
-					Goal:               float64(campaign.Goal),
-					Image:              campaign.Image,
-					TotalAmountDonated: float64(campaign.TotalFunds),
-					TotalNumber:        totalNumber.Int64(),
-					Owner:              campaign.Owner,
-					ID:                 int(campaign.ID),
-					Donations:          dons,
-					User: []interfaces.UserResponseInfo{
-						{
-							Username: userInfo.Username,
-							Email:    userInfo.Email,
-							Address:  userInfo.Address,
-							Avatar:   userInfo.Avatar,
-						},
-					},
-				})
-			} else {
-				activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-					CampaignType:       campaign.CampaignType,
-					Title:              campaign.Title,
-					Deadline:           deadline,
-					Description:        campaign.Description,
-					Goal:               float64(campaign.Goal),
-					Image:              campaign.Image,
-					TotalAmountDonated: float64(campaign.TotalFunds),
-					TotalNumber:        totalNumber.Int64(),
-					Owner:              campaign.Owner,
-					ID:                 int(campaign.ID),
-					Donations:          dons,
-					User: []interfaces.UserResponseInfo{
-						{
-							Username: userInfo.Username,
-							Email:    userInfo.Email,
-							Address:  userInfo.Address,
-							Avatar:   userInfo.Avatar,
-						},
-					},
-				})
-			}
-		}
+		activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
+			CampaignType:       campaign.CampaignType,
+			Title:              campaign.Title,
+			Deadline:           time.Unix(int64(campaign.Deadline), 0),
+			Description:        campaign.Description,
+			Goal:               float64(campaign.Goal),
+			Image:              campaign.Image,
+			TotalAmountDonated: float64(campaign.TotalFunds),
+			TotalNumber:        totalNumber.Int64(),
+			Owner:              campaign.Owner,
+			ID:                 int(campaign.ID),
+			Donations:          dons,
+			User: []interfaces.UserResponseInfo{
+				{
+					Username: userInfo.Username,
+					Email:    userInfo.Email,
+					Address:  userInfo.Address,
+					Avatar:   userInfo.Avatar,
+				},
+			},
+		})
 	}
+	// 		} else {
+	// 			activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
+	// 				CampaignType:       campaign.CampaignType,
+	// 				Title:              campaign.Title,
+	// 				Deadline:           deadline,
+	// 				Description:        campaign.Description,
+	// 				Goal:               float64(campaign.Goal),
+	// 				Image:              campaign.Image,
+	// 				TotalAmountDonated: float64(campaign.TotalFunds),
+	// 				TotalNumber:        totalNumber.Int64(),
+	// 				Owner:              campaign.Owner,
+	// 				ID:                 int(campaign.ID),
+	// 				Donations:          dons,
+	// 				User: []interfaces.UserResponseInfo{
+	// 					{
+	// 						Username: userInfo.Username,
+	// 						Email:    userInfo.Email,
+	// 						Address:  userInfo.Address,
+	// 						Avatar:   userInfo.Avatar,
+	// 					},
+	// 				},
+	// 			})
+	// 		}
+	// 	}
+	// }
 
-	// Sort the active campaigns by deadline in ascending order
-	for i := 0; i < len(activeCampaigns); i++ {
-		for j := i + 1; j < len(activeCampaigns); j++ {
-			if activeCampaigns[i].Deadline.After(activeCampaigns[j].Deadline) {
-				temp := activeCampaigns[i]
-				activeCampaigns[i] = activeCampaigns[j]
-				activeCampaigns[j] = temp
-			}
-		}
-	}
+	// // Sort the active campaigns by deadline in ascending order
+	// for i := 0; i < len(activeCampaigns); i++ {
+	// 	for j := i + 1; j < len(activeCampaigns); j++ {
+	// 		if activeCampaigns[i].Deadline.After(activeCampaigns[j].Deadline) {
+	// 			temp := activeCampaigns[i]
+	// 			activeCampaigns[i] = activeCampaigns[j]
+	// 			activeCampaigns[j] = temp
+	// 		}
+	// 	}
+	// }
 
 	latestActiveCampaigns := []interfaces.Campaigns{}
 
@@ -801,7 +802,7 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(err, http.StatusBadRequest))
 		return
 	}
-	
+
 	bal, err := strconv.ParseFloat(balance, 64)
 
 	if err != nil {
@@ -840,9 +841,9 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 
 	// if goal is reached, close campaign
 	if float64(campaign.TotalFunds) >= float64(campaign.Goal) {
-			newErr := errors.New("campaign has closed")
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(newErr, http.StatusInternalServerError))
-			return
+		newErr := errors.New("campaign has closed")
+		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(newErr, http.StatusInternalServerError))
+		return
 	}
 
 	msg, err := defi.Donate(amount, idL, privateKey, address)

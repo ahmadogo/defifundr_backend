@@ -21,7 +21,8 @@ type Server struct {
 
 // NewServer creates a new HTTP server and setup routing
 func NewServer(config utils.Config, store db.Store) (*Server, error) {
-	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+
+	tokenMaker, err := token.NewTokenMaker("beb4118e1bdc8020df695ceec7e464a5")
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker %s", err.Error())
 	}
@@ -37,11 +38,11 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	docs.SwaggerInfo.Title = "DefiFundr API"
 	docs.SwaggerInfo.Description = "Decentralized Crowdfunding Platform for DeFi Projects"
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "defifundr-hyper.koyeb.app"
+	// docs.SwaggerInfo.Host = "defifundr-hyper.koyeb.app"
+	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.Schemes = []string{"http"}
 
-	// docs.SwaggerInfo.Host = "localhost:8080"
-
-	docs.SwaggerInfo.Schemes = []string{"https"}
 	return server, nil
 }
 
@@ -49,7 +50,7 @@ func (server *Server) setUpRouter() {
 	router := gin.Default()
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	router.SetTrustedProxies(nil)
+	router.SetTrustedProxies([]string{"localhost"})
 	router.POST("/user", server.createUser)
 	router.POST("/user/login", server.loginUser)
 	router.POST("/user/verify", server.verifyUser)
