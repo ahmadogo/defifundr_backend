@@ -95,6 +95,31 @@ definitions:
     - email
     - username
     type: object
+  interfaces.CreateWalletAddressRequest:
+    properties:
+      chain:
+        type: string
+      wallet_address:
+        type: string
+    required:
+    - chain
+    - wallet_address
+    type: object
+  interfaces.CreateWalletAddressResponse:
+    properties:
+      chain:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      user_id:
+        type: string
+      wallet_address:
+        type: string
+    type: object
   interfaces.DocSuccessResponse:
     properties:
       data: {}
@@ -253,10 +278,10 @@ host: localhost:8080
 info:
   contact:
     email: kolawoleoluwasegun567@gmail
-    name: DefiRaise
+    name: DefiFundr
     url: http://www.swagger.io/support
   description: Decentralized Crowdfunding Platform for DeFi Projects
-  title: DefiRaise API
+  title: DefiFundr API
   version: "1.0"
 paths:
   /campaigns:
@@ -1040,6 +1065,39 @@ paths:
       summary: Resend Verification Code
       tags:
       - Authentication
+  /wallet-address/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user wallet address
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Wallet address Creation Data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/interfaces.CreateWalletAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/interfaces.CreateWalletAddressResponse'
+              type: object
+      summary: Create user Wallet Address
+      tags:
+      - User Wallet Addresses
 schemes:
 - http
 swagger: "2.0"

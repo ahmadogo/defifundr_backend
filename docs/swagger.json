@@ -5,9 +5,9 @@
     "swagger": "2.0",
     "info": {
         "description": "Decentralized Crowdfunding Platform for DeFi Projects",
-        "title": "DefiRaise API",
+        "title": "DefiFundr API",
         "contact": {
-            "name": "DefiRaise",
+            "name": "DefiFundr",
             "url": "http://www.swagger.io/support",
             "email": "kolawoleoluwasegun567@gmail"
         },
@@ -1246,6 +1246,60 @@
                     }
                 }
             }
+        },
+        "/wallet-address/create": {
+            "post": {
+                "description": "Create a new user wallet address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet Addresses"
+                ],
+                "summary": "Create user Wallet Address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Wallet address Creation Data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.CreateWalletAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/interfaces.CreateWalletAddressResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1392,6 +1446,44 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "interfaces.CreateWalletAddressRequest": {
+            "type": "object",
+            "required": [
+                "chain",
+                "wallet_address"
+            ],
+            "properties": {
+                "chain": {
+                    "type": "string"
+                },
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "interfaces.CreateWalletAddressResponse": {
+            "type": "object",
+            "properties": {
+                "chain": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
