@@ -27,7 +27,7 @@ SELECT * FROM user_wallet_addresses WHERE wallet_address = $1 AND user_id = $2 L
 
 UPDATE user_wallet_addresses
 SET status = $3, updated_at = now()
-WHERE wallet_address = $1 AND user_id = $2
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- name: SoftDeleteUserWallet :one
