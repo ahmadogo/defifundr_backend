@@ -105,21 +105,6 @@ definitions:
     - chain
     - wallet_address
     type: object
-  interfaces.CreateWalletAddressResponse:
-    properties:
-      chain:
-        type: string
-      created_at:
-        type: string
-      id:
-        type: integer
-      status:
-        type: string
-      user_id:
-        type: string
-      wallet_address:
-        type: string
-    type: object
   interfaces.DocSuccessResponse:
     properties:
       data: {}
@@ -214,6 +199,16 @@ definitions:
       biometrics:
         type: boolean
     type: object
+  interfaces.UpdateUserWalletAddressStatusRequest:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+    required:
+    - id
+    - status
+    type: object
   interfaces.UserResponse:
     properties:
       address:
@@ -268,6 +263,21 @@ definitions:
     - otp_code
     - password
     - username
+    type: object
+  interfaces.WalletAddressResponse:
+    properties:
+      chain:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      user_id:
+        type: string
+      wallet_address:
+        type: string
     type: object
   interfaces.Withdraw:
     properties:
@@ -1065,6 +1075,123 @@ paths:
       summary: Resend Verification Code
       tags:
       - Authentication
+  /wallet-address:
+    get:
+      consumes:
+      - application/json
+      description: Fetch paginated wallets for the authenticated user
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 'Limit (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/interfaces.WalletAddressResponse'
+                  type: array
+              type: object
+      summary: Get User Wallets (Paginated)
+      tags:
+      - User Wallet Addresses
+  /wallet-address/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a wallet (marks as deleted and updates status)
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Wallet Address Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/interfaces.AddressResponse'
+      summary: Soft Delete Wallet
+      tags:
+      - User Wallet Addresses
+    get:
+      consumes:
+      - application/json
+      description: Fetch wallet if it belongs to the authenticated user
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Wallet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/interfaces.AddressResponse'
+      summary: Get Wallet by ID
+      tags:
+      - User Wallet Addresses
+  /wallet-address/address/{wallet_address}:
+    get:
+      consumes:
+      - application/json
+      description: Fetch wallet by address
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Wallet Address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/interfaces.AddressResponse'
+      summary: Get Wallet by Address
+      tags:
+      - User Wallet Addresses
   /wallet-address/create:
     post:
       consumes:
@@ -1093,9 +1220,37 @@ paths:
             - $ref: '#/definitions/interfaces.DocSuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/interfaces.CreateWalletAddressResponse'
+                  $ref: '#/definitions/interfaces.AddressResponse'
               type: object
       summary: Create user Wallet Address
+      tags:
+      - User Wallet Addresses
+  /wallet-address/status:
+    patch:
+      consumes:
+      - application/json
+      description: Update the status of a user's wallet
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Wallet status update data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/interfaces.UpdateUserWalletAddressStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/interfaces.AddressResponse'
+      summary: Update Wallet Status
       tags:
       - User Wallet Addresses
 schemes:

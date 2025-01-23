@@ -1251,6 +1251,106 @@ const docTemplate = `{
                 }
             }
         },
+        "/wallet-address": {
+            "get": {
+                "description": "Fetch paginated wallets for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet Addresses"
+                ],
+                "summary": "Get User Wallets (Paginated)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/interfaces.WalletAddressResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet-address/address/{wallet_address}": {
+            "get": {
+                "description": "Fetch wallet by address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet Addresses"
+                ],
+                "summary": "Get Wallet by Address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.AddressResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet-address/create": {
             "post": {
                 "description": "Create a new user wallet address",
@@ -1295,11 +1395,131 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/interfaces.CreateWalletAddressResponse"
+                                            "$ref": "#/definitions/interfaces.AddressResponse"
                                         }
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet-address/status": {
+            "patch": {
+                "description": "Update the status of a user's wallet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet Addresses"
+                ],
+                "summary": "Update Wallet Status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Wallet status update data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.UpdateUserWalletAddressStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.AddressResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet-address/{id}": {
+            "get": {
+                "description": "Fetch wallet if it belongs to the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet Addresses"
+                ],
+                "summary": "Get Wallet by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Wallet ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.AddressResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete a wallet (marks as deleted and updates status)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet Addresses"
+                ],
+                "summary": "Soft Delete Wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.AddressResponse"
                         }
                     }
                 }
@@ -1469,29 +1689,6 @@ const docTemplate = `{
                 }
             }
         },
-        "interfaces.CreateWalletAddressResponse": {
-            "type": "object",
-            "properties": {
-                "chain": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                },
-                "wallet_address": {
-                    "type": "string"
-                }
-            }
-        },
         "interfaces.DocSuccessResponse": {
             "type": "object",
             "properties": {
@@ -1636,6 +1833,21 @@ const docTemplate = `{
                 }
             }
         },
+        "interfaces.UpdateUserWalletAddressStatusRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "status"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "interfaces.UserResponse": {
             "type": "object",
             "properties": {
@@ -1715,6 +1927,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "interfaces.WalletAddressResponse": {
+            "type": "object",
+            "properties": {
+                "chain": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
