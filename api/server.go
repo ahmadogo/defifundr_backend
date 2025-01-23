@@ -85,6 +85,12 @@ func (server *Server) setUpRouter() {
 	authRoutes.GET("/campaigns/categories", server.getCategories)
 	authRoutes.GET("/campaigns/search", server.searchCampaignByName)
 	authRoutes.POST("/wallet-address/create", server.createWalletAddress)
+	authRoutes.GET("/wallet-address", server.getUserWallets)
+	authRoutes.GET("/wallet-address/address/:wallet_address", server.getWalletByAddress)
+	authRoutes.GET("/wallet-address/:id", server.getWalletByID)
+	authRoutes.PATCH("/wallet-address/status", server.updateWalletStatus)
+	authRoutes.DELETE("/wallet-address/:id", server.softDeleteWallet)
+
 
 	server.router = router
 }
