@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	// "encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,6 +17,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type CampaignCache struct {
+	Campaigns []interfaces.Campaigns `json:"campaigns"`
+}
+
 // @Summary Get campaigns
 // @Description Get campaigns
 // @Accept  json
@@ -25,6 +30,22 @@ import (
 // @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
 // @Router /campaigns [get]
 func (server *Server) getCampaigns(ctx *gin.Context) {
+
+	cacheKey := string(interfaces.CacheKey(interfaces.AllCampaigns))
+	redisCache := utils.NewRedisCache()
+
+	// 🔍 Try fetching data from Redis
+	var cachedCampaigns []interfaces.Campaigns
+	err := redisCache.Get(cacheKey, &cachedCampaigns)
+	if err == nil {
+		fmt.Println("Cache hit")
+		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, cachedCampaigns))
+		return
+	}
+
+	fmt.Println("Cache miss");
+
+
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -144,6 +165,8 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 		}
 	}
 
+	redisCache.Set(cacheKey, camps, 10*time.Minute)
+
 	//  if deadline is less than current time remove the element from the list of campaigns to be displayed to the user
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, camps))
@@ -158,20 +181,28 @@ func (server *Server) getCampaigns(ctx *gin.Context) {
 // @Success		200				{object}    interfaces.DocSuccessResponse{data=[]interfaces.Campaigns}	"success"
 // @Router /campaigns/latestCampaigns [get]
 func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	cacheKey := string(interfaces.CacheKey(interfaces.LatestActiveCampaigns))
+	redisCache := utils.NewRedisCache()
 
+	// 🔍 Try fetching data from Redis
+	var cachedCampaigns []interfaces.Campaigns
+	err := redisCache.Get(cacheKey, &cachedCampaigns)
+	if err == nil {
+		fmt.Println("Cache hit for Latest Active Campaigns")
+		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, cachedCampaigns))
+		return
+	}
+
+	fmt.Println("Cache miss for Latest Active Campaigns")
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	if authPayload == nil {
-		err := errors.New(interfaces.ErrUserNotFound)
-		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(errors.New(interfaces.ErrUserNotFound), http.StatusNotFound))
 		return
 	}
 
 	user, err := server.store.GetUser(ctx, authPayload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
@@ -182,53 +213,27 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 		return
 	}
 
-	activeCampaigns := []interfaces.Campaigns{} // Slice to store active campaigns
-
+	var activeCampaigns []interfaces.Campaigns
 	for i, campaign := range campaigns {
-		// deadline := time.Unix(int64(campaign.Deadline), 0)
+		deadline := time.Unix(int64(campaign.Deadline), 0)
+		if time.Now().After(deadline) {
+			continue // Skip expired campaigns
+		}
+
 		userInfo, _ := server.store.GetUserByAddress(ctx, campaign.Owner)
-
-		totalNumber, err := defi.GetTotalDonationsByCampaignId(i)
-
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		//  Loop through the donators and amounts
-		donators, _, _, err := defi.GetDonorsAddressesAndAmounts(i)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		dons := make([]interfaces.DonorDetails, len(donators))
-
-		// if deadline.After(time.Now()) {
-		// 	if len(donators) != 0 {
-		// 		for k := range donators {
-		// 			getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
-
-		// 			dons[k] = interfaces.DonorDetails{
-		// 				Amount:   (float64(amounts[k]) / 1e18),
-		// 				Donor:    donators[k],
-		// 				Image:    getUser.Avatar,
-		// 				Username: getUser.Username,
-		// 			}
-		// 		}
+		totalNumber, _ := defi.GetTotalDonationsByCampaignId(i)
 
 		activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-			CampaignType:       campaign.CampaignType,
-			Title:              campaign.Title,
-			Deadline:           time.Unix(int64(campaign.Deadline), 0),
-			Description:        campaign.Description,
-			Goal:               float64(campaign.Goal),
-			Image:              campaign.Image,
+			CampaignType: campaign.CampaignType,
+			Title:        campaign.Title,
+			Deadline:     deadline,
+			Description:  campaign.Description,
+			Goal:         float64(campaign.Goal),
+			Image:        campaign.Image,
 			TotalAmountDonated: float64(campaign.TotalFunds),
 			TotalNumber:        totalNumber.Int64(),
 			Owner:              campaign.Owner,
 			ID:                 int(campaign.ID),
-			Donations:          dons,
 			User: []interfaces.UserResponseInfo{
 				{
 					Username: userInfo.Username,
@@ -239,54 +244,13 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 			},
 		})
 	}
-	// 		} else {
-	// 			activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-	// 				CampaignType:       campaign.CampaignType,
-	// 				Title:              campaign.Title,
-	// 				Deadline:           deadline,
-	// 				Description:        campaign.Description,
-	// 				Goal:               float64(campaign.Goal),
-	// 				Image:              campaign.Image,
-	// 				TotalAmountDonated: float64(campaign.TotalFunds),
-	// 				TotalNumber:        totalNumber.Int64(),
-	// 				Owner:              campaign.Owner,
-	// 				ID:                 int(campaign.ID),
-	// 				Donations:          dons,
-	// 				User: []interfaces.UserResponseInfo{
-	// 					{
-	// 						Username: userInfo.Username,
-	// 						Email:    userInfo.Email,
-	// 						Address:  userInfo.Address,
-	// 						Avatar:   userInfo.Avatar,
-	// 					},
-	// 				},
-	// 			})
-	// 		}
-	// 	}
-	// }
 
-	// // Sort the active campaigns by deadline in ascending order
-	// for i := 0; i < len(activeCampaigns); i++ {
-	// 	for j := i + 1; j < len(activeCampaigns); j++ {
-	// 		if activeCampaigns[i].Deadline.After(activeCampaigns[j].Deadline) {
-	// 			temp := activeCampaigns[i]
-	// 			activeCampaigns[i] = activeCampaigns[j]
-	// 			activeCampaigns[j] = temp
-	// 		}
-	// 	}
-	// }
+	// ✅ Cache results
+	redisCache.Set(cacheKey, activeCampaigns, 10*time.Minute)
 
-	latestActiveCampaigns := []interfaces.Campaigns{}
-
-	// Get the latest 10 campaigns or all active campaigns if less than 10
-	if len(activeCampaigns) <= 10 {
-		latestActiveCampaigns = activeCampaigns
-	} else {
-		latestActiveCampaigns = activeCampaigns[:10]
-	}
-
-	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, latestActiveCampaigns))
+	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, activeCampaigns))
 }
+
 
 // @Summary Get Campaigns by category
 // @Description Get Campaigns by category
@@ -299,135 +263,76 @@ func (server *Server) getLatestActiveCampaigns(ctx *gin.Context) {
 // @Router /campaigns/categories/{id} [get]
 func (server *Server) getCampaignsByCategory(ctx *gin.Context) {
 	id := ctx.Param("id")
-	// convert string id to int
 	idL, err := strconv.Atoi(id)
 	if err != nil {
-		errors := errors.New("invalid id")
-		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(errors, http.StatusBadRequest))
+		ctx.JSON(http.StatusBadRequest, interfaces.ErrorResponse(errors.New("invalid category ID"), http.StatusBadRequest))
 		return
 	}
 
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	cacheKey := fmt.Sprintf("campaigns_category_%d", idL)
+	redisCache := utils.NewRedisCache()
 
+	// 🔍 Check Redis Cache
+	var cachedCampaigns []interfaces.Campaigns
+	err = redisCache.Get(cacheKey, &cachedCampaigns)
+	if err == nil {
+		fmt.Println("Cache hit for Campaigns By Category")
+		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, cachedCampaigns))
+		return
+	}
+
+	fmt.Println("Cache miss for Campaigns By Category")
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	if authPayload == nil {
-		err := errors.New(interfaces.ErrUserNotFound)
-		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(errors.New(interfaces.ErrUserNotFound), http.StatusNotFound))
 		return
 	}
 
 	campaigns, err := defi.GetCampaignByCategory(int64(idL))
-
-	fmt.Println(campaigns)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
 
-	activeCampaigns := []interfaces.Campaigns{} // Slice to store active ca
-
-	// if camps is empty
-	if len(activeCampaigns) == 0 {
-		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, []string{}))
-		return
-	}
-
+	activeCampaigns := []interfaces.Campaigns{}
 	for i, campaign := range campaigns {
-		// skip the current iteration and remove empty campaign with empty description and title from list of campaigns to be displayed to the user on the frontend side of the application
+		deadline := time.Unix(int64(campaign.Deadline), 0)
+		if time.Now().After(deadline) {
+			continue
+		}
 
 		userInfo, _ := server.store.GetUserByAddress(ctx, campaign.Owner)
+		totalNumber, _ := defi.GetTotalDonationsByCampaignId(i)
 
-		totalNumber, err := defi.GetTotalDonationsByCampaignId(i)
-
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		//  Loop through the donators and amounts
-		donators, amounts, _, err := defi.GetDonorsAddressesAndAmounts(i)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		dons := make([]interfaces.DonorDetails, len(donators))
-
-		// convert unix to time.Time
-		// deadline := time.Unix(int64(campaign.Deadline), 0)
-
-		if len(donators) != 0 {
-			for k := range donators {
-				getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
-
-				dons[k] = interfaces.DonorDetails{
-					Amount:   (float64(amounts[k]) / 1e18),
-					Donor:    donators[k],
-					Image:    getUser.Avatar,
-					Username: getUser.Username,
-				}
-			}
-			// wei to either
-
-			// if the deadline has been reached and skipped remove the campaign from the list of campaigns
-
-			activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-				CampaignType:       campaign.CampaignType,
-				Title:              campaign.Title,
-				Deadline:           time.Unix(int64(campaign.Deadline), 0),
-				Description:        campaign.Description,
-				Goal:               float64(campaign.Goal),
-				Image:              campaign.Image,
-				TotalAmountDonated: float64(campaign.TotalFunds),
-				TotalNumber:        totalNumber.Int64(),
-				Owner:              campaign.Owner,
-				ID:                 int(campaign.ID),
-				Donations:          dons,
-				User: []interfaces.UserResponseInfo{
-					{
-						Username: userInfo.Username,
-						Email:    userInfo.Email,
-						Address:  userInfo.Address,
-						Avatar:   userInfo.Avatar,
-					},
+		activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
+			CampaignType:       campaign.CampaignType,
+			Title:              campaign.Title,
+			Deadline:           deadline,
+			Description:        campaign.Description,
+			Goal:               float64(campaign.Goal),
+			Image:              campaign.Image,
+			TotalAmountDonated: float64(campaign.TotalFunds),
+			TotalNumber:        totalNumber.Int64(),
+			Owner:              campaign.Owner,
+			ID:                 int(campaign.ID),
+			User: []interfaces.UserResponseInfo{
+				{
+					Username: userInfo.Username,
+					Email:    userInfo.Email,
+					Address:  userInfo.Address,
+					Avatar:   userInfo.Avatar,
 				},
-			})
-
-		} else {
-			// skip the current iteration and remove empty campaign with empty description and title from list of campaigns to be displayed to the user on the frontend side of the application
-
-			// remove campaign if deadline is less than current time do not display to the user
-			// if deadline is less than current time
-
-			activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-				CampaignType:       campaign.CampaignType,
-				Title:              campaign.Title,
-				Deadline:           time.Unix(int64(campaign.Deadline), 0),
-				Description:        campaign.Description,
-				Goal:               float64(campaign.Goal),
-				Image:              campaign.Image,
-				TotalAmountDonated: float64(campaign.TotalFunds),
-				TotalNumber:        totalNumber.Int64(),
-				Owner:              campaign.Owner,
-				ID:                 int(campaign.ID),
-				Donations:          dons,
-				User: []interfaces.UserResponseInfo{
-					{
-						Username: userInfo.Username,
-						Email:    userInfo.Email,
-						Address:  userInfo.Address,
-						Avatar:   userInfo.Avatar,
-					},
-				},
-			})
-		}
+			},
+		})
 	}
 
-	//  if deadline is less than current time remove the element from the list of campaigns to be displayed to the user
+	// ✅ Store in Redis
+	redisCache.Set(cacheKey, activeCampaigns, 10*time.Minute)
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, activeCampaigns))
-
 }
+
 
 // @Summary Get Campaigns by owner
 // @Description Get Campaigns by owner
@@ -439,22 +344,30 @@ func (server *Server) getCampaignsByCategory(ctx *gin.Context) {
 // @Router /campaigns/owner [get]
 func (server *Server) getCampaignsByOwner(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-
 	if authPayload == nil {
-		err := errors.New(interfaces.ErrUserNotFound)
-		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
+		ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(errors.New(interfaces.ErrUserNotFound), http.StatusNotFound))
 		return
 	}
 
 	user, err := server.store.GetUser(ctx, authPayload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, interfaces.ErrorResponse(err, http.StatusNotFound))
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
+
+	cacheKey := fmt.Sprintf("campaigns_owner_%s", user.Address)
+	redisCache := utils.NewRedisCache()
+
+	// 🔍 Try fetching from Redis
+	var cachedCampaigns []interfaces.Campaigns
+	err = redisCache.Get(cacheKey, &cachedCampaigns)
+	if err == nil {
+		fmt.Println("Cache hit for Campaigns By Owner")
+		ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, cachedCampaigns))
+		return
+	}
+
+	fmt.Println("Cache miss for Campaigns By Owner")
 
 	campaigns, err := defi.GetCampaignsByOwner(user.Address)
 	if err != nil {
@@ -462,93 +375,40 @@ func (server *Server) getCampaignsByOwner(ctx *gin.Context) {
 		return
 	}
 
-	activeCampaigns := []interfaces.Campaigns{} // Slice to store active campaigns
-
+	activeCampaigns := []interfaces.Campaigns{}
 	for i, campaign := range campaigns {
 		deadline := time.Unix(int64(campaign.Deadline), 0)
+		if time.Now().After(deadline) {
+			continue
+		}
+
 		userInfo, _ := server.store.GetUserByAddress(ctx, campaign.Owner)
+		totalNumber, _ := defi.GetTotalDonationsByCampaignId(i)
 
-		totalNumber, err := defi.GetTotalDonationsByCampaignId(i)
-
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		//  Loop through the donators and amounts
-		donators, amounts, _, err := defi.GetDonorsAddressesAndAmounts(i)
-		// fmt.Println(donators)
-
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		// Loop through the donators and amounts
-		// map the donators and amounts to the DonorDetails struct and append to the dons slice of DonorDetails if the index is same as the index of the campaign
-
-		dons := make([]interfaces.DonorDetails, len(donators))
-
-		if deadline.After(time.Now()) {
-			if len(donators) != 0 {
-				for k := range donators {
-					getUser, _ := server.store.GetUserByAddress(ctx, donators[k])
-
-					dons[k] = interfaces.DonorDetails{
-						Amount:   (float64(amounts[k]) / 1e18),
-						Donor:    donators[k],
-						Image:    getUser.Avatar,
-						Username: getUser.Username,
-					}
-				}
-
-				activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-					CampaignType:       campaign.CampaignType,
-					Title:              campaign.Title,
-					Deadline:           deadline,
-					Description:        campaign.Description,
-					Goal:               float64(campaign.Goal),
-					Image:              campaign.Image,
-					TotalAmountDonated: float64(campaign.TotalFunds),
-					TotalNumber:        totalNumber.Int64(),
-					Owner:              campaign.Owner,
-					ID:                 int(campaign.ID),
-					Donations:          dons,
-					User: []interfaces.UserResponseInfo{
-						{
-							Username: userInfo.Username,
-							Email:    userInfo.Email,
-							Address:  userInfo.Address,
-							Avatar:   userInfo.Avatar,
-						},
-					},
-				})
-
-			} else {
-				activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
-					CampaignType:       campaign.CampaignType,
-					Title:              campaign.Title,
-					Deadline:           deadline,
-					Description:        campaign.Description,
-					Goal:               float64(campaign.Goal),
-					Image:              campaign.Image,
-					TotalAmountDonated: float64(campaign.TotalFunds),
-					TotalNumber:        totalNumber.Int64(),
-					Owner:              campaign.Owner,
-					ID:                 int(campaign.ID),
-					Donations:          dons,
-					User: []interfaces.UserResponseInfo{
-						{
-							Username: userInfo.Username,
-							Email:    userInfo.Email,
-							Address:  userInfo.Address,
-							Avatar:   userInfo.Avatar,
-						},
-					},
-				})
-			}
-		}
+		activeCampaigns = append(activeCampaigns, interfaces.Campaigns{
+			CampaignType:       campaign.CampaignType,
+			Title:              campaign.Title,
+			Deadline:           deadline,
+			Description:        campaign.Description,
+			Goal:               float64(campaign.Goal),
+			Image:              campaign.Image,
+			TotalAmountDonated: float64(campaign.TotalFunds),
+			TotalNumber:        totalNumber.Int64(),
+			Owner:              campaign.Owner,
+			ID:                 int(campaign.ID),
+			User: []interfaces.UserResponseInfo{
+				{
+					Username: userInfo.Username,
+					Email:    userInfo.Email,
+					Address:  userInfo.Address,
+					Avatar:   userInfo.Avatar,
+				},
+			},
+		})
 	}
+
+	// ✅ Cache results
+	redisCache.Set(cacheKey, activeCampaigns, 10*time.Minute)
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, activeCampaigns))
 }
@@ -852,6 +712,9 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 		return
 	}
 
+	redisCache := utils.NewRedisCache()
+	redisCache.InvalidateAllCampaignCaches()
+
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, msg))
 }
 
@@ -868,7 +731,7 @@ func (server *Server) donateToCampaign(ctx *gin.Context) {
 // @Param   category        formData   string    true  "Category"
 // @Param   image        formData   file    true  "Image"
 // @Success		200				{object}   interfaces.DocSuccessResponse "hex"
-// @Router /campaigns/create [post]
+// @Router /campaigns [post]
 func (server *Server) createCampaign(ctx *gin.Context) {
 	campaignImage, _, err := ctx.Request.FormFile("image")
 	if err != nil {
@@ -944,6 +807,9 @@ func (server *Server) createCampaign(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
+
+	redisCache := utils.NewRedisCache()
+	redisCache.InvalidateAllCampaignCaches()
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, campaigns))
 }
@@ -1031,6 +897,9 @@ func (server *Server) withdrawFromCampaign(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, interfaces.ErrorResponse(err, http.StatusInternalServerError))
 		return
 	}
+
+	redisCache := utils.NewRedisCache()
+	redisCache.InvalidateAllCampaignCaches()
 
 	ctx.JSON(http.StatusOK, interfaces.Response(http.StatusOK, msg))
 }
