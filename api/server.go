@@ -48,19 +48,22 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 
 func (server *Server) setUpRouter() {
 	router := gin.Default()
+	// add versioning to the API
+	v1 := router.Group("/api/v1")
+	
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.SetTrustedProxies([]string{"localhost"})
-	router.POST("/user", server.createUser)
-	router.POST("/user/login", server.loginUser)
-	router.POST("/user/verify", server.verifyUser)
-	router.POST("/user/verify/resend", server.resendVerificationCode)
-	router.POST("/user/password/reset", server.resetPassword)
-	router.POST("/user/password/reset/verify", server.verifyPasswordResetCode)
-	router.POST("/user/password", server.createPassword)
-	router.POST("/user/checkUsername", server.checkUsernameExists)
-	router.POST("/token/renewAccess", server.renewAccessToken)
-	authRoutes := router.Group("/").Use(authMiddleWare(server.tokenMaker))
+	v1.POST("/user", server.createUser)
+	v1.POST("/user/login", server.loginUser)
+	v1.POST("/user/verify", server.verifyUser)
+	v1.POST("/user/verify/resend", server.resendVerificationCode)
+	v1.POST("/user/password/reset", server.resetPassword)
+	v1.POST("/user/password/reset/verify", server.verifyPasswordResetCode)
+	v1.POST("/user/password", server.createPassword)
+	v1.POST("/user/checkUsername", server.checkUsernameExists)
+	v1.POST("/token/renewAccess", server.renewAccessToken)
+	authRoutes := v1.Group("/").Use(authMiddleWare(server.tokenMaker))
 	authRoutes.GET("/user", server.getUser)
 	authRoutes.POST("/user/update", server.updateUser)
 	authRoutes.POST("/userAddress", server.getUserByAddress)
