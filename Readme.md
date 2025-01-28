@@ -1,9 +1,9 @@
 # DefiFundr - A decentralized crowdfunding platform for the Ethereum blockchain
 
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/demola234/deFICrowdFunding-Backend/test.yml)
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/demola234/deFICrowdFunding-Backend/test.yml)](https://github.com/DefiFundr-Labs/defifundr_backend/actions)
 ![GitHub go.mod Go version (branch & subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/demola234/deFICrowdFunding-Backend/main)
-![GitHub issues](https://img.shields.io/github/issues/demola234/deFICrowdFunding-Backend)
-![GitHub Repo stars](https://img.shields.io/github/stars/demola234/deFICrowdFunding-Backend)
+[![GitHub issues](https://img.shields.io/github/issues/demola234/deFICrowdFunding-Backend)](https://github.com/DefiFundr-Labs/defifundr_backend/issues?q=is%3Aissue%20state%3Aopen)
+[![GitHub Repo stars](https://img.shields.io/github/stars/demola234/deFICrowdFunding-Backend)](https://github.com/DefiFundr-Labs/defifundr_backend/stargazers)
 
 ## What is DefiFundr?
 
