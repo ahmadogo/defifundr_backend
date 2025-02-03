@@ -65,64 +65,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/campaigns/categories/{id}": {
-            "get": {
-                "description": "Get Campaigns by category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Campaigns"
-                ],
-                "summary": "Get Campaigns by category",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/interfaces.Campaigns"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/campaigns/create": {
+            },
             "post": {
                 "description": "Create campaign",
                 "consumes": [
@@ -192,6 +135,61 @@ const docTemplate = `{
                         "description": "hex",
                         "schema": {
                             "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/campaigns/categories/{id}": {
+            "get": {
+                "description": "Get Campaigns by category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Campaigns"
+                ],
+                "summary": "Get Campaigns by category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/interfaces.DocSuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/interfaces.Campaigns"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }

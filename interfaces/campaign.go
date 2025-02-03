@@ -2,8 +2,24 @@ package interfaces
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
+
+
+type CacheKey string
+
+const (
+	AllCampaigns           CacheKey = "campaigns_all"
+	LatestActiveCampaigns CacheKey = "campaigns_active"
+	CampaignsByCategory  CacheKey = "campaigns_category_%s" 
+	CampaignsByOwner     CacheKey = "campaigns_owner_%s"
+)
+
+func FormatCacheKey(key CacheKey, value string) string {
+	return fmt.Sprintf(string(key), value)
+}
+
 
 type UserResponseInfo struct {
 	Username string `json:"username"`

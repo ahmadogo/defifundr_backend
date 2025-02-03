@@ -323,41 +323,6 @@ paths:
       summary: Get campaigns
       tags:
       - Campaigns
-  /campaigns/categories/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get Campaigns by category
-      parameters:
-      - default: Bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            allOf:
-            - $ref: '#/definitions/interfaces.DocSuccessResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/interfaces.Campaigns'
-                  type: array
-              type: object
-      summary: Get Campaigns by category
-      tags:
-      - Campaigns
-  /campaigns/create:
     post:
       consumes:
       - application/json
@@ -407,6 +372,40 @@ paths:
           schema:
             $ref: '#/definitions/interfaces.DocSuccessResponse'
       summary: Create campaign
+      tags:
+      - Campaigns
+  /campaigns/categories/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Campaigns by category
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/interfaces.DocSuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/interfaces.Campaigns'
+                  type: array
+              type: object
+      summary: Get Campaigns by category
       tags:
       - Campaigns
   /campaigns/donate:
