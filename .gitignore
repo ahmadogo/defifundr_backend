@@ -5,5 +5,5 @@
 *.log
 
 
-old_project/
+.old_project/
 
