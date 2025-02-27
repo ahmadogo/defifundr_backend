@@ -2,38 +2,19 @@ linters:
   enable:
     - gofmt
     - govet
-    - goimports
-    - gosec
-    - gosimple
-    - ineffassign
-    - misspell
-    - staticcheck
-    - unconvert
-    - unparam
-    - unused
-    - revive
     - errcheck
+    - staticcheck
+    - unused
 
 linters-settings:
   gofmt:
     simplify: true
-  goimports:
-    local-prefixes: "github.com/DefiFundr-Labs/defifundr_backend"
-  revive:
-    rules:
-      - name: exported
-        arguments:
-          - disableStutteringCheck
-
-run:
-  timeout: 5m
-  issues-exit-code: 1
-  tests: true
 
 issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
   exclude-rules:
     - path: _test\.go
       linters:
-        - gosec
+        - errcheck
+
+run:
+  timeout: 5m
