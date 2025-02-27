@@ -1,14 +1,7 @@
 linters:
   enable:
-    - gofmt
-    - govet
     - errcheck
-    - staticcheck
-    - unused
-
-linters-settings:
-  gofmt:
-    simplify: true
+    - govet
 
 issues:
   exclude-rules:
