@@ -1,0 +1,110 @@
+name: DefiFundr CI
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          cache: true
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.52.2
+
+      - name: Lint code
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          golangci-lint run --timeout=5m
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD || 'secret' }}
+          POSTGRES_USER: ${{ secrets.DB_USER || 'root' }}
+          POSTGRES_DB: ${{ secrets.DB_NAME || 'defi' }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5433:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          cache: true
+
+      - name: "Create env file"
+        run: |
+          touch .env
+          echo "${{ secrets.ENV_FILE }}" > .env
+          cat .env
+
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin/migrate
+          which migrate
+
+      - name: Run database migrations
+        run: migrate -path db/migrations -database "postgresql://${{ secrets.DB_USER || 'root' }}:${{ secrets.DB_PASSWORD || 'secret' }}@localhost:5433/${{ secrets.DB_NAME || 'defi' }}?sslmode=disable" -verbose up
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+        env:
+          DB_SOURCE: postgresql://${{ secrets.DB_USER || 'root' }}:${{ secrets.DB_PASSWORD || 'secret' }}@localhost:5433/${{ secrets.DB_NAME || 'defi' }}?sslmode=disable
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
+          fail_ci_if_error: false
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19 
+          cache: true
+
+      - name: Build application
+        run: go build -v -o defifundr_backend ./cmd/api
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: defifundr-backend
+          path: defifundr_backend
+          retention-days: 5
