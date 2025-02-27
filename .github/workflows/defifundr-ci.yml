@@ -69,7 +69,7 @@ jobs:
           which migrate
 
       - name: Run database migrations
-        run: migrate -path db/migration -database "postgresql://${{ secrets.DB_USER || 'root' }}:${{ secrets.DB_PASSWORD || 'secret' }}@localhost:5433/${{ secrets.DB_NAME || 'defi' }}?sslmode=disable" -verbose up
+        run: migrate -path db/migrations -database "postgresql://${{ secrets.DB_USER || 'root' }}:${{ secrets.DB_PASSWORD || 'secret' }}@localhost:5433/${{ secrets.DB_NAME || 'defi' }}?sslmode=disable" -verbose up
 
       - name: Install dependencies
         run: go mod download
