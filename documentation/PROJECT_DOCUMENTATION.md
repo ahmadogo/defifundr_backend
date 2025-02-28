@@ -36,7 +36,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#about">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
@@ -45,23 +45,23 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="./sub-docs/ARCHITECTURE_DOCUMENTATION.md">Architecture documentation</a></li>
+    <li><a href="./sub-docs/WEBAPP_DOCUMENTATION.md">WebApp documentation</a></li>
+    <li><a href="./sub-docs/BACKEND_DOCUMENTATION.md">Backend Documentation</a></li>
+    <li><a href="./sub-docs/MOBILE_DOCUMENTATION.md">Mobile Documentation</a></li>
+    <li><a href="./sub-docs/DEVELOPMENT_WORKFLOW.md">Development Workflow</a></li>
   </ol>
 </details>
 
 
 
 <!-- ABOUT THE PROJECT -->
-## What is DefiFundr?
 
+
+## What is DefiFundr?
+<span id="#about"> </span>
 DefiFundr is a decentralized crowdfunding platform built on the Ethereum blockchain. It allows users to create and contribute to crowdfunding campaigns, with features including:
 
 <ul>
@@ -78,8 +78,8 @@ DefiFundr is a decentralized crowdfunding platform built on the Ethereum blockch
 
 
 
-
-### Built With
+<span id="#built-with" ></span>
+### Built With 
 
 
 
@@ -97,6 +97,7 @@ DefiFundr is a decentralized crowdfunding platform built on the Ethereum blockch
 <!-- GETTING STARTED -->
 ## Getting Started
 
+<span id="#prerequisites" ></span>
 ### Prerequisites
 
 To set up any of the repositories, you need to **fork** and **clone** them: 
