@@ -16,7 +16,7 @@ DefiFundr is a decentralized payroll and invoice management system built on the 
 
 Below is a high-level architecture diagram of the DefiFundr system:
 
-![DefiFundr Architecture Diagram]()
+![DefiFundr Architecture Diagram](https://github.com/chiscookeke11/defifundr_backend--fork--/blob/main/documentation/images/DefiFundr%20Architecture%20Documentation%20-%20visual%20selection.png?raw=true)
 
 
 ---
@@ -98,13 +98,14 @@ Below is a high-level architecture diagram of the DefiFundr system:
 
 6. **Response**:
    - The backend sends a response back to the frontend, which updates the UI accordingly.
-
+   
+![Frontend Architecture Diagram](https://github.com/chiscookeke11/defifundr_backend--fork--/blob/main/documentation/images/dataflow.png?raw=true)
 ---
 
 ## Detailed Component Diagrams
 
 ### 1. **Frontend Architecture**
-![Frontend Architecture Diagram](https://via.placeholder.com/800x600.png?text=Frontend+Architecture+Diagram)
+
 
 - **Components**:
   - **UI Layer**: React.js (Web), Dart (Mobile).
@@ -112,7 +113,7 @@ Below is a high-level architecture diagram of the DefiFundr system:
   - **API Layer**: Axios (Web), Dio (Mobile).
 
 ### 2. **Backend Architecture**
-![Backend Architecture Diagram](https://via.placeholder.com/800x600.png?text=Backend+Architecture+Diagram)
+
 
 - **Components**:
   - **API Layer**: RESTful APIs built with Go/Node.js.
@@ -120,8 +121,6 @@ Below is a high-level architecture diagram of the DefiFundr system:
   - **Data Layer**: PostgreSQL (relational data), MongoDB (NoSQL data).
 
 ### 3. **Blockchain Architecture**
-![Blockchain Architecture Diagram](https://via.placeholder.com/800x600.png?text=Blockchain+Architecture+Diagram)
-
 - **Components**:
   - **Smart Contracts**: Written in Solidity.
   - **Ethereum Network**: Mainnet or Testnet (e.g., Sepolia).
@@ -163,6 +162,10 @@ Below is a high-level architecture diagram of the DefiFundr system:
 
 ### 5. **Storage**:
    - IPFS for decentralized file storage.
+
+   
+
+   ![Blockchain Architecture Diagram](https://github.com/chiscookeke11/defifundr_backend--fork--/blob/main/documentation/images/deployment-architceture.png?raw=true)
 
 ---
 
@@ -206,9 +209,8 @@ DefiFundr is a decentralized payroll and invoice management system built on the 
 
 Below is a high-level architecture diagram of the DefiFundr system:
 
-![DefiFundr Architecture Diagram](https://via.placeholder.com/800x600.png?text=DefiFundr+Architecture+Diagram)
 
-*(Replace the placeholder link with an actual diagram. You can use tools like [Lucidchart](https://www.lucidchart.com/), [Draw.io](https://app.diagrams.net/), or [Miro](https://miro.com/) to create the diagram.)*
+
 
 ---
 
@@ -295,7 +297,6 @@ Below is a high-level architecture diagram of the DefiFundr system:
 ## Detailed Component Diagrams
 
 ### 1. **Frontend Architecture**
-![Frontend Architecture Diagram](https://via.placeholder.com/800x600.png?text=Frontend+Architecture+Diagram)
 
 - **Components**:
   - **UI Layer**: React.js (Web), Flutter (Mobile).
@@ -303,7 +304,6 @@ Below is a high-level architecture diagram of the DefiFundr system:
   - **API Layer**: Axios (Web), Dio (Mobile).
 
 ### 2. **Backend Architecture**
-![Backend Architecture Diagram](https://via.placeholder.com/800x600.png?text=Backend+Architecture+Diagram)
 
 - **Components**:
   - **API Layer**: RESTful APIs built with Go/Node.js.
@@ -311,7 +311,6 @@ Below is a high-level architecture diagram of the DefiFundr system:
   - **Data Layer**: PostgreSQL (relational data), MongoDB (NoSQL data).
 
 ### 3. **Blockchain Architecture**
-![Blockchain Architecture Diagram](https://via.placeholder.com/800x600.png?text=Blockchain+Architecture+Diagram)
 
 - **Components**:
   - **Smart Contracts**: Written in Solidity.
