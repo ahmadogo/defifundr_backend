@@ -80,7 +80,7 @@ air:
 	air
 
 mock:
-	mockgen -package mockdb -destination db/mock/store.go github.com/demola234/defiraise/db/sqlc Store
+	mockgen -package mockdb -destination db/mock/store.go github.com/demola234/defifundr/db/sqlc Store
 
 # Help command
 help:
