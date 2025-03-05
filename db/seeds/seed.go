@@ -1,1 +1,1 @@
-package seeds
+package db
