@@ -1,0 +1,172 @@
+Project DefiFundr {
+  database_type: 'PostgreSQL'
+  Note: '''
+    **DefiFundr is a revolutionary decentralized payroll and invoice management system that bridges 
+    the gap between traditional financial systems and blockchain technology. 
+    The platform provides a seamless, secure, and transparent solution for businesses to manage employee payments, 
+    handle freelancer invoices, and automate salary disbursements across both fiat and cryptocurrency channels.**
+    '''
+}
+
+Table users {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  email VARCHAR(255) [not null, unique]
+  password_hash VARCHAR(255) [not null]
+  account_type VARCHAR(50) [not null, note: 'business, personal']
+  personal_account_type VARCHAR(50) [not null, note: 'contractor, business']
+  first_name VARCHAR(255) [not null]
+  last_name VARCHAR(255) [not null]
+  nationality VARCHAR(255) [not null]
+  residencial_country VARCHAR(255) [null]
+  job_role VARCHAR(255) [null]
+  company_website VARCHAR(255) [null]
+  employment_type VARCHAR(255) [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  
+  indexes {
+    email [unique]
+  }
+}
+
+Table kyc {
+  id uuid [pk]
+  user_id UUID [not null, ref: > users.id]
+  face_verification bool [not null]
+  identity_verification bool [not null]
+  updated_at timestamptz [not null, default: '0001-01-01']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+
+Table sessions {
+  id uuid [pk]
+  user_id UUID [not null, ref: > users.id]
+  refresh_token varchar [not null]
+  user_agent varchar [not null]
+  client_ip varchar [not null]
+  is_blocked boolean [not null, default: false]
+  expires_at timestamptz [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+
+Table wallets {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  user_id UUID [not null, ref: > users.id]
+  wallet_address VARCHAR(255) [not null, unique]
+  chain VARCHAR(50) [not null, note: 'ethereum, solana']
+  is_primary BOOLEAN [not null, default: false]
+  created_at timestamptz [not null, default: '0001-01-01']
+  pin_hash VARCHAR(255) [not null]
+  
+  indexes {
+    user_id
+    wallet_address [unique]
+  }
+}
+
+Table organizations {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  name VARCHAR(255) [not null]
+  employer_id UUID [not null, ref: > users.id]
+  created_at timestamptz [not null, default: '0001-01-01']
+  updated_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    name [unique]
+    employer_id
+  }
+}
+
+Table organization_members {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  organization_id UUID [not null, ref: > organizations.id]
+  employee_id UUID [not null, ref: > users.id]
+  role VARCHAR(50) [not null, note: 'employee, manager, etc.']
+  created_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    organization_id
+    employee_id
+    (organization_id, employee_id) [unique]
+  }
+}
+
+Table payrolls {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  employer_id UUID [not null, ref: > users.id]
+  organization_id UUID [null, ref: > organizations.id]
+  payment_frequency VARCHAR(50) [not null, note: 'weekly, bi-weekly, monthly']
+  salary_amount NUMERIC(18, 2) [not null]
+  currency VARCHAR(10) [not null, note: 'USDC, SOL, ETH']
+  contract_address VARCHAR(255) [null]
+  status VARCHAR(50) [not null, note: 'pending, active, completed']
+  created_at timestamptz [not null, default: '0001-01-01']
+  updated_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    employer_id
+    organization_id
+  }
+}
+
+Table payroll_employees {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  payroll_id UUID [not null, ref: > payrolls.id]
+  employee_id UUID [not null, ref: > users.id]
+  created_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    payroll_id
+    employee_id
+    (payroll_id, employee_id) [unique]
+  }
+}
+
+Table invoices {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  freelancer_id UUID [not null, ref: > users.id]
+  employer_id UUID [not null, ref: > users.id]
+  amount NUMERIC(18, 2) [not null]
+  currency VARCHAR(10) [not null, note: 'USDC, SOL, ETH']
+  status VARCHAR(50) [not null, note: 'pending, approved, rejected, paid']
+  contract_address VARCHAR(255) [null]
+  created_at timestamptz [not null, default: '0001-01-01']
+  updated_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    freelancer_id
+    employer_id
+  }
+}
+
+Table transactions {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  user_id UUID [not null, ref: > users.id]
+  tx_hash VARCHAR(255) [not null, unique]
+  amount NUMERIC(18, 2) [not null]
+  currency VARCHAR(10) [not null, note: 'USDC, SOL, ETH']
+  type VARCHAR(50) [not null, note: 'payroll, invoice']
+  status VARCHAR(50) [not null, note: 'pending, success, failed']
+  created_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    user_id
+    tx_hash [unique]
+  }
+}
+
+Table notifications {
+  id UUID [pk, default: `uuid_generate_v4()`]
+  user_id UUID [not null, ref: > users.id]
+  message TEXT [not null]
+  type VARCHAR(50) [not null, note: 'payroll, invoice, transaction']
+  is_read BOOLEAN [not null, default: false]
+  created_at timestamptz [not null, default: '0001-01-01']
+  
+  indexes {
+    user_id
+    is_read
+  }
+}
