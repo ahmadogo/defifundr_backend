@@ -1,12 +1,20 @@
-version: "1"
-packages:
-  - path: "db/sqlc"
-    name: "db"
-    engine: "postgresql"
-    schema: "./db/migration/"
-    queries: "./db/query/"
-    emit_json_tags: true
-    emit_prepared_queries: false
-    emit_interface: true
-    emit_exact_table_names: true
-    emit_empty_slices: true
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/adapters/secondary/db/postgres/query"
+    schema: "db/migrations"
+    gen:
+      go:
+        package: "postgres"
+        out: "internal/adapters/secondary/db/postgres"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: true
+        emit_exact_table_names: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
+          - db_type: "pg_catalog.numeric"
+            go_type: "github.com/shopspring/decimal.Decimal"
