@@ -1,4 +1,4 @@
-# DefiFundr - A decentralized crowdfunding platform for the Ethereum blockchain
+# DefiFundr - A decentralized payroll platform
 
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/demola234/deFICrowdFunding-Backend/test.yml)](https://github.com/DefiFundr-Labs/defifundr_backend/actions)
 ![GitHub go.mod Go version (branch & subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/demola234/deFICrowdFunding-Backend/main)
@@ -55,7 +55,6 @@ go test ./...
 go test -v -cover ./...
 ```
 
-```markdown
 # Database Migrations
 
 The DefiFundr backend uses [goose](https://github.com/pressly/goose) for managing database migrations. Migrations are stored in the `migrations` directory and are written in SQL.
