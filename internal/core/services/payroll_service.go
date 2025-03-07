@@ -218,6 +218,10 @@ func (s *payrollService) ProcessPayroll(ctx context.Context, payrollID uuid.UUID
 			ID:     payrollID,
 			Status: domain.PayrollStatusCompleted,
 		})
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return transactions, nil
