@@ -1,12 +1,12 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "internal/adapters/secondary/db/postgres/query"
+    queries: "db/query"
     schema: "db/migrations"
     gen:
       go:
-        package: "postgres"
-        out: "internal/adapters/secondary/db/postgres"
+        package: "sqlc"
+        out: "internal/adapters/secondary/db/postgres/sqlc"
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_prepared_queries: false
@@ -18,3 +18,5 @@ sql:
             go_type: "github.com/google/uuid.UUID"
           - db_type: "pg_catalog.numeric"
             go_type: "github.com/shopspring/decimal.Decimal"
+          - db_type: "timestamptz"
+            go_type: "time.Time"
