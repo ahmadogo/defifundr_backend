@@ -28,10 +28,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Create a queries object
 	queries := db.New(conn)
 
-	// Seed the database
 	if err := db.SeedDB(ctx, queries); err != nil {
 		log.Fatalf("Error seeding database: %v", err)
 	}
