@@ -11,7 +11,7 @@ CREATE TABLE users (
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   nationality VARCHAR(255) NOT NULL,
-  residencial_country VARCHAR(255),
+  residential_country VARCHAR(255),
   job_role VARCHAR(255),
   company_website VARCHAR(255),
   employment_type VARCHAR(255),

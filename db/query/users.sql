@@ -7,7 +7,7 @@ INSERT INTO users (
   first_name,
   last_name,
   nationality,
-  residencial_country,
+  residential_country,
   job_role,
   company_website,
   employment_type
@@ -35,7 +35,7 @@ SET
   first_name = COALESCE($2, first_name),
   last_name = COALESCE($3, last_name),
   nationality = COALESCE($4, nationality),
-  residencial_country = COALESCE($5, residencial_country),
+  residential_country = COALESCE($5, residential_country),
   job_role = COALESCE($6, job_role),
   company_website = COALESCE($7, company_website),
   employment_type = COALESCE($8, employment_type),
