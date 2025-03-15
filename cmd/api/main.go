@@ -114,9 +114,9 @@ func setupRoutes(router *gin.Engine, queries *db.Queries) {
 		}
 
 		// Notification routes
-		notifRoutes := api.Group("/notifications")
+		notificationRoutes := api.Group("/notifications")
 		{
-			notifRoutes.GET("/user/:userId", getUserNotifications(queries))
+			notificationRoutes.GET("/user/:userId", getUserNotifications(queries))
 			// Add more notification routes
 		}
 	}

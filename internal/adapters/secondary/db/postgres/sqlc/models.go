@@ -120,7 +120,7 @@ type Users struct {
 	FirstName           string      `json:"first_name"`
 	LastName            string      `json:"last_name"`
 	Nationality         string      `json:"nationality"`
-	ResidencialCountry  pgtype.Text `json:"residencial_country"`
+	ResidentialCountry  pgtype.Text `json:"residential_country"`
 	JobRole             pgtype.Text `json:"job_role"`
 	CompanyWebsite      pgtype.Text `json:"company_website"`
 	EmploymentType      pgtype.Text `json:"employment_type"`

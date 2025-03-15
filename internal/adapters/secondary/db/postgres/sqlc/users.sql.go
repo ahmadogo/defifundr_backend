@@ -21,13 +21,13 @@ INSERT INTO users (
   first_name,
   last_name,
   nationality,
-  residencial_country,
+  residential_country,
   job_role,
   company_website,
   employment_type
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) RETURNING id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residencial_country, job_role, company_website, employment_type, created_at, updated_at
+) RETURNING id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_website, employment_type, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -38,7 +38,7 @@ type CreateUserParams struct {
 	FirstName           string      `json:"first_name"`
 	LastName            string      `json:"last_name"`
 	Nationality         string      `json:"nationality"`
-	ResidencialCountry  pgtype.Text `json:"residencial_country"`
+	ResidentialCountry  pgtype.Text `json:"residential_country"`
 	JobRole             pgtype.Text `json:"job_role"`
 	CompanyWebsite      pgtype.Text `json:"company_website"`
 	EmploymentType      pgtype.Text `json:"employment_type"`
@@ -53,7 +53,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		arg.FirstName,
 		arg.LastName,
 		arg.Nationality,
-		arg.ResidencialCountry,
+		arg.ResidentialCountry,
 		arg.JobRole,
 		arg.CompanyWebsite,
 		arg.EmploymentType,
@@ -68,7 +68,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
-		&i.ResidencialCountry,
+		&i.ResidentialCountry,
 		&i.JobRole,
 		&i.CompanyWebsite,
 		&i.EmploymentType,
@@ -89,7 +89,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residencial_country, job_role, company_website, employment_type, created_at, updated_at FROM users
+SELECT id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_website, employment_type, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -105,7 +105,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
-		&i.ResidencialCountry,
+		&i.ResidentialCountry,
 		&i.JobRole,
 		&i.CompanyWebsite,
 		&i.EmploymentType,
@@ -116,7 +116,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residencial_country, job_role, company_website, employment_type, created_at, updated_at FROM users
+SELECT id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_website, employment_type, created_at, updated_at FROM users
 WHERE email = $1 LIMIT 1
 `
 
@@ -132,7 +132,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
-		&i.ResidencialCountry,
+		&i.ResidentialCountry,
 		&i.JobRole,
 		&i.CompanyWebsite,
 		&i.EmploymentType,
@@ -143,7 +143,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residencial_country, job_role, company_website, employment_type, created_at, updated_at FROM users
+SELECT id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_website, employment_type, created_at, updated_at FROM users
 ORDER BY created_at
 LIMIT $1
 OFFSET $2
@@ -172,7 +172,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]Users, 
 			&i.FirstName,
 			&i.LastName,
 			&i.Nationality,
-			&i.ResidencialCountry,
+			&i.ResidentialCountry,
 			&i.JobRole,
 			&i.CompanyWebsite,
 			&i.EmploymentType,
@@ -195,13 +195,13 @@ SET
   first_name = COALESCE($2, first_name),
   last_name = COALESCE($3, last_name),
   nationality = COALESCE($4, nationality),
-  residencial_country = COALESCE($5, residencial_country),
+  residential_country = COALESCE($5, residential_country),
   job_role = COALESCE($6, job_role),
   company_website = COALESCE($7, company_website),
   employment_type = COALESCE($8, employment_type),
   updated_at = now()
 WHERE id = $1
-RETURNING id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residencial_country, job_role, company_website, employment_type, created_at, updated_at
+RETURNING id, email, password_hash, account_type, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_website, employment_type, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -209,7 +209,7 @@ type UpdateUserParams struct {
 	FirstName          string      `json:"first_name"`
 	LastName           string      `json:"last_name"`
 	Nationality        string      `json:"nationality"`
-	ResidencialCountry pgtype.Text `json:"residencial_country"`
+	ResidentialCountry pgtype.Text `json:"residential_country"`
 	JobRole            pgtype.Text `json:"job_role"`
 	CompanyWebsite     pgtype.Text `json:"company_website"`
 	EmploymentType     pgtype.Text `json:"employment_type"`
@@ -221,7 +221,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		arg.FirstName,
 		arg.LastName,
 		arg.Nationality,
-		arg.ResidencialCountry,
+		arg.ResidentialCountry,
 		arg.JobRole,
 		arg.CompanyWebsite,
 		arg.EmploymentType,
@@ -236,7 +236,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
-		&i.ResidencialCountry,
+		&i.ResidentialCountry,
 		&i.JobRole,
 		&i.CompanyWebsite,
 		&i.EmploymentType,
