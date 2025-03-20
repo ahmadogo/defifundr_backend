@@ -3,9 +3,8 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	interfaces "job_portal/api_gateway/infrastructure/error_response"
-	token "job_portal/api_gateway/infrastructure/middleware/token_maker"
-
+	interfaces "github.com/demola234/defifundr/internal/core/domain"
+	token "github.com/demola234/defifundr/internal/adapters/primary/api/dto/token_maker"
 	"net/http"
 	"strings"
 

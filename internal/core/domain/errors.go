@@ -1,6 +1,17 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ErrorResponse(err error, status int) gin.H {
+	return gin.H{
+		"status":  status,
+		"message": err.Error(),
+	}
+}
 
 // Domain-level errors
 var (
