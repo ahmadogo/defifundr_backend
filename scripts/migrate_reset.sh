@@ -5,8 +5,8 @@ set -e
 
 # Get directory of this script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-MIGRATIONS_DIR="$DIR/../migrations"
-DB_URL=${DATABASE_URL:-"postgres://postgres:postgres@localhost:5432/defifundr?sslmode=disable"}
+MIGRATIONS_DIR="$DIR/../db/migrations"
+DB_URL=${DATABASE_URL:-"postgres://root:secret@localhost:5433/defi?sslmode=disable"}
 
 # Check if goose is installed
 if ! command -v goose &> /dev/null; then
