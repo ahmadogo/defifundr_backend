@@ -5,7 +5,7 @@ set -e
 
 # Get directory of this script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-MIGRATIONS_DIR="$DIR/../migrations"
+MIGRATIONS_DIR="$DIR/../db/migrations"
 
 # Check if goose is installed
 if ! command -v goose &> /dev/null; then
