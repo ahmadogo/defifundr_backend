@@ -24,7 +24,7 @@ func main() {
 	// Setup connection to database
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://postgres:postgres@localhost:5432/defifundr?sslmode=disable"
+		dbURL = "postgres://postgres:postgres@localhost:5432/defi?sslmode=disable"
 	}
 
 	// Connect using pgx

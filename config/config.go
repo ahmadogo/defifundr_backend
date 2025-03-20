@@ -14,17 +14,31 @@ type Config struct {
 }
 
 func LoadConfig(path string) (config Config, err error) {
+	viper.SetConfigName(".env")
+	
+	// Set the path to look for the configuration file
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+
+
+	// Set default values
+	viper.SetDefault("DB_DRIVER", "postgres")
+	viper.SetDefault("DB_SOURCE", "postgres://root:secret@localhost:5433/defi?sslmode=disable")
+	viper.SetDefault("GRPC_SERVER_ADDRESS", ":9090")
+	viper.SetDefault("HTTP_SERVER_ADDRESS", ":8080")
+	
+	// Enable VIPER to read environment variables
+	viper.AutomaticEnv()
+	
+	// Set the type of the configuration file
 	viper.SetConfigType("env")
 
-	viper.AutomaticEnv()
-
+	// Read the configuration file
 	err = viper.ReadInConfig()
 	if err != nil {
 		return
 	}
 
+	// Unmarshal the configuration into the Config struct
 	err = viper.Unmarshal(&config)
 	return
 }
