@@ -12,17 +12,12 @@ import (
 )
 
 type OTPRepository struct {
-	store db.Store
+	store db.Queries
 }
 
-func NewOtpRepository(store db.Store) *OTPRepository {
+func NewOtpRepository(store db.Queries) *OTPRepository {
 	return &OTPRepository{store: store}
 }
-
-// CreateOTP(ctx context.Context, otp domain.OTPVerification) (*domain.OTPVerification, error)
-// 	GetOTPByUserIDAndPurpose(ctx context.Context, userID uuid.UUID, purpose domain.OTPPurpose) (*domain.OTPVerification, error)
-// 	VerifyOTP(ctx context.Context, id uuid.UUID) error
-// 	IncrementAttempts(ctx context.Context, id uuid.UUID) error
 
 // CreateOTP creates a new OTP in the database
 func (r *OTPRepository) CreateOTP(ctx context.Context, otp domain.OTPVerification) (*domain.OTPVerification, error) {
@@ -71,11 +66,15 @@ func (r *OTPRepository) GetOTPByUserIDAndPurpose(ctx context.Context, userID uui
 }
 
 // VerifyOTP verifies an OTP
-func (r *OTPRepository) VerifyOTP(ctx context.Context, id uuid.UUID) error {
+func (r *OTPRepository) VerifyOTP(ctx context.Context, id uuid.UUID, code string) error {
 	otpData, err := r.store.GetOTPVerificationByID(ctx, id)
 
 	if err != nil {
 		return err
+	}
+
+	if code != otpData.OtpCode {
+		return errors.New("invalid OTP")
 	}
 
 	// Verify the OTP

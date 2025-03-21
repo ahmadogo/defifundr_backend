@@ -1,22 +1,21 @@
-package handlers
+package routers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/demola234/defifundr/internal/adapters/handlers"
+	"github.com/gin-gonic/gin"
+)
 
-// AuthHandler struct
-type AuthHandler struct {
-	AuthService AuthService
-}
+func RegisterRoutes(rg *gin.RouterGroup, authHandler *handlers.AuthHandler, authMiddleware gin.HandlerFunc) {
+	authRoutes := rg.Group("/auth")
 
-func (h *AuthHandler) RegisterRoutes(router *gin.Engine) {
-	auth := router.Group("/auth")
 	{
-		auth.POST("/register", h.Register)
-		auth.POST("/login", h.Login)
-		auth.POST("/verify-email", h.VerifyEmail)
-		auth.POST("/refresh-token", h.RefreshToken)
-		auth.POST("/logout", h.AuthMiddleware(), h.Logout)
-		auth.POST("/resend-verification", h.ResendVerification)
-		auth.POST("/forgot-password", h.ForgotPassword)
-		auth.POST("/reset-password", h.ResetPassword)
+		authRoutes.POST("/register", authHandler.Register)
+		// authRoutes.POST("/login", authHandler.Login)
+		// authRoutes.POST("/verify", authHandler.VerifyUser)
+		// authRoutes.POST("/resend-otp", authHandler.ResendOtp)
+
+		// // Protected routes (require authMiddleware)
+		// authRoutes.GET("/user", authMiddleware, authHandler.GetUser)
+		// authRoutes.POST("/logout", authMiddleware, authHandler.Logout)
 	}
 }

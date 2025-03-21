@@ -3,7 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	interfaces "github.com/demola234/defifundr/internal/core/domain"
+	interfaces "github.com/demola234/defifundr/pkg/app_errors"
 	token "github.com/demola234/defifundr/pkg/token_maker"
 	"net/http"
 	"strings"

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	utils "github.com/demola234/defifundr/pkg/utils"
+	utils "github.com/demola234/defifundr/pkg/random"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )

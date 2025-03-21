@@ -13,10 +13,10 @@ import (
 )
 
 type UserRepository struct {
-	store db.Store
+	store db.Queries
 }
 
-func NewUserRepository(store db.Store) *UserRepository {
+func NewUserRepository(store db.Queries) *UserRepository {
 	return &UserRepository{store: store}
 }
 
