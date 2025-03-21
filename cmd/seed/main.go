@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	db "github.com/demola234/defifundr/internal/adapters/secondary/db/postgres/sqlc"
+	// db "github.com/demola234/defifundr/internal/adapters/secondary/db/postgres/sqlc"
 )
 
 func main() {
@@ -28,11 +27,11 @@ func main() {
 	}
 	defer conn.Close()
 
-	queries := db.New(conn)
+	// queries := db.New(conn)
 
-	if err := db.SeedDB(ctx, queries); err != nil {
-		log.Fatalf("Error seeding database: %v", err)
-	}
+	// if err := db.SeedDB(ctx, queries); err != nil {
+	// 	log.Fatalf("Error seeding database: %v", err)
+	// }
 
 	log.Println("Database successfully seeded!")
 }

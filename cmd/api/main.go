@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	db "github.com/demola234/defifundr/internal/adapters/secondary/db/postgres/sqlc"
+	db "github.com/demola234/defifundr/db/sqlc"
 	"github.com/gin-gonic/gin"
 
 	"github.com/demola234/defifundr/config"

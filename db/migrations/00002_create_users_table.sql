@@ -5,8 +5,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255),
+  profile_picture VARCHAR(255),
   account_type VARCHAR(50) NOT NULL,
+  gender VARCHAR(50),
   personal_account_type VARCHAR(50) NOT NULL,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
@@ -22,7 +24,7 @@ CREATE TABLE users (
 CREATE INDEX idx_users_email ON users(email);
 
 COMMENT ON COLUMN users.account_type IS 'business, personal';
-COMMENT ON COLUMN users.personal_account_type IS 'contractor, business';
+COMMENT ON COLUMN users.personal_account_type IS 'contractor, freelancer, employee';
 
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
