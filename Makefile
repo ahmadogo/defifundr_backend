@@ -121,6 +121,11 @@ install-tools:
 	go install github.com/golang/mock/mockgen@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
+# Swagger
+swagger:
+	swag init -g cmd/api/main.go -o cmd/api/docs
+
+
 # Help command
 help:
 	@echo "DefiFundr - Blockchain Payroll System"
@@ -168,5 +173,9 @@ help:
 	@echo ""
 	@echo "Setup Commands:"
 	@echo "  install-tools       - Install development tools"
+	@echo ""
+	@echo "Swagger Commands:"
+	@echo "  swagger             - Generate Swagger documentation"
+	@echo ""
 
 .PHONY: postgres createdb dockerlogs dropdb migrate-create migrate-up migrate-up-one migrate-down migrate-down-one migrate-status migrate-reset migrateup migrateup1 migratedown migratedown1 db_docs db_schema sqlc test server air mock gencontract docker-up docker-down docker-logs docker-ps docker-build docker-restart help seed lint build clean install-tools

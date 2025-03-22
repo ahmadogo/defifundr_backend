@@ -29,7 +29,7 @@ func NewAuthHandler(authService ports.AuthService) *AuthHandler {
 // @Success 201 {object} map[string]interface{} "Successfully registered"
 // @Failure 400 {object} map[string]interface{} "Invalid request"
 // @Failure 409 {object} map[string]interface{} "User already exists"
-// @Router /api/v1/auth/register [post]
+// @Router /auth/register [post]
 func (s *AuthHandler) Register(ctx *gin.Context) {
 	var req *request.RegisterRequest
 
