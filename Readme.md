@@ -22,7 +22,7 @@
   - [💻 Development](#-development)
     - [Running the Application](#running-the-application)
     - [Available Commands](#available-commands)
-  - [🐚 Run Migration with Shell Commands](#-run-migration-with-shell-commands)
+    - [🐚 Run Migration with Shell Commands](#-run-migration-with-shell-commands)
   - [📚 API Documentation](#-api-documentation)
   - [🗄️ Database Management](#️-database-management)
     - [Creating a New Migration](#creating-a-new-migration)

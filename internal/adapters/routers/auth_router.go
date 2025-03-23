@@ -5,17 +5,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(rg *gin.RouterGroup, authHandler *handlers.AuthHandler, authMiddleware gin.HandlerFunc) {
+func RegisterAuthRoutes(rg *gin.RouterGroup, authHandler *handlers.AuthHandler, authMiddleware gin.HandlerFunc) {
 	authRoutes := rg.Group("/auth")
 
 	{
 		authRoutes.POST("/register", authHandler.Register)
-		// authRoutes.POST("/login", authHandler.Login)
-		// authRoutes.POST("/verify", authHandler.VerifyUser)
-		// authRoutes.POST("/resend-otp", authHandler.ResendOtp)
+		authRoutes.POST("/login", authHandler.Login)
+		authRoutes.POST("/refresh", authHandler.RefreshToken)
+		authRoutes.POST("/verify-email", authHandler.VerifyEmail)
+		authRoutes.POST("/resend-otp", authHandler.ResendOTP)
 
-		// // Protected routes (require authMiddleware)
-		// authRoutes.GET("/user", authMiddleware, authHandler.GetUser)
-		// authRoutes.POST("/logout", authMiddleware, authHandler.Logout)
+		// Protected routes (require authMiddleware)
+		authRoutes.POST("/logout", authMiddleware, authHandler.Logout)
+	
 	}
 }

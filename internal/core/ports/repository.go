@@ -3,8 +3,8 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/demola234/defifundr/internal/core/domain"
+	"github.com/google/uuid"
 )
 
 // UserRepository defines the data access operations for User entities
@@ -41,7 +41,7 @@ type KYCRepository interface {
 }
 
 // EmailService defines operations for sending emails
-type EmailService interface {
+type EmailRepository interface {
 	SendVerificationEmail(ctx context.Context, email, name, code string) error
 	SendPasswordResetEmail(ctx context.Context, email, name, code string) error
 }
