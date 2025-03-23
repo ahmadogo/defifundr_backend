@@ -33,9 +33,6 @@
   - [🧪 Testing](#-testing)
     - [Running Tests](#running-tests)
     - [Test Structure](#test-structure)
-  - [🚢 Deployment](#-deployment)
-    - [Building the Application](#building-the-application)
-    - [Building Docker Images](#building-docker-images)
   - [👥 Contributing](#-contributing)
     - [Development Workflow](#development-workflow)
   - [Contributors](#contributors)
@@ -310,25 +307,6 @@ make mock
 
 For detailed testing information, see [TESTING.md](documentation/TESTING.md).
 
-## 🚢 Deployment
-
-DefiFundr can be deployed using Docker and Kubernetes.
-
-### Building the Application
-
-```bash
-make build
-```
-
-This creates a binary in the `bin/` directory.
-
-### Building Docker Images
-
-```bash
-make docker-build
-```
-
-For comprehensive deployment instructions, see [DEPLOYMENT.md](documentation/DEPLOYMENT.md).
 
 ## 👥 Contributing
 
