@@ -15,6 +15,7 @@ import (
 	"github.com/demola234/defifundr/internal/adapters/routers"
 	"github.com/demola234/defifundr/internal/core/services"
 	tokenMaker "github.com/demola234/defifundr/pkg/token_maker"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -48,30 +49,48 @@ func main() {
 	defer cancel()
 
 	// Connect to the database using the pgx driver with database/sql
-	conn, err := pgxpool.New(ctx, configs.DBDriver)
+	conn, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5433/defifundr?sslmode=disable")
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
-	defer conn.Close()
+
 
 	// Initialize repository
 	dbQueries := db.New(conn)
 
+	defer conn.Close()
+
 	// Create repositories
 	userRepo := repositories.NewUserRepository(*dbQueries)
 	otpRepo := repositories.NewOtpRepository(*dbQueries)
+	sessionRepo := repositories.NewSessionRepository(*dbQueries)
+	tokenMaker, err := tokenMaker.NewTokenMaker(configs.TokenSymmetricKey)
+	if err != nil {
+		log.Fatalf("cannot create token maker: %v", err)
+	}
 
 	// Create services
-	authService := services.NewAuthService(userRepo, otpRepo)
+	authService := services.NewAuthService(userRepo, otpRepo, sessionRepo, tokenMaker, configs)
+	userService := services.NewUserService(userRepo)
 
 	// Create handlers
 	authHandler := handlers.NewAuthHandler(authService)
+	userHandler := handlers.NewUserHandler(userService)
 
 	// Initialize the router
 	router := gin.Default()
 
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	// Set up API routes
-	setupRoutes(router, authHandler, configs)
+	setupRoutes(router, authHandler, userHandler, configs)
 
 	docs.SwaggerInfo.Title = "DefiFundr API"
 	docs.SwaggerInfo.Description = "Decentralized Payroll and Invoicing Platform for Remote Teams"
@@ -90,7 +109,7 @@ func main() {
 }
 
 // setupRoutes configures all the API routes
-func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, configs config.Config) {
+func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, configs config.Config) {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -109,6 +128,7 @@ func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, configs 
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
 	// Register routes
-	routers.RegisterRoutes(v1, authHandler, authMiddleware)
+	routers.RegisterAuthRoutes(v1, authHandler, authMiddleware)
+	routers.RegisterUserRoutes(v1, userHandler, authMiddleware)
 
 }

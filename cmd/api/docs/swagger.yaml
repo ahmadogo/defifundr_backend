@@ -1,6 +1,16 @@
 basePath: /api/v1
 definitions:
-  request.RegisterRequest:
+  request.ChangePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  request.LoginRequest:
     properties:
       email:
         type: string
@@ -9,6 +19,160 @@ definitions:
     required:
     - email
     - password
+    type: object
+  request.RegisterRequest:
+    properties:
+      account_type:
+        type: string
+      company_website:
+        type: string
+      email:
+        type: string
+      employment_type:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      job_role:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      password:
+        type: string
+      personal_account_type:
+        type: string
+      residential_country:
+        type: string
+    required:
+    - account_type
+    - email
+    - first_name
+    - last_name
+    - nationality
+    - password
+    type: object
+  request.ResendOTPRequest:
+    properties:
+      contact_method:
+        type: string
+      purpose:
+        type: string
+      user_id:
+        type: string
+    required:
+    - contact_method
+    - purpose
+    - user_id
+    type: object
+  request.UpdateProfileRequest:
+    properties:
+      company_website:
+        type: string
+      employment_type:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      job_role:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      residential_country:
+        type: string
+    required:
+    - first_name
+    - last_name
+    - nationality
+    type: object
+  request.VerifyEmailRequest:
+    properties:
+      otp_code:
+        type: string
+      user_id:
+        type: string
+    required:
+    - otp_code
+    - user_id
+    type: object
+  response.ErrorResponse:
+    properties:
+      details:
+        type: string
+      error:
+        type: string
+    type: object
+  response.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      email_verified:
+        type: boolean
+      expires_at:
+        type: string
+      refresh_token:
+        type: string
+      session_id:
+        type: string
+      token_type:
+        type: string
+      user:
+        $ref: '#/definitions/response.UserResponse'
+    type: object
+  response.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  response.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_at:
+        type: string
+      token_type:
+        type: string
+    type: object
+  response.UserResponse:
+    properties:
+      account_type:
+        type: string
+      company_website:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      employment_type:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      job_role:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      personal_account_type:
+        type: string
+      profile_picture:
+        type: string
+      residential_country:
+        type: string
+      updated_at:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -24,6 +188,76 @@ info:
   title: DefiFundr API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and generate access token
+      parameters:
+      - description: User login data
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged in
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Login a user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate user session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged out
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generate a new access token using refresh token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: New access token
+          schema:
+            $ref: '#/definitions/response.TokenResponse'
+        "401":
+          description: Invalid refresh token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -42,21 +276,154 @@ paths:
         "201":
           description: Successfully registered
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/response.UserResponse'
         "400":
           description: Invalid request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: User already exists
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Register a new user
       tags:
       - auth
+  /auth/resend-otp:
+    post:
+      consumes:
+      - application/json
+      description: Resend OTP for verification
+      parameters:
+      - description: Resend OTP data
+        in: body
+        name: resend
+        required: true
+        schema:
+          $ref: '#/definitions/request.ResendOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP sent successfully
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Resend OTP
+      tags:
+      - auth
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      description: Verify user email using OTP
+      parameters:
+      - description: Email verification data
+        in: body
+        name: verification
+        required: true
+        schema:
+          $ref: '#/definitions/request.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email verified successfully
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Verify user email
+      tags:
+      - auth
+  /users/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change authenticated user's password
+      parameters:
+      - description: Password change data
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/request.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - users
+  /users/profile:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve authenticated user's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile
+          schema:
+            $ref: '#/definitions/response.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update authenticated user's profile information
+      parameters:
+      - description: Profile data to update
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user profile
+          schema:
+            $ref: '#/definitions/response.UserResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - users
 schemes:
 - http
 securityDefinitions:

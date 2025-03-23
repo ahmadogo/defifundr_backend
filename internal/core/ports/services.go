@@ -11,7 +11,7 @@ import (
 // AuthService defines the use cases for authentication
 type AuthService interface {
 	// User authentication
-	Login(ctx context.Context, email, password, userAgent, clientIP string) (*domain.Session, string, error)
+	Login(ctx context.Context, email, password, userAgent, clientIP string) (*domain.Session, *domain.User, error)
 	RegisterUser(ctx context.Context, user domain.User, password string) (*domain.User, error)
 	VerifyEmail(ctx context.Context, userID uuid.UUID, code string) error
 	

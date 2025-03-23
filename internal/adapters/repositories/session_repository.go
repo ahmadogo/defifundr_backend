@@ -11,10 +11,10 @@ import (
 )
 
 type SessionRepository struct {
-	store db.Store
+	store db.Queries
 }
 
-func NewSessionRepository(store db.Store) *SessionRepository {
+func NewSessionRepository(store db.Queries) *SessionRepository {
 	return &SessionRepository{store: store}
 }
 
