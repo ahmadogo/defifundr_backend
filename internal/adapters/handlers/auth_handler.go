@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/demola234/defifundr/infrastructure/common/logging"
 	"github.com/demola234/defifundr/internal/adapters/dto/request"
 	"github.com/demola234/defifundr/internal/adapters/dto/response"
 	"github.com/demola234/defifundr/internal/core/domain"
@@ -16,12 +17,14 @@ import (
 
 type AuthHandler struct {
 	authService ports.AuthService
+	logger      logging.Logger
 }
 
 // NewAuthHandler creates a new authentication handler
-func NewAuthHandler(authService ports.AuthService) *AuthHandler {
+func NewAuthHandler(authService ports.AuthService, logger logging.Logger) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
+		logger:      logger,
 	}
 }
 
@@ -37,6 +40,11 @@ func NewAuthHandler(authService ports.AuthService) *AuthHandler {
 // @Failure 409 {object} response.ErrorResponse "User already exists"
 // @Router /auth/register [post]
 func (h *AuthHandler) Register(ctx *gin.Context) {
+	// Extract request co-relation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing register user request")
+
 	var req request.RegisterRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -81,12 +89,12 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 		if app_errors.IsAppError(err) {
 			appErr := err.(*app_errors.AppError)
 			errResponse.Error = appErr.Error()
-			
+
 			if appErr.ErrorType == app_errors.ErrorTypeConflict {
 				ctx.JSON(http.StatusConflict, errResponse)
 				return
 			}
-			
+
 			ctx.JSON(http.StatusBadRequest, errResponse)
 			return
 		}
@@ -110,19 +118,19 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	if registeredUser.Gender != nil {
 		userResponse.Gender = *registeredUser.Gender
 	}
-	
+
 	if registeredUser.ResidentialCountry != nil {
 		userResponse.ResidentialCountry = *registeredUser.ResidentialCountry
 	}
-	
+
 	if registeredUser.JobRole != nil {
 		userResponse.JobRole = *registeredUser.JobRole
 	}
-	
+
 	if registeredUser.CompanyWebsite != nil {
 		userResponse.CompanyWebsite = *registeredUser.CompanyWebsite
 	}
-	
+
 	if registeredUser.EmploymentType != nil {
 		userResponse.EmploymentType = *registeredUser.EmploymentType
 	}
@@ -169,12 +177,12 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 		if app_errors.IsAppError(err) {
 			appErr := err.(*app_errors.AppError)
 			errResponse.Error = appErr.Error()
-			
+
 			if appErr.ErrorType == app_errors.ErrorTypeUnauthorized {
 				ctx.JSON(http.StatusUnauthorized, errResponse)
 				return
 			}
-			
+
 			ctx.JSON(http.StatusBadRequest, errResponse)
 			return
 		}

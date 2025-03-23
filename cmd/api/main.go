@@ -9,6 +9,7 @@ import (
 	_ "github.com/demola234/defifundr/cmd/api/docs"
 	"github.com/demola234/defifundr/config"
 	db "github.com/demola234/defifundr/db/sqlc"
+	"github.com/demola234/defifundr/infrastructure/common/logging"
 	"github.com/demola234/defifundr/infrastructure/middleware"
 	"github.com/demola234/defifundr/internal/adapters/handlers"
 	"github.com/demola234/defifundr/internal/adapters/repositories"
@@ -43,6 +44,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot load config: %v", err)
 	}
+	// Initialize logger
+	logger := logging.New(&configs)
+	logger.Info("Starting application", map[string]interface{}{
+		"environment": configs.Environment,
+	})
 
 	// Connect using pgx
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -51,9 +57,10 @@ func main() {
 	// Connect to the database using the pgx driver with database/sql
 	conn, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5433/defifundr?sslmode=disable")
 	if err != nil {
-		log.Fatalf("Unable to connect to database: %v", err)
+		logger.Fatal("Unable to connect to database", err, map[string]interface{}{
+			"db_source": configs.DBSource,
+		})
 	}
-
 
 	// Initialize repository
 	dbQueries := db.New(conn)
@@ -74,11 +81,15 @@ func main() {
 	userService := services.NewUserService(userRepo)
 
 	// Create handlers
-	authHandler := handlers.NewAuthHandler(authService)
+	authHandler := handlers.NewAuthHandler(authService, logger)
 	userHandler := handlers.NewUserHandler(userService)
 
 	// Initialize the router
-	router := gin.Default()
+	router := gin.New() // We use a custom logger middleware to log all requests
+
+	// Apply our custom logging middleware
+	router.Use(middleware.LoggingMiddleware(logger, &configs))
+	router.Use(gin.Recovery()) // We still need recovery middleware
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -90,7 +101,7 @@ func main() {
 	}))
 
 	// Set up API routes
-	setupRoutes(router, authHandler, userHandler, configs)
+	setupRoutes(router, authHandler, userHandler, configs, logger)
 
 	docs.SwaggerInfo.Title = "DefiFundr API"
 	docs.SwaggerInfo.Description = "Decentralized Payroll and Invoicing Platform for Remote Teams"
@@ -102,14 +113,16 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Start the HTTP server
-	log.Printf("HTTP server is running on %s", configs.HTTPServerAddress)
+	logger.Info("HTTP server is running on", map[string]interface{}{
+		"address": configs.HTTPServerAddress,
+	})
 	if err := router.Run(configs.HTTPServerAddress); err != nil {
-		log.Fatalf("Failed to start HTTP server: %v", err)
+		logger.Fatal("Failed to start HTTP server", err)
 	}
 }
 
 // setupRoutes configures all the API routes
-func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, configs config.Config) {
+func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, configs config.Config, logger logging.Logger) {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -121,7 +134,7 @@ func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHand
 
 	tokenMaker, err := tokenMaker.NewTokenMaker(configs.TokenSymmetricKey)
 	if err != nil {
-		panic("failed to create token maker: " + err.Error())
+		logger.Panic("failed to create token maker", err)
 	}
 
 	// Middleware to check if the user is authenticated
