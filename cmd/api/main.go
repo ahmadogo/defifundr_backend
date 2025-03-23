@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"github.com/demola234/defifundr/cmd/api/docs"
@@ -44,18 +43,12 @@ func main() {
 		log.Fatalf("cannot load config: %v", err)
 	}
 
-	// Setup connection to database
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgres://postgres:postgres@localhost:5432/defi?sslmode=disable"
-	}
-
 	// Connect using pgx
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	// Connect to the database using the pgx driver with database/sql
-	conn, err := pgxpool.New(ctx, dbURL)
+	conn, err := pgxpool.New(ctx, configs.DBDriver)
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
