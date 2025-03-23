@@ -208,7 +208,7 @@ make lint             # Run linter
 make swagger          # Generate Swagger documentation
 ```
 
-## 🐚 Run Migration with Shell Commands
+### 🐚 Run Migration with Shell Commands
 ```bash
 # Create a new migration
 cd scripts
