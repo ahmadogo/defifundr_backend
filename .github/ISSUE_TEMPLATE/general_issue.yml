@@ -1,0 +1,98 @@
+name: General Issue
+description: Report any other issue or concern that doesn't fit other categories
+title: "[ISSUE]: "
+labels: ["needs-triage"]
+assignees:
+  - octocat
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue! Please provide as much detail as possible.
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue are you reporting?
+      options:
+        - Question
+        - Documentation
+        - Performance
+        - Security Concern
+        - Accessibility
+        - UI/UX Improvement
+        - Technical Debt
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a clear and concise description of the issue
+      placeholder: Please describe the issue in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: Describe what currently happens
+      placeholder: Currently, when I [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Describe what you expected to happen
+      placeholder: I expected [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the issue here
+      placeholder: Any other information that might be helpful...
+    validations:
+      required: false
+
+  - type: input
+    id: affected-components
+    attributes:
+      label: Affected Components
+      description: Which components or areas of the application are affected?
+      placeholder: e.g., Authentication, Dashboard, Settings
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this issue?
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verification
+      description: Before submitting, please verify that you have done the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all relevant information to understand the issue
+          required: true
