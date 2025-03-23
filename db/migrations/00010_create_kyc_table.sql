@@ -5,6 +5,9 @@ CREATE TABLE kyc (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   face_verification BOOLEAN NOT NULL,
   identity_verification BOOLEAN NOT NULL,
+  verification_type VARCHAR(50) NOT NULL,
+  verification_number VARCHAR(50) NOT NULL,
+  verification_status VARCHAR(50) NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

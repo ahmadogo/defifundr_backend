@@ -45,38 +45,25 @@ dropdb:
 # Migration commands (using goose)
 migrate-create:
 	@read -p "Enter migration name: " name; \
-	goose -dir migrations create $${name} sql
+	goose -dir db/migrations create $${name} sql
 
 migrate-up:
-	goose -dir migrations postgres "$(DB_URL)" up
+	goose -dir db/migrations postgres "postgres://root:secret@localhost:5433/defi?sslmode=disable" up
 
 migrate-up-one:
-	goose -dir migrations postgres "$(DB_URL)" up-by-one
+	goose -dir db/migrations postgres "$(DB_URL)" up-by-one
 
 migrate-down:
-	goose -dir migrations postgres "$(DB_URL)" down
+	goose -dir db/migrations postgres "$(DB_URL)" down
 
 migrate-down-one:
-	goose -dir migrations postgres "$(DB_URL)" down-by-one
+	goose -dir db/migrations postgres "$(DB_URL)" down-by-one
 
 migrate-status:
-	goose -dir migrations postgres "$(DB_URL)" status
+	goose -dir db/migrations postgres "$(DB_URL)" status
 
 migrate-reset:
-	goose -dir migrations postgres "$(DB_URL)" reset
-
-# Legacy migrate commands (keeping for compatibility)
-migrateup:
-	migrate -path db/migration -database "$(DB_URL)" -verbose up
-
-migrateup1:
-	migrate -path db/migration -database "$(DB_URL)" -verbose up 1
-
-migratedown:
-	migrate -path db/migration -database "$(DB_URL)" -verbose down
-
-migratedown1:
-	migrate -path db/migration -database "$(DB_URL)" -verbose down 1
+	goose -dir db/migrations postgres "$(DB_URL)" reset
 
 # Smart contract commands
 gencontract:
@@ -134,6 +121,11 @@ install-tools:
 	go install github.com/golang/mock/mockgen@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
+# Swagger
+swagger:
+	swag init -g cmd/api/main.go -o cmd/api/docs
+
+
 # Help command
 help:
 	@echo "DefiFundr - Blockchain Payroll System"
@@ -181,5 +173,9 @@ help:
 	@echo ""
 	@echo "Setup Commands:"
 	@echo "  install-tools       - Install development tools"
+	@echo ""
+	@echo "Swagger Commands:"
+	@echo "  swagger             - Generate Swagger documentation"
+	@echo ""
 
 .PHONY: postgres createdb dockerlogs dropdb migrate-create migrate-up migrate-up-one migrate-down migrate-down-one migrate-status migrate-reset migrateup migrateup1 migratedown migratedown1 db_docs db_schema sqlc test server air mock gencontract docker-up docker-down docker-logs docker-ps docker-build docker-restart help seed lint build clean install-tools

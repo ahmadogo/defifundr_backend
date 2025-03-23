@@ -3,16 +3,38 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
-	db "github.com/demola234/defifundr/internal/adapters/secondary/db/postgres/sqlc"
-	"github.com/gin-gonic/gin"
-
+	"github.com/demola234/defifundr/cmd/api/docs"
+	_ "github.com/demola234/defifundr/cmd/api/docs"
 	"github.com/demola234/defifundr/config"
+	db "github.com/demola234/defifundr/db/sqlc"
+	"github.com/demola234/defifundr/infrastructure/middleware"
+	"github.com/demola234/defifundr/internal/adapters/handlers"
+	"github.com/demola234/defifundr/internal/adapters/repositories"
+	"github.com/demola234/defifundr/internal/adapters/routers"
+	"github.com/demola234/defifundr/internal/core/services"
+	tokenMaker "github.com/demola234/defifundr/pkg/token_maker"
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib" // pgx driver for database/sql
+	_ "github.com/jackc/pgx/v5/stdlib"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @title DefiFundr API
+// @version 1.0
+// @description Decentralized Payroll and Invoicing Platform for Remote Teams
+// @termsOfService http://swagger.io/terms/
+// @schemes http
+// @contact.name DefiFundr Support
+// @contact.url http://defifundr.com/support
+// @contact.email hello@defifundr.com
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
+// @BasePath /api/v1
+// @securityDefinitions.basic BasicAuth
 
 func main() {
 	// Load configuration
@@ -21,18 +43,12 @@ func main() {
 		log.Fatalf("cannot load config: %v", err)
 	}
 
-	// Setup connection to database
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgres://postgres:postgres@localhost:5432/defifundr?sslmode=disable"
-	}
-
 	// Connect using pgx
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	// Connect to the database using the pgx driver with database/sql
-	conn, err := pgxpool.New(ctx, dbURL)
+	conn, err := pgxpool.New(ctx, configs.DBDriver)
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
@@ -41,11 +57,30 @@ func main() {
 	// Initialize repository
 	dbQueries := db.New(conn)
 
+	// Create repositories
+	userRepo := repositories.NewUserRepository(*dbQueries)
+	otpRepo := repositories.NewOtpRepository(*dbQueries)
+
+	// Create services
+	authService := services.NewAuthService(userRepo, otpRepo)
+
+	// Create handlers
+	authHandler := handlers.NewAuthHandler(authService)
+
 	// Initialize the router
 	router := gin.Default()
 
 	// Set up API routes
-	setupRoutes(router, dbQueries)
+	setupRoutes(router, authHandler, configs)
+
+	docs.SwaggerInfo.Title = "DefiFundr API"
+	docs.SwaggerInfo.Description = "Decentralized Payroll and Invoicing Platform for Remote Teams"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Start the HTTP server
 	log.Printf("HTTP server is running on %s", configs.HTTPServerAddress)
@@ -55,7 +90,7 @@ func main() {
 }
 
 // setupRoutes configures all the API routes
-func setupRoutes(router *gin.Engine, queries *db.Queries) {
+func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, configs config.Config) {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -63,146 +98,17 @@ func setupRoutes(router *gin.Engine, queries *db.Queries) {
 		})
 	})
 
-	// API routes
-	api := router.Group("/api/v1")
-	{
-		// User routes
-		userRoutes := api.Group("/users")
-		{
-			userRoutes.POST("/", createUser(queries))
-			userRoutes.GET("/:id", getUser(queries))
-			// Add more user routes
-		}
+	v1 := router.Group("/api/v1")
 
-		// Wallet routes
-		walletRoutes := api.Group("/wallets")
-		{
-			walletRoutes.POST("/", createWallet(queries))
-			walletRoutes.GET("/user/:userId", getUserWallets(queries))
-			// Add more wallet routes
-		}
-
-		// Organization routes
-		orgRoutes := api.Group("/organizations")
-		{
-			orgRoutes.POST("/", createOrganization(queries))
-			orgRoutes.GET("/:id", getOrganization(queries))
-			// Add more organization routes
-		}
-
-		// Payroll routes
-		payrollRoutes := api.Group("/payrolls")
-		{
-			payrollRoutes.POST("/", createPayroll(queries))
-			payrollRoutes.GET("/:id", getPayroll(queries))
-			// Add more payroll routes
-		}
-
-		// Invoice routes
-		invoiceRoutes := api.Group("/invoices")
-		{
-			invoiceRoutes.POST("/", createInvoice(queries))
-			invoiceRoutes.GET("/:id", getInvoice(queries))
-			// Add more invoice routes
-		}
-
-		// Transaction routes
-		txRoutes := api.Group("/transactions")
-		{
-			txRoutes.GET("/user/:userId", getUserTransactions(queries))
-			// Add more transaction routes
-		}
-
-		// Notification routes
-		notificationRoutes := api.Group("/notifications")
-		{
-			notificationRoutes.GET("/user/:userId", getUserNotifications(queries))
-			// Add more notification routes
-		}
+	tokenMaker, err := tokenMaker.NewTokenMaker(configs.TokenSymmetricKey)
+	if err != nil {
+		panic("failed to create token maker: " + err.Error())
 	}
-}
 
-// Handler functions - these are placeholders that you'll need to implement
-func createUser(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
+	// Middleware to check if the user is authenticated
+	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
-func getUser(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
+	// Register routes
+	routers.RegisterRoutes(v1, authHandler, authMiddleware)
 
-func createWallet(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func getUserWallets(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func createOrganization(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func getOrganization(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func createPayroll(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func getPayroll(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func createInvoice(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func getInvoice(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func getUserTransactions(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
-}
-
-func getUserNotifications(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implementation
-		c.JSON(501, gin.H{"error": "Not implemented"})
-	}
 }
