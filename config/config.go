@@ -43,6 +43,12 @@ type Config struct {
 	// OTP Configuration
 	OTPExpiryDuration time.Duration `mapstructure:"OTP_EXPIRY_DURATION"`
 	MaxOTPAttempts    int           `mapstructure:"MAX_OTP_ATTEMPTS"`
+
+	// Logging configuration
+	LogLevel       string `mapstructure:"LOG_LEVEL"`
+	LogFormat      string `mapstructure:"LOG_FORMAT"`
+	LogOutput      string `mapstructure:"LOG_OUTPUT"`
+	LogRequestBody bool   `mapstructure:"LOG_REQUEST_BODY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -63,6 +69,11 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetDefault("OTP_EXPIRY_DURATION", "5m")
 	viper.SetDefault("MAX_OTP_ATTEMPTS", 3)
 
+	// Set default values for logging
+	viper.SetDefault("LOG_LEVEL", "info")
+	viper.SetDefault("LOG_FORMAT", "json")
+	viper.SetDefault("LOG_OUTPUT", "stdout")
+	viper.SetDefault("LOG_REQUEST_BODY", false)
 	// Enable VIPER to read environment variables
 	viper.AutomaticEnv()
 
