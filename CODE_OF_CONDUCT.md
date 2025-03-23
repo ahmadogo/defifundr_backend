@@ -38,7 +38,7 @@ This Code of Conduct applies within all community spaces, including the GitHub r
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project team at conduct@defifundr.com. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project team at hello@defifundr.com. All complaints will be reviewed and investigated promptly and fairly.
 
 All project maintainers are obligated to respect the privacy and security of the reporter of any incident.
 
@@ -94,4 +94,4 @@ As DefiFundr operates in the blockchain and decentralized finance space, we incl
 
 ---
 
-For any questions about this Code of Conduct, please contact the project team at conduct@defifundr.com.
+For any questions about this Code of Conduct, please contact the project team at hello@defifundr.com.

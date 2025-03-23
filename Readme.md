@@ -22,6 +22,7 @@
   - [💻 Development](#-development)
     - [Running the Application](#running-the-application)
     - [Available Commands](#available-commands)
+  - [🐚 Run Migration with Shell Commands](#-run-migration-with-shell-commands)
   - [📚 API Documentation](#-api-documentation)
   - [🗄️ Database Management](#️-database-management)
     - [Creating a New Migration](#creating-a-new-migration)
@@ -209,6 +210,43 @@ make test             # Run tests
 make lint             # Run linter
 make swagger          # Generate Swagger documentation
 ```
+
+## 🐚 Run Migration with Shell Commands
+```bash
+# Create a new migration
+cd scripts
+sh create_migration.sh
+```
+
+```bash
+# Apply all pending migrations
+cd scripts
+sh migrate_up.sh
+```
+
+```bash
+# Revert the last migration
+cd scripts
+sh migrate_down.sh
+```
+
+```bash
+# Reset Migrations
+cd scripts
+sh migrate_reset.sh
+```
+```bash
+# Migration Status
+cd scripts
+sh migrate_status.sh
+```
+
+```bash 
+# Run migrations up to the latest version
+cd scripts
+sh migrate.sh
+```
+
 
 ## 📚 API Documentation
 
