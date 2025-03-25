@@ -2,12 +2,14 @@ package commons
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"unsafe"
 
 	"golang.org/x/crypto/argon2"
@@ -121,4 +123,79 @@ func HashPassword(password string) (string, error) {
 	}()
 
 	return encoded, nil
+}
+
+func CheckPassword(password, encodedHash string) (bool, error) {
+	// Security check: prevent DoS through extremely long passwords
+	if len(password) > maxPasswordLength {
+		return false, errors.New("password length exceeds maximum allowed")
+	}
+
+	// Parse the encoded hash
+	parts := strings.Split(encodedHash, "$")
+	if len(parts) != 6 {
+		return false, errors.New("invalid hash format")
+	}
+
+	// Check algorithm identifier
+	if parts[1] != "argon2id" {
+		return false, errors.New("unsupported algorithm")
+	}
+
+	// Parse version
+	var version int
+	if _, err := fmt.Sscanf(parts[2], "v=%d", &version); err != nil {
+		return false, fmt.Errorf("invalid version format: %w", err)
+	}
+	if version != argon2.Version {
+		return false, errors.New("incompatible argon2 version")
+	}
+
+	// Parse parameters
+	params := Argon2Params{}
+	if _, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d",
+		&params.Memory,
+		&params.Iterations,
+		&params.Parallelism); err != nil {
+		return false, fmt.Errorf("invalid parameter format: %w", err)
+	}
+
+	// Decode salt and hash
+	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
+	if err != nil {
+		return false, fmt.Errorf("invalid salt encoding: %w", err)
+	}
+	params.SaltLength = uint32(len(salt))
+
+	storedHash, err := base64.RawStdEncoding.DecodeString(parts[5])
+	if err != nil {
+		return false, fmt.Errorf("invalid hash encoding: %w", err)
+	}
+	params.KeyLength = uint32(len(storedHash))
+
+	// Recompute the hash
+	computedHash := argon2.IDKey(
+		[]byte(password),
+		salt,
+		params.Iterations,
+		params.Memory,
+		params.Parallelism,
+		params.KeyLength,
+	)
+
+	// Securely wipe temporary buffers
+	defer func() {
+		for i := range computedHash {
+			computedHash[i] = 0
+		}
+		for i := range salt {
+			salt[i] = 0
+		}
+	}()
+
+	// Constant-time comparison
+	if subtle.ConstantTimeCompare(computedHash, storedHash) == 1 {
+		return true, nil
+	}
+	return false, nil
 }
