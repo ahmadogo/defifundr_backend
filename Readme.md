@@ -266,7 +266,7 @@ The API follows RESTful principles with these main endpoints:
 - **Transactions**: `/v1/transactions/*` (payment operations)
 - **KYC**: `/v1/kyc/*` (verification processes)
 
-For detailed API specifications, see [API_DOCUMENTATION.md](documentation/API_DOCUMENTATION.md).
+For detailed API specifications, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
 
 ## 🗄️ Database Management
 
@@ -300,24 +300,8 @@ After adding or modifying queries in the `db/query/` directory:
 make sqlc
 ```
 
-For more details, see [DATABASE.md](documentation/DATABASE.md).
+For more details, see [DATABASE.md](DATABASE.md).
 
-## ⛓️ Smart Contracts
-
-DefiFundr integrates with Ethereum-based smart contracts for payroll and invoice management.
-
-### Contracts
-
-- `Payroll.sol`: Manages recurring payments
-- `Invoice.sol`: Handles one-time payments for invoices
-
-### Generating Go Bindings
-
-After modifying contracts in the `smart-contracts/ethereum/` directory:
-
-```bash
-make gencontract
-```
 
 This generates Go bindings in `internal/adapters/secondary/blockchain/contracts/`.
 
@@ -343,7 +327,7 @@ make mock
 - **Integration Tests**: In the `test/integration/` directory
 - **End-to-End Tests**: In the `test/e2e/` directory
 
-For detailed testing information, see [TESTING.md](documentation/TESTING.md).
+For detailed testing information, see [TESTING.md](TESTING.md).
 
 
 ## 👥 Contributing
