@@ -74,6 +74,12 @@ func LoadParams() Argon2Params {
 }
 
 func HashPassword(password string) (string, error) {
+
+	//check if password is empty
+	if password == "" {
+		return "", errors.New("password cannot be empty")
+	}
+
 	// Security check: prevent DoS through extremely long passwords
 	if len(password) > maxPasswordLength {
 		return "", errors.New("password length exceeds maximum allowed")
