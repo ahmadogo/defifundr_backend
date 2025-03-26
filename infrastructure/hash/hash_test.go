@@ -114,3 +114,13 @@ func BenchmarkHashPassword(b *testing.B) {
 		_, _ = HashPassword(password)
 	}
 }
+
+func BenchmarkCheckPassword(b *testing.B) {
+	password := random.RandomString(12)
+	hashStr, _ := HashPassword(password)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckPassword(password, hashStr)
+	}
+}
