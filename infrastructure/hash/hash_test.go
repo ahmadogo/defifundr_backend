@@ -1,6 +1,7 @@
 package commons
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -64,5 +65,27 @@ func TestPasswordHashing(t *testing.T) {
 		longPassword := random.RandomString(100)
 		_, err := HashPassword(longPassword)
 		require.Error(t, err)
+	})
+}
+
+func TestArgon2Parameters(t *testing.T) {
+	t.Parallel()
+
+	t.Run("custom parameters via env vars", func(t *testing.T) {
+		t.Parallel()
+		os.Setenv("ARGON2_MEMORY", "128000") // 128MB
+		os.Setenv("ARGON2_ITERATIONS", "5")
+		os.Setenv("ARGON2_PARALLELISM", "4")
+		defer os.Unsetenv("ARGON2_MEMORY")
+		defer os.Unsetenv("ARGON2_ITERATIONS")
+		defer os.Unsetenv("ARGON2_PARALLELISM")
+
+		password := random.RandomString(12)
+		hashStr, err := HashPassword(password)
+		require.NoError(t, err)
+
+		// Verify parameters were applied
+		parts := strings.Split(hashStr, "$")
+		require.Equal(t, "m=128000,t=5,p=4", parts[3])
 	})
 }
