@@ -105,3 +105,12 @@ func TestHashFormat(t *testing.T) {
 	require.NotEmpty(t, parts[4]) // salt
 	require.NotEmpty(t, parts[5]) // hash
 }
+
+func BenchmarkHashPassword(b *testing.B) {
+	password := random.RandomString(12)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = HashPassword(password)
+	}
+}
