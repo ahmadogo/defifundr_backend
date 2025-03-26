@@ -89,3 +89,19 @@ func TestArgon2Parameters(t *testing.T) {
 		require.Equal(t, "m=128000,t=5,p=4", parts[3])
 	})
 }
+
+func TestHashFormat(t *testing.T) {
+	t.Parallel()
+
+	password := random.RandomString(12)
+	hashStr, err := HashPassword(password)
+	require.NoError(t, err)
+
+	parts := strings.Split(hashStr, "$")
+	require.Len(t, parts, 6)
+	require.Equal(t, "argon2id", parts[1])
+	require.True(t, strings.HasPrefix(parts[2], "v=19"))
+	require.Regexp(t, `^m=\d+,t=\d+,p=\d+$`, parts[3])
+	require.NotEmpty(t, parts[4]) // salt
+	require.NotEmpty(t, parts[5]) // hash
+}
