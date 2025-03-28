@@ -158,3 +158,18 @@ type Users struct {
 	CreatedAt           time.Time   `json:"created_at"`
 	UpdatedAt           time.Time   `json:"updated_at"`
 }
+
+type Waitlist struct {
+	ID             uuid.UUID          `json:"id"`
+	Email          string             `json:"email"`
+	FullName       pgtype.Text        `json:"full_name"`
+	ReferralCode   string             `json:"referral_code"`
+	ReferralSource pgtype.Text        `json:"referral_source"`
+	Status         string             `json:"status"`
+	SignupDate     time.Time          `json:"signup_date"`
+	InvitedDate    pgtype.Timestamptz `json:"invited_date"`
+	RegisteredDate pgtype.Timestamptz `json:"registered_date"`
+	Metadata       []byte             `json:"metadata"`
+	CreatedAt      time.Time          `json:"created_at"`
+	UpdatedAt      time.Time          `json:"updated_at"`
+}
