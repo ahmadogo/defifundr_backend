@@ -55,7 +55,7 @@ func main() {
 	defer cancel()
 
 	// Connect to the database using the pgx driver with database/sql
-	conn, err := pgxpool.New(ctx, "postgres://root:secret@localhost:5433/defi?sslmode=disable")
+	conn, err := pgxpool.New(ctx, configs.DBSource)
 	if err != nil {
 		logger.Fatal("Unable to connect to database", err, map[string]interface{}{
 			"db_source": configs.DBSource,
@@ -72,7 +72,7 @@ func main() {
 	otpRepo := repositories.NewOtpRepository(*dbQueries)
 	sessionRepo := repositories.NewSessionRepository(*dbQueries)
 	waitlistRepo := repositories.NewWaitlistRepository(*dbQueries)
-	
+
 	tokenMaker, err := tokenMaker.NewTokenMaker(configs.TokenSymmetricKey)
 	if err != nil {
 		log.Fatalf("cannot create token maker: %v", err)
