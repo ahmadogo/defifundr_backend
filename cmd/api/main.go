@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/demola234/defifundr/cmd/api/docs"
-	_ "github.com/demola234/defifundr/cmd/api/docs"
 	"github.com/demola234/defifundr/config"
 	db "github.com/demola234/defifundr/db/sqlc"
 	"github.com/demola234/defifundr/infrastructure/common/logging"
