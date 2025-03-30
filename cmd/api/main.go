@@ -55,7 +55,7 @@ func main() {
 	defer cancel()
 
 	// Connect to the database using the pgx driver with database/sql
-	conn, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5433/defifundr?sslmode=disable")
+	conn, err := pgxpool.New(ctx, configs.DBSource)
 	if err != nil {
 		logger.Fatal("Unable to connect to database", err, map[string]interface{}{
 			"db_source": configs.DBSource,
@@ -85,11 +85,11 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 
 	// Initialize the router
-	router := gin.New() // We use a custom logger middleware to log all requests
+	router := gin.New()
 
 	// Apply our custom logging middleware
 	router.Use(middleware.LoggingMiddleware(logger, &configs))
-	router.Use(gin.Recovery()) // We still need recovery middleware
+	router.Use(gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
