@@ -85,11 +85,11 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 
 	// Initialize the router
-	router := gin.New() // We use a custom logger middleware to log all requests
+	router := gin.New()
 
 	// Apply our custom logging middleware
 	router.Use(middleware.LoggingMiddleware(logger, &configs))
-	router.Use(gin.Recovery()) // We still need recovery middleware
+	router.Use(gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
