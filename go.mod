@@ -1,5 +1,3 @@
-// +build !goproxy_off
-
 module github.com/demola234/defifundr
 
 go 1.23.0

@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	maxPasswordLength = 72 // Argon2's maximum input length
+	maxPasswordLength = 72 
 )
 
 type Argon2Params struct {
