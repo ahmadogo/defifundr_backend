@@ -112,7 +112,7 @@ func main() {
 	docs.SwaggerInfo.Title = "DefiFundr API"
 	docs.SwaggerInfo.Description = "Decentralized Payroll and Invoicing Platform for Remote Teams"
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.Host = "https://defifundr.koyeb.app"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
