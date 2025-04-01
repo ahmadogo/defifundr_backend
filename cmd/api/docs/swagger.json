@@ -18,7 +18,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "https://defifundr.koyeb.app",
     "basePath": "/api/v1",
     "paths": {
         "/admin/waitlist": {
