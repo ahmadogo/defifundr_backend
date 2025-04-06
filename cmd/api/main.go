@@ -79,25 +79,26 @@ func main() {
 	}
 
 	// Initialize Email System
-	// Create RabbitMQ email sender
-	emailSender, err := mail.NewRabbitMQEmailSender(configs, logger)
+	// Create AsyncQ email sender
+	emailSender, err := mail.NewAsyncQEmailSender(configs, logger)
 	if err != nil {
-		logger.Fatal("Failed to create RabbitMQ email sender", err, map[string]interface{}{
-			"rabbitmq_url": configs.RabbitMqURL,
-		})
+		logger.Fatal("Failed to create AsyncQ email sender", err, nil)
 	}
 
-	// Start the email worker
-	emailWorker, err := mail.NewEmailWorker(configs, logger, 5) // 5 worker goroutines
+	// Need to cast to access the non-interface methods
+	asyncQSender, ok := emailSender.(*mail.AsyncQEmailSender)
+	if !ok {
+		logger.Fatal("Failed to cast email sender", nil, nil)
+	}
+
+	// Create the email worker with the async queue
+	emailWorker, err := mail.NewEmailWorker(configs, logger, asyncQSender)
 	if err != nil {
 		logger.Fatal("Failed to create email worker", err, nil)
 	}
 
 	// Start the email worker
-	err = emailWorker.Start()
-	if err != nil {
-		logger.Fatal("Failed to start email worker", err, nil)
-	}
+	emailWorker.Start()
 	defer emailWorker.Stop()
 
 	// Create email service using the email sender

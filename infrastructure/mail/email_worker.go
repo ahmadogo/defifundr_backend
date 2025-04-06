@@ -1,59 +1,31 @@
 package mail
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync"
-	"time"
 
 	"github.com/demola234/defifundr/config"
 	"github.com/demola234/defifundr/infrastructure/common/logging"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"gopkg.in/gomail.v2"
-)
-
-const (
-	maxRetries    = 3
-	retryInterval = 5 * time.Second
 )
 
 // EmailWorker processes emails from the queue and sends them
 type EmailWorker struct {
-	config         config.Config
-	logger         logging.Logger
-	conn           *amqp.Connection
-	channel        *amqp.Channel
-	dialer         *gomail.Dialer
-	templates      map[string]*template.Template
-	templatesDir   string
-	workerCount    int
-	shutdownCh     chan struct{}
-	workerWg       sync.WaitGroup
+	config       config.Config
+	logger       logging.Logger
+	dialer       *gomail.Dialer
+	templates    map[string]*template.Template
+	templatesDir string
+	sender       *AsyncQEmailSender
 }
 
 // NewEmailWorker creates a new email worker
-func NewEmailWorker(config config.Config, logger logging.Logger, workerCount int) (*EmailWorker, error) {
-	// Connect to RabbitMQ
-	conn, err := amqp.Dial(config.RabbitMqURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
-	}
-
-	// Create a channel
-	channel, err := conn.Channel()
-	if err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("failed to open a channel: %w", err)
-	}
-
+func NewEmailWorker(config config.Config, logger logging.Logger, sender *AsyncQEmailSender) (*EmailWorker, error) {
 	// Set up the dialer for sending emails
 	dialer := gomail.NewDialer(
 		config.SMTPHost,
@@ -62,193 +34,57 @@ func NewEmailWorker(config config.Config, logger logging.Logger, workerCount int
 		config.SMTPPassword,
 	)
 
-	// Load email templates
-	templatesDir := "./templates"
-	templates, err := loadTemplates(templatesDir)
-	if err != nil {
-		channel.Close()
-		conn.Close()
-		return nil, fmt.Errorf("failed to load email templates: %w", err)
+	// Determine templates directory - try different paths
+	templatesDir := ""
+	if templatesDir == "" {
+		templatesDir = "./templates/emails"
 	}
 
-	return &EmailWorker{
-		config:        config,
-		logger:        logger,
-		conn:          conn,
-		channel:       channel,
-		dialer:        dialer,
-		templates:     templates,
-		templatesDir:  templatesDir,
-		workerCount:   workerCount,
-		shutdownCh:    make(chan struct{}),
-	}, nil
+	// Load email templates - don't fail if templates directory doesn't exist
+	templates, err := loadTemplates(templatesDir)
+	if err != nil {
+		logger.Warn("Failed to load email templates, will use text-only emails", map[string]interface{}{
+			"error": err.Error(),
+			"path":  templatesDir,
+		})
+		templates = make(map[string]*template.Template)
+	}
+
+	worker := &EmailWorker{
+		config:       config,
+		logger:       logger,
+		dialer:       dialer,
+		templates:    templates,
+		templatesDir: templatesDir,
+		sender:       sender,
+	}
+
+	// Set up the processor for the async queue
+	sender.SetProcessor(func(item interface{}) error {
+		emailMsg, ok := item.(EmailMessage)
+		if !ok {
+			return fmt.Errorf("invalid message type, expected EmailMessage")
+		}
+		return worker.processEmail(emailMsg)
+	})
+
+	return worker, nil
 }
 
 // Start starts the email worker
-func (w *EmailWorker) Start() error {
-	// Ensure the queue exists
-	_, err := w.channel.QueueDeclare(
-		emailQueue, // name
-		true,       // durable
-		false,      // delete when unused
-		false,      // exclusive
-		false,      // no-wait
-		nil,        // arguments
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare a queue: %w", err)
-	}
-
-	// Prefetch count
-	err = w.channel.Qos(
-		1,     // prefetch count
-		0,     // prefetch size
-		false, // global
-	)
-	if err != nil {
-		return fmt.Errorf("failed to set QoS: %w", err)
-	}
-
-	// Start worker goroutines
-	for i := 0; i < w.workerCount; i++ {
-		workerID := i
-		w.workerWg.Add(1)
-
-		go func() {
-			defer w.workerWg.Done()
-			w.runWorker(workerID)
-		}()
-	}
-
-	w.logger.Info("Email worker started", map[string]interface{}{
-		"worker_count": w.workerCount,
-	})
-
-	return nil
+func (w *EmailWorker) Start() {
+	w.sender.Start()
+	w.logger.Info("Email worker started")
 }
 
 // Stop stops the email worker
-func (w *EmailWorker) Stop() error {
-	// Signal all workers to stop
-	close(w.shutdownCh)
-
-	// Wait for all workers to finish
-	w.workerWg.Wait()
-
-	// Close the channel and connection
-	if w.channel != nil {
-		w.channel.Close()
-	}
-	if w.conn != nil {
-		w.conn.Close()
-	}
-
+func (w *EmailWorker) Stop() {
+	w.sender.Stop()
 	w.logger.Info("Email worker stopped")
-	return nil
 }
 
-// runWorker runs a worker to process emails from the queue
-func (w *EmailWorker) runWorker(workerID int) {
-	w.logger.Info("Starting email worker", map[string]interface{}{
-		"worker_id": workerID,
-	})
-
-	// Create a consumer
-	msgs, err := w.channel.Consume(
-		emailQueue,        // queue
-		fmt.Sprintf("email-worker-%d", workerID), // consumer
-		false,             // auto-ack
-		false,             // exclusive
-		false,             // no-local
-		false,             // no-wait
-		nil,               // args
-	)
-	if err != nil {
-		w.logger.Error("Failed to register a consumer", err, map[string]interface{}{
-			"worker_id": workerID,
-		})
-		return
-	}
-
-	for {
-		select {
-		case <-w.shutdownCh:
-			// Worker is being shut down
-			w.logger.Info("Worker shutting down", map[string]interface{}{
-				"worker_id": workerID,
-			})
-			return
-
-		case msg, ok := <-msgs:
-			if !ok {
-				// Channel was closed
-				w.logger.Error("Channel closed", nil, map[string]interface{}{
-					"worker_id": workerID,
-				})
-				return
-			}
-
-			// Process the message
-			err := w.processMessage(msg)
-
-			if err != nil {
-				// Log the error
-				w.logger.Error("Failed to process message", err, map[string]interface{}{
-					"worker_id": workerID,
-				})
-
-				// Get retry count from headers
-				retryCount := 0
-				if headers, ok := msg.Headers["x-retry-count"].(int); ok {
-					retryCount = headers
-				}
-
-				// If we haven't exceeded max retries, requeue the message
-				if retryCount < maxRetries {
-					// Increment retry count
-					if msg.Headers == nil {
-						msg.Headers = make(amqp.Table)
-					}
-					msg.Headers["x-retry-count"] = retryCount + 1
-
-					// Requeue the message after a delay
-					time.Sleep(retryInterval)
-					err = w.requeueMessage(msg)
-					if err != nil {
-						w.logger.Error("Failed to requeue message", err, map[string]interface{}{
-							"worker_id": workerID,
-						})
-						// Nack the message without requeuing
-						msg.Nack(false, false)
-					}
-				} else {
-					// Max retries exceeded, move to dead letter queue
-					err = w.moveToDeadLetterQueue(msg)
-					if err != nil {
-						w.logger.Error("Failed to move message to dead letter queue", err, map[string]interface{}{
-							"worker_id": workerID,
-						})
-					}
-					// Nack the message without requeuing
-					msg.Nack(false, false)
-				}
-			} else {
-				// Acknowledge the message
-				msg.Ack(false)
-			}
-		}
-	}
-}
-
-// processMessage processes an email message from the queue
-func (w *EmailWorker) processMessage(msg amqp.Delivery) error {
-	// Parse the message
-	var emailMsg EmailMessage
-	err := json.Unmarshal(msg.Body, &emailMsg)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal email message: %w", err)
-	}
-
+// processEmail processes an email message from the queue
+func (w *EmailWorker) processEmail(emailMsg EmailMessage) error {
 	w.logger.Info("Processing email", map[string]interface{}{
 		"id":        emailMsg.ID,
 		"recipient": emailMsg.Recipient,
@@ -256,8 +92,12 @@ func (w *EmailWorker) processMessage(msg amqp.Delivery) error {
 	})
 
 	// Send the email
-	err = w.sendEmail(emailMsg)
+	err := w.sendEmail(emailMsg)
 	if err != nil {
+		w.logger.Error("Failed to send email", err, map[string]interface{}{
+			"id":        emailMsg.ID,
+			"recipient": emailMsg.Recipient,
+		})
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
@@ -277,28 +117,44 @@ func (w *EmailWorker) sendEmail(emailMsg EmailMessage) error {
 	m.SetHeader("To", emailMsg.Recipient)
 	m.SetHeader("Subject", emailMsg.Subject)
 
-	// Render the email template
-	templateName := emailMsg.TemplateName
-	tmpl, ok := w.templates[templateName]
-	if !ok {
-		return fmt.Errorf("template not found: %s", templateName)
-	}
+	// Check if this is a direct text email
+	if textBody, ok := emailMsg.Data["TextBody"].(string); ok {
+		m.SetBody("text/plain", textBody)
+	} else {
+		// Try to use a template if available
+		templateName := emailMsg.TemplateName
+		tmpl, ok := w.templates[templateName]
 
-	// Render the HTML template
-	var htmlBody string
-	if tmpl != nil {
-		var htmlBuffer strings.Builder
-		err := tmpl.Execute(&htmlBuffer, emailMsg.Data)
-		if err != nil {
-			return fmt.Errorf("failed to render email template: %w", err)
+		// If template found, render it
+		if ok && tmpl != nil {
+			var htmlBuffer strings.Builder
+			err := tmpl.Execute(&htmlBuffer, emailMsg.Data)
+			if err != nil {
+				w.logger.Warn("Failed to render template, using plain text", map[string]interface{}{
+					"template": templateName,
+					"error":    err.Error(),
+				})
+			} else {
+				htmlBody := htmlBuffer.String()
+				m.AddAlternative("text/html", htmlBody)
+				
+				// Generate plain text version from HTML
+				plainText := generatePlainTextFromHTML(htmlBody)
+				m.SetBody("text/plain", plainText)
+			}
+		} else {
+			// No template found, create a simple text version
+			content := fmt.Sprintf("Hello,\n\nThis is a message from %s.\n\n", w.config.SenderName)
+			
+			// Add any data values as simple text
+			for k, v := range emailMsg.Data {
+				content += fmt.Sprintf("%s: %v\n", k, v)
+			}
+			
+			content += fmt.Sprintf("\n\nBest regards,\nThe %s Team", w.config.SenderName)
+			m.SetBody("text/plain", content)
 		}
-		htmlBody = htmlBuffer.String()
-		m.AddAlternative("text/html", htmlBody)
 	}
-
-	// Generate plain text version from HTML
-	plainText := generatePlainTextFromHTML(htmlBody)
-	m.SetBody("text/plain", plainText)
 
 	// Add attachments if any
 	for _, attachment := range emailMsg.Attachments {
@@ -315,56 +171,6 @@ func (w *EmailWorker) sendEmail(emailMsg EmailMessage) error {
 
 	// Send the email
 	return w.dialer.DialAndSend(m)
-}
-
-// requeueMessage requeues a message to the main queue
-func (w *EmailWorker) requeueMessage(msg amqp.Delivery) error {
-	return w.channel.PublishWithContext(
-		context.Background(),
-		"",        // exchange
-		emailQueue, // routing key
-		false,     // mandatory
-		false,     // immediate
-		amqp.Publishing{
-			ContentType:  msg.ContentType,
-			Body:         msg.Body,
-			DeliveryMode: msg.DeliveryMode,
-			Priority:     msg.Priority,
-			Headers:      msg.Headers,
-		},
-	)
-}
-
-// moveToDeadLetterQueue moves a message to the dead letter queue
-func (w *EmailWorker) moveToDeadLetterQueue(msg amqp.Delivery) error {
-	// Ensure the dead letter queue exists
-	_, err := w.channel.QueueDeclare(
-		emailQueue+".dead", // name
-		true,              // durable
-		false,             // delete when unused
-		false,             // exclusive
-		false,             // no-wait
-		nil,               // arguments
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare dead letter queue: %w", err)
-	}
-
-	// Publish to the dead letter queue
-	return w.channel.PublishWithContext(
-		context.Background(),
-		"",                 // exchange
-		emailQueue+".dead", // routing key
-		false,              // mandatory
-		false,              // immediate
-		amqp.Publishing{
-			ContentType:  msg.ContentType,
-			Body:         msg.Body,
-			DeliveryMode: msg.DeliveryMode,
-			Priority:     msg.Priority,
-			Headers:      msg.Headers,
-		},
-	)
 }
 
 // loadTemplates loads all email templates from the templates directory
@@ -393,7 +199,7 @@ func loadTemplates(templatesDir string) (map[string]*template.Template, error) {
 		}
 
 		// Read the template file
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("failed to read template file %s: %w", path, err)
 		}
@@ -423,9 +229,6 @@ func loadTemplates(templatesDir string) (map[string]*template.Template, error) {
 
 // generatePlainTextFromHTML generates a plain text version from HTML
 func generatePlainTextFromHTML(html string) string {
-	// This is a simple implementation that removes HTML tags
-	// For a more robust solution, consider using a proper HTML to text converter
-	
 	// Remove HTML tags
 	plainText := html
 	plainText = tagRegex.ReplaceAllString(plainText, "")
