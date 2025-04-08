@@ -5,9 +5,9 @@ ifneq (,$(wildcard .env))
 endif
 
 DB_URL = ${DB_SOURCE}
-DB_NAME ?= defi
-DB_USER ?= root
-DB_PASSWORD ?= secret
+DB_NAME ?= ${DB_NAME}
+DB_USER ?= ${DB_USER}
+DB_PASSWORD ?= ${DB_PASSWORD}
 DB_PORT ?= 5433
 
 # Docker commands
@@ -31,10 +31,10 @@ docker-restart:
 
 # Database commands
 postgres:
-	docker run --name defi -p $(DB_PORT):5432 -e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -d postgres:15-alpine
+	docker run --name $(DB_NAME) -p $(DB_PORT):5432 -e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -d postgres:15-alpine
 
 createdb:
-	docker exec -it defi createdb --username=$(DB_USER) --owner=$(DB_USER) $(DB_NAME)
+	docker exec -it $(DB_NAME) createdb --username=$(DB_USER) --owner=$(DB_USER) $(DB_NAME)
 
 dockerlogs:
 	docker logs defi
@@ -48,7 +48,7 @@ migrate-create:
 	goose -dir db/migrations create $${name} sql
 
 migrate-up:
-	goose -dir db/migrations postgres "postgres://root:secret@localhost:5433/defi?sslmode=disable" up
+	goose -dir db/migrations postgres "$(DB_URL)?sslmode=require" up
 
 migrate-up-one:
 	goose -dir db/migrations postgres "$(DB_URL)" up-by-one
