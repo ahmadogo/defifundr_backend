@@ -9,6 +9,7 @@ import (
 	"github.com/demola234/defifundr/config"
 	db "github.com/demola234/defifundr/db/sqlc"
 	"github.com/demola234/defifundr/infrastructure/common/logging"
+	"github.com/demola234/defifundr/infrastructure/mail"
 	"github.com/demola234/defifundr/infrastructure/middleware"
 	"github.com/demola234/defifundr/internal/adapters/handlers"
 	"github.com/demola234/defifundr/internal/adapters/repositories"
@@ -77,8 +78,31 @@ func main() {
 		log.Fatalf("cannot create token maker: %v", err)
 	}
 
-	// Create email service
-	emailService := services.NewEmailService(configs, logger)
+	// Initialize Email System
+	// Create AsyncQ email sender
+	emailSender, err := mail.NewAsyncQEmailSender(configs, logger)
+	if err != nil {
+		logger.Fatal("Failed to create AsyncQ email sender", err, nil)
+	}
+
+	// Need to cast to access the non-interface methods
+	asyncQSender, ok := emailSender.(*mail.AsyncQEmailSender)
+	if !ok {
+		logger.Fatal("Failed to cast email sender", nil, nil)
+	}
+
+	// Create the email worker with the async queue
+	emailWorker, err := mail.NewEmailWorker(configs, logger, asyncQSender)
+	if err != nil {
+		logger.Fatal("Failed to create email worker", err, nil)
+	}
+
+	// Start the email worker
+	emailWorker.Start()
+	defer emailWorker.Stop()
+
+	// Create email service using the email sender
+	emailService := services.NewEmailService(configs, logger, emailSender)
 
 	// Create services
 	authService := services.NewAuthService(userRepo, otpRepo, sessionRepo, tokenMaker, configs)
