@@ -40,30 +40,7 @@ dockerlogs:
 	docker logs defi
 
 dropdb:
-	docker exec -it defi dropdb $(DB_NAME)
-
-# Migration commands (using goose)
-migrate-create:
-	@read -p "Enter migration name: " name; \
-	goose -dir db/migrations create $${name} sql
-
-migrate-up:
-	goose -dir db/migrations postgres "$(DB_URL)?sslmode=require" up
-
-migrate-up-one:
-	goose -dir db/migrations postgres "$(DB_URL)" up-by-one
-
-migrate-down:
-	goose -dir db/migrations postgres "$(DB_URL)" down
-
-migrate-down-one:
-	goose -dir db/migrations postgres "$(DB_URL)" down-by-one
-
-migrate-status:
-	goose -dir db/migrations postgres "$(DB_URL)" status
-
-migrate-reset:
-	goose -dir db/migrations postgres "$(DB_URL)" reset
+	docker exec -it defi dropdb $(DB_NAME)  
 
 # Smart contract commands
 gencontract:

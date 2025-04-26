@@ -237,7 +237,7 @@ definitions:
       waiting_count:
         type: integer
     type: object
-host: https://defifundr.koyeb.app
+host: defifundr.koyeb.app
 info:
   contact:
     email: hello@defifundr.com
