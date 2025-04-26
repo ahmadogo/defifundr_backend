@@ -24,17 +24,18 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// IMPORTANT: Do not include protocol in host (no http:// or https://)
 // @title DefiFundr API
 // @version 1.0
 // @description Decentralized Payroll and Invoicing Platform for Remote Teams
 // @termsOfService http://swagger.io/terms/
-// @schemes http
+// @schemes http https
 // @contact.name DefiFundr Support
 // @contact.url http://defifundr.com/support
 // @contact.email hello@defifundr.com
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host https://defifundr.koyeb.app
+// @host localhost:8080
 // @BasePath /api/v1
 // @securityDefinitions.basic BasicAuth
 
@@ -121,6 +122,7 @@ func main() {
 	router.Use(middleware.LoggingMiddleware(logger, &configs))
 	router.Use(gin.Recovery())
 
+	// Configure CORS to allow all origins
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -133,13 +135,23 @@ func main() {
 	// Set up API routes
 	setupRoutes(router, authHandler, userHandler, waitlistHandler, configs, logger)
 
+	// Explicitly set host based on environment without protocol
+	var swaggerHost string
+	if configs.Environment == "production" {
+		swaggerHost = "defifundr.koyeb.app"
+	} else {
+		swaggerHost = "localhost:8080"
+	}
+
+	// Set Swagger info
 	docs.SwaggerInfo.Title = "DefiFundr API"
 	docs.SwaggerInfo.Description = "Decentralized Payroll and Invoicing Platform for Remote Teams"
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "https://defifundr.koyeb.app"
+	docs.SwaggerInfo.Host = swaggerHost // No protocol here
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
+	// Setup Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Start the HTTP server
