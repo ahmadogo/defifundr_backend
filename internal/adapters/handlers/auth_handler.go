@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -327,117 +326,5 @@ func (h *AuthHandler) Logout(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response.SuccessResponse{
 		Message: "Logged out successfully",
-	})
-}
-
-// VerifyEmail godoc
-// @Summary Verify user email
-// @Description Verify user email using OTP
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param verification body request.VerifyEmailRequest true "Email verification data"
-// @Success 200 {object} response.SuccessResponse "Email verified successfully"
-// @Failure 400 {object} response.ErrorResponse "Invalid request"
-// @Router /auth/verify-email [post]
-func (h *AuthHandler) VerifyEmail(ctx *gin.Context) {
-	var req request.VerifyEmailRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
-		})
-		return
-	}
-
-	// Parse user ID
-	userID, err := uuid.Parse(req.UserID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error: "Invalid user ID format",
-		})
-		return
-	}
-
-	// Verify email
-	err = h.authService.VerifyEmail(ctx, userID, req.OTPCode)
-	if err != nil {
-		errResponse := response.ErrorResponse{
-			Error: "Failed to verify email",
-		}
-
-		if app_errors.IsAppError(err) {
-			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
-		}
-
-		ctx.JSON(http.StatusBadRequest, errResponse)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, response.SuccessResponse{
-		Message: "Email verified successfully",
-	})
-}
-
-// ResendOTP godoc
-// @Summary Resend OTP
-// @Description Resend OTP for verification
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param resend body request.ResendOTPRequest true "Resend OTP data"
-// @Success 200 {object} response.SuccessResponse "OTP sent successfully"
-// @Failure 400 {object} response.ErrorResponse "Invalid request"
-// @Router /auth/resend-otp [post]
-func (h *AuthHandler) ResendOTP(ctx *gin.Context) {
-	var req request.ResendOTPRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
-		})
-		return
-	}
-
-	// Parse user ID
-	userID, err := uuid.Parse(req.UserID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error: "Invalid user ID format",
-		})
-		return
-	}
-
-	// Determine OTP purpose
-	var purpose domain.OTPPurpose
-	switch req.Purpose {
-	case "email_verification":
-		purpose = domain.OTPPurposeEmailVerification
-	case "password_reset":
-		purpose = domain.OTPPurposePasswordReset
-	default:
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error: "Invalid OTP purpose",
-		})
-		return
-	}
-
-	// Generate new OTP
-	otp, err := h.authService.GenerateOTP(ctx, userID, purpose, req.ContactMethod)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: fmt.Sprintf("Failed to generate OTP: %v", err),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, response.SuccessResponse{
-		Message: "OTP sent successfully",
-		Data: gin.H{
-			"expires_at": otp.ExpiresAt,
-		},
 	})
 }

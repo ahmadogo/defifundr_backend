@@ -8,11 +8,12 @@ import (
 	"github.com/demola234/defifundr/config"
 	"github.com/demola234/defifundr/infrastructure/common/logging"
 	"github.com/demola234/defifundr/internal/core/ports"
+	emailEnums "github.com/demola234/defifundr/pkg/utils"
 )
 
 type EmailService struct {
-	config    config.Config
-	logger    logging.Logger
+	config      config.Config
+	logger      logging.Logger
 	emailSender ports.EmailSender
 }
 
@@ -33,19 +34,19 @@ func (s *EmailService) SendWaitlistConfirmation(ctx context.Context, email, name
 	}
 
 	subject := "Welcome to DefiFundr Waitlist"
-	
+
 	// Create plain text email body
 	body := fmt.Sprintf(
 		"Hello %s,\n\n"+
-		"Thank you for joining the DefiFundr waitlist. We're excited to have you on board!\n\n"+
-		"Your current position on the waitlist: %d\n\n"+
-		"Want to move up? Share your unique referral code with friends: %s\n\n"+
-		"We'll notify you as soon as we're ready to welcome you to the platform.\n\n"+
-		"Best regards,\n"+
-		"The DefiFundr Team",
+			"Thank you for joining the DefiFundr waitlist. We're excited to have you on board!\n\n"+
+			"Your current position on the waitlist: %d\n\n"+
+			"Want to move up? Share your unique referral code with friends: %s\n\n"+
+			"We'll notify you as soon as we're ready to welcome you to the platform.\n\n"+
+			"Best regards,\n"+
+			"The DefiFundr Team",
 		name, position, referralCode,
 	)
-	
+
 	// Prepare data for the email sender
 	templateData := map[string]interface{}{
 		"Name":         name,
@@ -56,7 +57,7 @@ func (s *EmailService) SendWaitlistConfirmation(ctx context.Context, email, name
 	}
 
 	// Queue email with normal priority
-	_, err := s.emailSender.QueueEmail(ctx, email, subject, "text_email", templateData, ports.NormalPriority)
+	_, err := s.emailSender.QueueEmail(ctx, email, subject, "text_email", templateData, emailEnums.NormalPriority)
 	if err != nil {
 		s.logger.Error("Failed to queue waitlist confirmation email", err, map[string]interface{}{
 			"email": email,
@@ -78,7 +79,7 @@ func (s *EmailService) SendWaitlistInvitation(ctx context.Context, email, name s
 	}
 
 	subject := "You're In! Access DefiFundr Now"
-	
+
 	// Prepare template data
 	templateData := map[string]interface{}{
 		"Name":       name,
@@ -87,7 +88,7 @@ func (s *EmailService) SendWaitlistInvitation(ctx context.Context, email, name s
 	}
 
 	// Queue email with high priority
-	_, err := s.emailSender.QueueEmail(ctx, email, subject, "waitlist_invitation", templateData, ports.HighPriority)
+	_, err := s.emailSender.QueueEmail(ctx, email, subject, "waitlist_invitation", templateData, emailEnums.HighPriority)
 	if err != nil {
 		s.logger.Error("Failed to queue waitlist invitation email", err, map[string]interface{}{
 			"email": email,
@@ -116,7 +117,7 @@ func (s *EmailService) SendBatchUpdate(ctx context.Context, emails []string, sub
 
 	for _, email := range emails {
 		// Queue email with low priority (for batch operations)
-		_, err := s.emailSender.QueueEmail(ctx, email, subject, "general_update", templateData, ports.LowPriority)
+		_, err := s.emailSender.QueueEmail(ctx, email, subject, "general_update", templateData, emailEnums.LowPriority)
 		if err != nil {
 			s.logger.Error("Failed to queue batch update email", err, map[string]interface{}{
 				"email": email,
@@ -137,6 +138,6 @@ func (s *EmailService) SendBatchUpdate(ctx context.Context, emails []string, sub
 
 // isTestMode checks if the service is running in test mode
 func (s *EmailService) isTestMode() bool {
-	return strings.ToLower(s.config.Environment) == "test" || 
-		   strings.ToLower(s.config.Environment) == "development"
+	return strings.ToLower(s.config.Environment) == "test" ||
+		strings.ToLower(s.config.Environment) == "development"
 }

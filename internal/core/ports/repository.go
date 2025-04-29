@@ -13,6 +13,8 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	UpdateUser(ctx context.Context, user domain.User) (*domain.User, error)
+	ValidateWebOAuthUser(ctx context.Context, provider, providerID string) (*domain.User, error)
+	GetUserByProviderID(ctx context.Context, provider, providerID string) (*domain.User, error)
 	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 }
 
@@ -45,7 +47,6 @@ type EmailRepository interface {
 	SendVerificationEmail(ctx context.Context, email, name, code string) error
 	SendPasswordResetEmail(ctx context.Context, email, name, code string) error
 }
-
 
 // WaitlistRepository defines the storage operations for the waitlist
 type WaitlistRepository interface {

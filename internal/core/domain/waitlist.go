@@ -19,3 +19,4 @@ type WaitlistEntry struct {
 	RegisteredDate *time.Time `json:"registered_date,omitempty"`
 	Metadata      map[string]interface{} `json:"metadata,omitempty"`
 }
+

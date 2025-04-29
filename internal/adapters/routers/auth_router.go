@@ -12,11 +12,9 @@ func RegisterAuthRoutes(rg *gin.RouterGroup, authHandler *handlers.AuthHandler, 
 		authRoutes.POST("/register", authHandler.Register)
 		authRoutes.POST("/login", authHandler.Login)
 		authRoutes.POST("/refresh", authHandler.RefreshToken)
-		authRoutes.POST("/verify-email", authHandler.VerifyEmail)
-		authRoutes.POST("/resend-otp", authHandler.ResendOTP)
 
 		// Protected routes (require authMiddleware)
 		authRoutes.POST("/logout", authMiddleware, authHandler.Logout)
-	
+
 	}
 }
