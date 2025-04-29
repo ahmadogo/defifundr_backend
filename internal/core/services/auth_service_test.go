@@ -171,31 +171,6 @@ func TestAuthService_Login_InvalidCredentials(t *testing.T) {
 	assert.Equal(t, 1, mockUserRepo.GetUserByEmailCallCount())
 }
 
-func TestAuthService_VerifyEmail(t *testing.T) {
-	// Arrange
-	mockUserRepo := new(mocks.FakeUserRepository)
-	mockOTPRepo := new(mocks.FakeOTPRepository)
-	mockSessionRepo := new(mocks.FakeSessionRepository)
-	mockTokenMaker := new(mocks.FakeMaker)
-	cfg := config.Config{}
-
-	service := NewAuthService(mockUserRepo, mockOTPRepo, mockSessionRepo, mockTokenMaker, cfg)
-
-	ctx := context.Background()
-	userID := uuid.New()
-	code := "123456"
-
-	// Mock expectations
-	mockOTPRepo.VerifyOTPReturns(nil)
-
-	// Act
-	err := service.VerifyEmail(ctx, userID, code)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, 1, mockOTPRepo.VerifyOTPCallCount())
-}
-
 func TestAuthService_RefreshToken(t *testing.T) {
 	// Arrange
 	mockUserRepo := new(mocks.FakeUserRepository)

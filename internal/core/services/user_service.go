@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MicahParks/keyfunc/v2"
 	"github.com/demola234/defifundr/internal/core/domain"
 	"github.com/demola234/defifundr/internal/core/ports"
 	utils "github.com/demola234/defifundr/pkg/hash"
-	jwtv5 "github.com/golang-jwt/jwt/v5"
 
 	"github.com/google/uuid"
 )
@@ -114,38 +112,3 @@ func validatePassword(password string) error {
 
 	return nil
 }
-
-func verifyWeb3AuthToken(ctx context.Context, tokenString string) (jwtv5.MapClaims, error) {
-	// Load JWKS from Web3Auth
-	jwksURL := "https://authjs.web3auth.io/jwks"
-	jwks, err := keyfunc.Get(jwksURL, keyfunc.Options{
-		RefreshInterval: time.Hour,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get JWKS: %v", err)
-	}
-
-	// Manually patch: wrap Keyfunc
-	keyFunc := func(t *jwtv5.Token) (interface{}, error) {
-		// Rebuild a v4 Token to use with keyfunc
-		return jwks.Keyfunc((*jwtv5.Token)(t))
-	}
-
-	// Parse the token
-	token, err := jwtv5.Parse(tokenString, keyFunc)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse token: %v", err)
-	}
-
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	claims, ok := token.Claims.(jwtv5.MapClaims)
-	if !ok {
-		return nil, fmt.Errorf("invalid claims")
-	}
-
-	return claims, nil
-}
-

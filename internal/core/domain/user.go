@@ -9,7 +9,7 @@ import (
 type User struct {
 	ID                  uuid.UUID `json:"id"`
 	Email               string    `json:"email"`
-	Password            *string    `json:"-"`
+	Password            *string   `json:"-"`
 	ProfilePicture      *string   `json:"profile_picture,omitempty"`
 	AccountType         string    `json:"account_type"`
 	Gender              *string   `json:"gender,omitempty"`
@@ -21,6 +21,11 @@ type User struct {
 	JobRole             *string   `json:"job_role,omitempty"`
 	CompanyWebsite      *string   `json:"company_website,omitempty"`
 	EmploymentType      *string   `json:"employment_type,omitempty"`
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
+	Address             string    `json:"address"`
+	City                string    `json:"city"`
+	PostalCode          string    `json:"postal_code"`
+	Provider            string    `json:"provider"`
+	ProviderID          string    `json:"provider_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

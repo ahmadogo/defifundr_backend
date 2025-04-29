@@ -10,6 +10,7 @@ counterfeiter -o internal/core/ports/mocks/email_repository.go internal/core/por
 # Generate mocks for services
 counterfeiter -o internal/core/ports/mocks/auth_service.go internal/core/ports AuthService
 counterfeiter -o internal/core/ports/mocks/user_service.go internal/core/ports UserService
+counterfeiter -o internal/core/ports/mocks/oauth_service.go internal/core/ports OAuthService
 
 # Generate mocks for token maker
 counterfeiter -o internal/core/ports/mocks/token_maker.go pkg/token_maker Maker 

@@ -8,6 +8,8 @@ import (
 	"github.com/demola234/defifundr/config"
 	"github.com/demola234/defifundr/infrastructure/common/logging"
 	"github.com/demola234/defifundr/internal/core/ports"
+	emailEnums "github.com/demola234/defifundr/pkg/utils"
+
 	"github.com/google/uuid"
 )
 
@@ -40,18 +42,18 @@ func NewAsyncQEmailSender(config config.Config, logger logging.Logger) (ports.Em
 
 // SendEmail sends an email directly
 func (s *AsyncQEmailSender) SendEmail(ctx context.Context, recipient string, subject string, templateName string, data map[string]interface{}) error {
-	_, err := s.QueueEmail(ctx, recipient, subject, templateName, data, ports.NormalPriority)
+	_, err := s.QueueEmail(ctx, recipient, subject, templateName, data, emailEnums.NormalPriority)
 	return err
 }
 
 // SendEmailWithAttachment sends an email with attachments directly
-func (s *AsyncQEmailSender) SendEmailWithAttachment(ctx context.Context, recipient string, subject string, templateName string, data map[string]interface{}, attachments []ports.EmailAttachment) error {
-	_, err := s.QueueEmail(ctx, recipient, subject, templateName, data, ports.NormalPriority)
+func (s *AsyncQEmailSender) SendEmailWithAttachment(ctx context.Context, recipient string, subject string, templateName string, data map[string]interface{}, attachments []emailEnums.EmailAttachment) error {
+	_, err := s.QueueEmail(ctx, recipient, subject, templateName, data, emailEnums.NormalPriority)
 	return err
 }
 
 // QueueEmail queues an email for asynchronous delivery
-func (s *AsyncQEmailSender) QueueEmail(ctx context.Context, recipient string, subject string, templateName string, data map[string]interface{}, priority ports.EmailPriority) (string, error) {
+func (s *AsyncQEmailSender) QueueEmail(ctx context.Context, recipient string, subject string, templateName string, data map[string]interface{}, priority emailEnums.EmailPriority) (string, error) {
 	// Create a unique ID for the email
 	id := uuid.New().String()
 

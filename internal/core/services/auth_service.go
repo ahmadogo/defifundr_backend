@@ -23,6 +23,36 @@ type authService struct {
 	config      config.Config
 }
 
+// RegisterAddressDetails implements ports.AuthService.
+func (a *authService) RegisterAddressDetails(ctx context.Context, user domain.User, password string) (*domain.User, error) {
+	panic("unimplemented")
+}
+
+// RegisterBusiness implements ports.AuthService.
+func (a *authService) RegisterBusiness(ctx context.Context, user domain.User, password string) (*domain.User, error) {
+	panic("unimplemented")
+}
+
+// RegisterBusinessDetails implements ports.AuthService.
+func (a *authService) RegisterBusinessDetails(ctx context.Context, user domain.User, password string) (*domain.User, error) {
+	panic("unimplemented")
+}
+
+// RegisterPersonalDetails implements ports.AuthService.
+func (a *authService) RegisterPersonalDetails(ctx context.Context, user domain.User, password string) (*domain.User, error) {
+	panic("unimplemented")
+}
+
+// ResetPassword implements ports.AuthService.
+func (a *authService) ResetPassword(ctx context.Context, email string, code string, newPassword string) error {
+	panic("unimplemented")
+}
+
+// SendPasswordResetEmail implements ports.AuthService.
+func (a *authService) SendPasswordResetEmail(ctx context.Context, email string) error {
+	panic("unimplemented")
+}
+
 // NewAuthService creates a new instance of authService.
 func NewAuthService(
 	userRepo ports.UserRepository,
@@ -235,5 +265,5 @@ func (a *authService) VerifyOTP(ctx context.Context, userID uuid.UUID, purpose d
 func verifyPassword(plainPassword, hashedPassword string) bool {
 	// Replace with your actual password verification logic
 	// This might use bcrypt or another hashing algorithm
-	return plainPassword == hashedPassword // This is just a placeholder!
+	return plainPassword == hashedPassword
 }

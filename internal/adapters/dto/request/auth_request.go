@@ -21,6 +21,7 @@ type RegisterRequest struct {
 	JobRole             string `json:"job_role"`
 	CompanyWebsite      string `json:"company_website"`
 	EmploymentType      string `json:"employment_type"`
+
 }
 
 // Validate validates the register request
@@ -46,8 +47,10 @@ func (r *RegisterRequest) Validate() error {
 
 // LoginRequest represents the user login request
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email      string `json:"email" binding:"required,email"`
+	Password   string `json:"password" binding:"required"`
+	Provider   string `json:"provider"`
+	ProviderID string `json:"provider_id"`
 }
 
 // Validate validates the login request
@@ -168,14 +171,14 @@ func (r *ResendOTPRequest) Validate() error {
 
 // UpdateKYCRequest represents the KYC update request
 type UpdateKYCRequest struct {
-	IDType             string    `json:"id_type" binding:"required"`
-	IDNumber           string    `json:"id_number" binding:"required"`
-	IDIssuingCountry   string    `json:"id_issuing_country" binding:"required"`
-	IDExpiryDate       time.Time `json:"id_expiry_date" binding:"required"`
-	IDFrontImage       string    `json:"id_front_image" binding:"required"`
-	IDBackImage        string    `json:"id_back_image"`
-	SelfieImage        string    `json:"selfie_image" binding:"required"`
-	AddressProofImage  string    `json:"address_proof_image"`
+	IDType            string    `json:"id_type" binding:"required"`
+	IDNumber          string    `json:"id_number" binding:"required"`
+	IDIssuingCountry  string    `json:"id_issuing_country" binding:"required"`
+	IDExpiryDate      time.Time `json:"id_expiry_date" binding:"required"`
+	IDFrontImage      string    `json:"id_front_image" binding:"required"`
+	IDBackImage       string    `json:"id_back_image"`
+	SelfieImage       string    `json:"selfie_image" binding:"required"`
+	AddressProofImage string    `json:"address_proof_image"`
 }
 
 // Validate validates the KYC update request
