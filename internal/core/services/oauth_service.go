@@ -13,23 +13,36 @@ import (
 	"github.com/demola234/defifundr/internal/core/ports"
 )
 
-type oauthService struct {
+// Ensure oauthService implements ports.OAuthService
+var _ ports.OAuthService = (*OAuthServiceImpl)(nil)
+
+// OAuthServiceImpl implements the OAuthService interface
+type OAuthServiceImpl struct {
 	userRepo ports.UserRepository
 	config   config.Config
+
+	// For testing
+	ValidateWebAuthTokenFunc func(ctx context.Context, tokenString string) (map[string]interface{}, error)
 }
 
-// NewOAuthService creates a new instance of oauthService.
+// NewOAuthService creates a new instance of OAuthServiceImpl.
 func NewOAuthService(
 	userRepo ports.UserRepository,
 	config config.Config,
 ) ports.OAuthService {
-	return &oauthService{
+	return &OAuthServiceImpl{
 		userRepo: userRepo,
 		config:   config,
 	}
 }
 
-func (o *oauthService) ValidateWebAuthToken(ctx context.Context, tokenString string) (map[string]interface{}, error) {
+func (o *OAuthServiceImpl) ValidateWebAuthToken(ctx context.Context, tokenString string) (map[string]interface{}, error) {
+	// If using a test mock function, use it instead
+	if o.ValidateWebAuthTokenFunc != nil {
+		return o.ValidateWebAuthTokenFunc(ctx, tokenString)
+	}
+
+	// Standard implementation
 	jwksURL := "https://authjs.web3auth.io/jwks"
 	jwks, err := keyfunc.Get(jwksURL, keyfunc.Options{
 		RefreshInterval: time.Hour,
@@ -60,7 +73,7 @@ func (o *oauthService) ValidateWebAuthToken(ctx context.Context, tokenString str
 	return claims, nil
 }
 
-func (o *oauthService) GetUserInfo(ctx context.Context, token string) (map[string]interface{}, error) {
+func (o *OAuthServiceImpl) GetUserInfo(ctx context.Context, token string) (map[string]interface{}, error) {
 	// Validate the token first
 	claims, err := o.ValidateWebAuthToken(ctx, token)
 	if err != nil {
@@ -84,6 +97,25 @@ func (o *oauthService) GetUserInfo(ctx context.Context, token string) (map[strin
 		"user_id":    user.ID,
 		"email":      email,
 		"name":       claims["name"],
+		"created_at": user.CreatedAt,
+		"updated_at": user.UpdatedAt,
+	}
+
+	return userInfo, nil
+}
+
+func (o *OAuthServiceImpl) GetUserInfoByEmail(ctx context.Context, email string) (map[string]interface{}, error) {
+	// Get user from repository
+	user, err := o.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user info: %v", err)
+	}
+
+	// Build user info map
+	userInfo := map[string]interface{}{
+		"user_id":    user.ID,
+		"email":      user.Email,
+		"name":       user.FirstName + " " + user.LastName,
 		"created_at": user.CreatedAt,
 		"updated_at": user.UpdatedAt,
 	}
