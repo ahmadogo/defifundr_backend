@@ -23,20 +23,6 @@ type FakeOAuthService struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	GetUserInfoByEmailStub        func(context.Context, string) (map[string]interface{}, error)
-	getUserInfoByEmailMutex       sync.RWMutex
-	getUserInfoByEmailArgsForCall []struct {
-		arg1 context.Context
-		arg2 string
-	}
-	getUserInfoByEmailReturns struct {
-		result1 map[string]interface{}
-		result2 error
-	}
-	getUserInfoByEmailReturnsOnCall map[int]struct {
-		result1 map[string]interface{}
-		result2 error
-	}
 	ValidateWebAuthTokenStub        func(context.Context, string) (map[string]interface{}, error)
 	validateWebAuthTokenMutex       sync.RWMutex
 	validateWebAuthTokenArgsForCall []struct {
@@ -120,71 +106,6 @@ func (fake *FakeOAuthService) GetUserInfoReturnsOnCall(i int, result1 map[string
 	}{result1, result2}
 }
 
-func (fake *FakeOAuthService) GetUserInfoByEmail(arg1 context.Context, arg2 string) (map[string]interface{}, error) {
-	fake.getUserInfoByEmailMutex.Lock()
-	ret, specificReturn := fake.getUserInfoByEmailReturnsOnCall[len(fake.getUserInfoByEmailArgsForCall)]
-	fake.getUserInfoByEmailArgsForCall = append(fake.getUserInfoByEmailArgsForCall, struct {
-		arg1 context.Context
-		arg2 string
-	}{arg1, arg2})
-	stub := fake.GetUserInfoByEmailStub
-	fakeReturns := fake.getUserInfoByEmailReturns
-	fake.recordInvocation("GetUserInfoByEmail", []interface{}{arg1, arg2})
-	fake.getUserInfoByEmailMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeOAuthService) GetUserInfoByEmailCallCount() int {
-	fake.getUserInfoByEmailMutex.RLock()
-	defer fake.getUserInfoByEmailMutex.RUnlock()
-	return len(fake.getUserInfoByEmailArgsForCall)
-}
-
-func (fake *FakeOAuthService) GetUserInfoByEmailCalls(stub func(context.Context, string) (map[string]interface{}, error)) {
-	fake.getUserInfoByEmailMutex.Lock()
-	defer fake.getUserInfoByEmailMutex.Unlock()
-	fake.GetUserInfoByEmailStub = stub
-}
-
-func (fake *FakeOAuthService) GetUserInfoByEmailArgsForCall(i int) (context.Context, string) {
-	fake.getUserInfoByEmailMutex.RLock()
-	defer fake.getUserInfoByEmailMutex.RUnlock()
-	argsForCall := fake.getUserInfoByEmailArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeOAuthService) GetUserInfoByEmailReturns(result1 map[string]interface{}, result2 error) {
-	fake.getUserInfoByEmailMutex.Lock()
-	defer fake.getUserInfoByEmailMutex.Unlock()
-	fake.GetUserInfoByEmailStub = nil
-	fake.getUserInfoByEmailReturns = struct {
-		result1 map[string]interface{}
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeOAuthService) GetUserInfoByEmailReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
-	fake.getUserInfoByEmailMutex.Lock()
-	defer fake.getUserInfoByEmailMutex.Unlock()
-	fake.GetUserInfoByEmailStub = nil
-	if fake.getUserInfoByEmailReturnsOnCall == nil {
-		fake.getUserInfoByEmailReturnsOnCall = make(map[int]struct {
-			result1 map[string]interface{}
-			result2 error
-		})
-	}
-	fake.getUserInfoByEmailReturnsOnCall[i] = struct {
-		result1 map[string]interface{}
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeOAuthService) ValidateWebAuthToken(arg1 context.Context, arg2 string) (map[string]interface{}, error) {
 	fake.validateWebAuthTokenMutex.Lock()
 	ret, specificReturn := fake.validateWebAuthTokenReturnsOnCall[len(fake.validateWebAuthTokenArgsForCall)]
@@ -255,8 +176,6 @@ func (fake *FakeOAuthService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.getUserInfoMutex.RLock()
 	defer fake.getUserInfoMutex.RUnlock()
-	fake.getUserInfoByEmailMutex.RLock()
-	defer fake.getUserInfoByEmailMutex.RUnlock()
 	fake.validateWebAuthTokenMutex.RLock()
 	defer fake.validateWebAuthTokenMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
