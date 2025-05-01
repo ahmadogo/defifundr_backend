@@ -22,36 +22,35 @@ func NewWaitlistRepository(store db.Queries) *WaitlistRepository {
 
 func (r *WaitlistRepository) CreateWaitlistEntry(ctx context.Context, entry domain.WaitlistEntry) (*domain.WaitlistEntry, error) {
 
-
 	// Prepare invited and registered dates
 	var invitedDate pgtype.Timestamptz
 	if entry.InvitedDate != nil {
 		invitedDate = pgtype.Timestamptz{
-			Time:   *entry.InvitedDate,
-			Valid:  true,
+			Time:  *entry.InvitedDate,
+			Valid: true,
 		}
 	}
 
 	var registeredDate pgtype.Timestamptz
 	if entry.RegisteredDate != nil {
 		registeredDate = pgtype.Timestamptz{
-			Time:   *entry.RegisteredDate,
-			Valid:  true,
+			Time:  *entry.RegisteredDate,
+			Valid: true,
 		}
 	}
 
 	// Create params for query
 	params := db.CreateWaitlistEntryParams{
-		ID:              entry.ID,
-		Email:           entry.Email,
-		FullName:        pgtype.Text{String: entry.FullName, Valid: entry.FullName != ""},
-		ReferralCode:    entry.ReferralCode,
-		ReferralSource:  pgtype.Text{String: entry.ReferralSource, Valid: entry.ReferralSource != ""},
-		Status:          entry.Status,
-		SignupDate:      entry.SignupDate,
-		InvitedDate:     invitedDate,
-		RegisteredDate:  registeredDate,
-		Metadata:        nil,
+		ID:             entry.ID,
+		Email:          entry.Email,
+		FullName:       pgtype.Text{String: entry.FullName, Valid: entry.FullName != ""},
+		ReferralCode:   entry.ReferralCode,
+		ReferralSource: pgtype.Text{String: entry.ReferralSource, Valid: entry.ReferralSource != ""},
+		Status:         entry.Status,
+		SignupDate:     entry.SignupDate,
+		InvitedDate:    invitedDate,
+		RegisteredDate: registeredDate,
+		Metadata:       nil,
 	}
 
 	dbEntry, err := r.store.CreateWaitlistEntry(ctx, params)
@@ -78,7 +77,6 @@ func (r *WaitlistRepository) CreateWaitlistEntry(ctx context.Context, entry doma
 	if dbEntry.RegisteredDate.Valid {
 		result.RegisteredDate = &dbEntry.RegisteredDate.Time
 	}
-
 
 	return result, nil
 }
@@ -170,14 +168,12 @@ func (r *WaitlistRepository) GetWaitlistEntryByReferralCode(ctx context.Context,
 	return result, nil
 }
 
-
 func (r *WaitlistRepository) ListWaitlistEntries(ctx context.Context, limit, offset int, filters map[string]string) ([]domain.WaitlistEntry, int64, error) {
 	// Build filter conditions based on the provided filters
 	params := db.ListWaitlistEntriesParams{
 		Limit:  int32(limit),
 		Offset: int32(offset),
 	}
-
 
 	// Get entries from DB
 	dbEntries, err := r.store.ListWaitlistEntries(ctx, params)

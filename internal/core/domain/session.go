@@ -12,7 +12,7 @@ type Session struct {
 	RefreshToken     string    `json:"-"`
 	UserAgent        string    `json:"user_agent"`
 	WebOAuthClientID *string   `json:"web_oauth_client_id,omitempty"`
-	OAuthAccessToken *string   `json:"oauth_access_token,omitempty"`
+	OAuthAccessToken string    `json:"oauth_access_token,omitempty"`
 	OAuthIDToken     *string   `json:"oauth_id_token,omitempty"`
 	UserLoginType    string    `json:"user_login_type"`
 	MFAEnabled       bool      `json:"mfa_enabled"`

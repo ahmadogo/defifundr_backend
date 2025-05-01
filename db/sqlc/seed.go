@@ -236,8 +236,6 @@ func (s *Seeder) seedUsers(ctx context.Context) error {
 		"Project Manager", "Marketing Specialist", "Sales Representative", "Financial Analyst", "Customer Support",
 		"Content Writer", "Graphic Designer", "HR Manager", "Business Analyst", "QA Engineer"}
 
-	employmentTypes := []string{"Full-time", "Part-time", "Contract", "Freelance", "Self-employed", "Internship"}
-
 	personalAccountTypes := []string{"contractor", "freelancer", "employee"}
 
 	// Generate users
@@ -298,26 +296,13 @@ func (s *Seeder) seedUsers(ctx context.Context) error {
 		jobRole := pgtype.Text{String: jobRoles[s.randGen.Intn(len(jobRoles))], Valid: true}
 
 		// Company website only for business accounts and some freelancers
-		var companyWebsite pgtype.Text
-		if accountType == "business" || (personalAccountType == "freelancer" && s.randGen.Float32() < 0.7) {
-			companyWebsite = pgtype.Text{
-				String: fmt.Sprintf("https://www.%s-%s.com",
-					strings.ToLower(firstName),
-					strings.ToLower(lastName)),
-				Valid: true,
-			}
-		} else {
-			companyWebsite = pgtype.Text{Valid: false}
-		}
-
-		employmentType := pgtype.Text{String: employmentTypes[s.randGen.Intn(len(employmentTypes))], Valid: true}
 
 		// Create user with the generated data
 		user, err := s.queries.CreateUser(ctx, CreateUserParams{
-			Column1:             uuid.New(),
+			ID:                  uuid.New(),
 			Email:               email,
 			PasswordHash:        passwordHash,
-			Column4:             profilePicture,
+			ProfilePicture:      profilePicture,
 			AccountType:         accountType,
 			Gender:              gender,
 			PersonalAccountType: personalAccountType,
@@ -326,10 +311,9 @@ func (s *Seeder) seedUsers(ctx context.Context) error {
 			Nationality:         nationality,
 			ResidentialCountry:  residentialCountry,
 			JobRole:             jobRole,
-			CompanyWebsite:      companyWebsite,
-			EmploymentType:      employmentType,
-			Column15:            time.Now(),
-			Column16:            time.Now(),
+
+			UpdatedAt: time.Now(),
+			CreatedAt: time.Now(),
 		})
 
 		if err != nil {
@@ -423,7 +407,7 @@ func (s *Seeder) seedSessions(ctx context.Context) error {
 				MfaEnabled:       mfaEnabled,
 				ClientIp:         clientIp,
 				IsBlocked:        isBlocked,
-				ExpiresAt:        expiresAt,
+				ExpiresAt:        pgtype.Timestamp{Time: expiresAt, Valid: true},
 			})
 
 			if err != nil {

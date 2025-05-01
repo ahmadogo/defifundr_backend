@@ -8,24 +8,18 @@ import (
 )
 
 // RegisterRequest represents the user registration request
-type RegisterRequest struct {
-	Email               string `json:"email" binding:"required,email"`
-	Password            string `json:"password" binding:"required"`
-	FirstName           string `json:"first_name" binding:"required"`
-	LastName            string `json:"last_name" binding:"required"`
-	AccountType         string `json:"account_type" binding:"required"`
-	PersonalAccountType string `json:"personal_account_type"`
-	Nationality         string `json:"nationality" binding:"required"`
-	Gender              string `json:"gender"`
-	ResidentialCountry  string `json:"residential_country"`
-	JobRole             string `json:"job_role"`
-	CompanyWebsite      string `json:"company_website"`
-	EmploymentType      string `json:"employment_type"`
-
+type RegisterUserRequest struct {
+	Email        string `json:"email" binding:"omitempty"`
+	Password     string `json:"password,omitempty" binding:"omitempty,min=8"`
+	FirstName    string `json:"first_name" binding:"omitempty"`
+	LastName     string `json:"last_name" binding:"omitempty"`
+	Provider     string `json:"provider" binding:"omitempty"`
+	ProviderID   string `json:"provider_id" binding:"omitempty"`
+	WebAuthToken string `json:"web_auth_token" binding:"required"`
 }
 
 // Validate validates the register request
-func (r *RegisterRequest) Validate() error {
+func (r *RegisterUserRequest) Validate() error {
 	// Validate email
 	if !isValidEmail(r.Email) {
 		return errors.New("invalid email format")
@@ -36,12 +30,142 @@ func (r *RegisterRequest) Validate() error {
 		return err
 	}
 
-	// Validate account type
-	if !isValidAccountType(r.AccountType) {
-		return errors.New("invalid account type")
+	// Additional validations as needed
+	return nil
+}
+
+type CheckEmailRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+func (r *CheckEmailRequest) Validate() error {
+	// Validate email
+	if !isValidEmail(r.Email) {
+		return errors.New("invalid email format")
+	}
+	// Additional validations as needed
+	return nil
+}
+
+type RegisterPersonalDetailsRequest struct {
+	Nationality         string `json:"nationality" binding:"required"`
+	DateOfBirth         string `json:"date_of_birth" binding:"omitempty"`
+	PhoneNumber         string `json:"phone_number" binding:"omitempty"`
+	AccountType         string `json:"account_type" binding:"omitempty"`
+	PersonalAccountType string `json:"personal_account_type" binding:"omitempty"`
+}
+
+func (r *RegisterPersonalDetailsRequest) Validate() error {
+	// Validate nationality
+	if r.Nationality == "" {
+		return errors.New("nationality is required")
 	}
 
-	// Additional validations as needed
+	// Validate date of birth
+	if r.DateOfBirth != "" {
+		_, err := time.Parse("2006-01-02", r.DateOfBirth)
+		if err != nil {
+			return errors.New("invalid date of birth format")
+		}
+	}
+
+	// Validate phone number
+	if r.PhoneNumber != "" {
+		if !isValidPhoneNumber(r.PhoneNumber) {
+			return errors.New("invalid phone number format")
+		}
+	}
+
+	return nil
+}
+
+func isValidPhoneNumber(phone string) bool {
+	phoneRegex := regexp.MustCompile(`^\+?[0-9]{10,15}$`)
+	return phoneRegex.MatchString(phone)
+}
+
+type RegisterBusinessDetailsRequest struct {
+	CompanyName        string `json:"company_name" binding:"omitempty"`
+	CompanyType        string `json:"company_type" binding:"omitempty"`
+	CompanySize        string `json:"company_size" binding:"omitempty"`
+	CompanyWebsite     string `json:"company_website" binding:"omitempty"`
+	CompanyIndustry    string `json:"company_industry" binding:"omitempty"`
+	CompanyDescription string `json:"company_description" binding:"omitempty"`
+	CompanyAddress     string `json:"company_address" binding:"omitempty"`
+	CompanyCity        string `json:"company_city" binding:"omitempty"`
+	CompanyPostalCode  string `json:"company_postal_code" binding:"omitempty"`
+	CompanyCountry     string `json:"company_country" binding:"omitempty"`
+	CompanyPhone       string `json:"company_phone" binding:"omitempty"`
+	CompanyEmail       string `json:"company_email" binding:"omitempty"`
+}
+
+// Fixed RegisterAddressDetailsRequest struct with added State field
+type RegisterAddressDetailsRequest struct {
+	AddressLine1 string `json:"address_line_1" binding:"omitempty"`
+	City         string `json:"city" binding:"omitempty"`
+	State        string `json:"state" binding:"omitempty"`
+	PostalCode   string `json:"postal_code" binding:"omitempty"`
+	Country      string `json:"country" binding:"omitempty"`
+}
+
+// Validate validates the address details request
+func (r *RegisterAddressDetailsRequest) Validate() error {
+	// Validate address line 1
+	if r.AddressLine1 == "" {
+		return errors.New("address line 1 is required")
+	}
+
+	// Validate city
+	if r.City == "" {
+		return errors.New("city is required")
+	}
+
+	// Validate state
+	if r.State == "" {
+		return errors.New("state is required")
+	}
+
+	// Validate postal code
+	if r.PostalCode == "" {
+		return errors.New("postal code is required")
+	}
+
+	// Validate country
+	if r.Country == "" {
+		return errors.New("country is required")
+	}
+	return nil
+}
+
+// Validate validates the business details request
+func (r *RegisterBusinessDetailsRequest) Validate() error {
+	// Validate company name
+	if r.CompanyName == "" {
+		return errors.New("company name is required")
+	}
+
+	// Validate company address
+	if r.CompanyAddress == "" {
+		return errors.New("company address is required")
+	}
+
+	// Validate company city
+	if r.CompanyCity == "" {
+		return errors.New("company city is required")
+	}
+
+	// Validate company postal code
+	if r.CompanyPostalCode == "" {
+		return errors.New("company postal code is required")
+	}
+
+	// Validate company country
+	if r.CompanyCountry == "" {
+		return errors.New("company country is required")
+	}
+
+	// Additional validations can be added for company website (URL format) etc.
+
 	return nil
 }
 

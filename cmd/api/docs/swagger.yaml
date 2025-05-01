@@ -10,62 +10,87 @@ definitions:
     - new_password
     - old_password
     type: object
-  request.LoginRequest:
+  request.CheckEmailRequest:
     properties:
       email:
         type: string
-      password:
-        type: string
     required:
     - email
-    - password
     type: object
-  request.RegisterRequest:
+  request.RegisterAddressDetailsRequest:
     properties:
-      account_type:
+      address_line_1:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      postal_code:
+        type: string
+      state:
+        type: string
+    type: object
+  request.RegisterBusinessDetailsRequest:
+    properties:
+      company_address:
+        type: string
+      company_city:
+        type: string
+      company_country:
+        type: string
+      company_description:
+        type: string
+      company_email:
+        type: string
+      company_industry:
+        type: string
+      company_name:
+        type: string
+      company_phone:
+        type: string
+      company_postal_code:
+        type: string
+      company_size:
+        type: string
+      company_type:
         type: string
       company_website:
         type: string
-      email:
+    type: object
+  request.RegisterPersonalDetailsRequest:
+    properties:
+      account_type:
         type: string
-      employment_type:
-        type: string
-      first_name:
-        type: string
-      gender:
-        type: string
-      job_role:
-        type: string
-      last_name:
+      date_of_birth:
         type: string
       nationality:
         type: string
-      password:
-        type: string
       personal_account_type:
         type: string
-      residential_country:
+      phone_number:
         type: string
     required:
-    - account_type
-    - email
-    - first_name
-    - last_name
     - nationality
-    - password
     type: object
-  request.ResendOTPRequest:
+  request.RegisterUserRequest:
     properties:
-      contact_method:
+      email:
         type: string
-      purpose:
+      first_name:
         type: string
-      user_id:
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      provider:
+        type: string
+      provider_id:
+        type: string
+      web_auth_token:
         type: string
     required:
-    - contact_method
-    - purpose
-    - user_id
+    - web_auth_token
     type: object
   request.UpdateProfileRequest:
     properties:
@@ -90,16 +115,6 @@ definitions:
     - last_name
     - nationality
     type: object
-  request.VerifyEmailRequest:
-    properties:
-      otp_code:
-        type: string
-      user_id:
-        type: string
-    required:
-    - otp_code
-    - user_id
-    type: object
   request.WaitlistJoinRequest:
     properties:
       email:
@@ -115,27 +130,10 @@ definitions:
     type: object
   response.ErrorResponse:
     properties:
-      details:
+      message:
         type: string
-      error:
-        type: string
-    type: object
-  response.LoginResponse:
-    properties:
-      access_token:
-        type: string
-      email_verified:
+      success:
         type: boolean
-      expires_at:
-        type: string
-      refresh_token:
-        type: string
-      session_id:
-        type: string
-      token_type:
-        type: string
-      user:
-        $ref: '#/definitions/response.UserResponse'
     type: object
   response.PageResponse:
     properties:
@@ -154,47 +152,26 @@ definitions:
       data: {}
       message:
         type: string
-    type: object
-  response.TokenResponse:
-    properties:
-      access_token:
-        type: string
-      expires_at:
-        type: string
-      token_type:
-        type: string
+      success:
+        type: boolean
     type: object
   response.UserResponse:
     properties:
-      account_type:
-        type: string
-      company_website:
-        type: string
       created_at:
         type: string
       deleted_at:
         type: string
       email:
         type: string
-      employment_type:
-        type: string
       first_name:
-        type: string
-      gender:
         type: string
       id:
         type: string
-      job_role:
-        type: string
       last_name:
         type: string
-      nationality:
+      provider:
         type: string
-      personal_account_type:
-        type: string
-      profile_picture:
-        type: string
-      residential_country:
+      provider_id:
         type: string
       updated_at:
         type: string
@@ -237,7 +214,7 @@ definitions:
       waiting_count:
         type: integer
     type: object
-host: defifundr.koyeb.app
+host: localhost:8080
 info:
   contact:
     email: hello@defifundr.com
@@ -288,6 +265,14 @@ paths:
           description: Invalid request
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Access denied
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: List waitlist entries
@@ -327,76 +312,6 @@ paths:
       summary: Get waitlist statistics
       tags:
       - waitlist
-  /auth/login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate a user and generate access token
-      parameters:
-      - description: User login data
-        in: body
-        name: login
-        required: true
-        schema:
-          $ref: '#/definitions/request.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully logged in
-          schema:
-            $ref: '#/definitions/response.LoginResponse'
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "401":
-          description: Invalid credentials
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Login a user
-      tags:
-      - auth
-  /auth/logout:
-    post:
-      consumes:
-      - application/json
-      description: Invalidate user session
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully logged out
-          schema:
-            $ref: '#/definitions/response.SuccessResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Logout user
-      tags:
-      - auth
-  /auth/refresh:
-    post:
-      consumes:
-      - application/json
-      description: Generate a new access token using refresh token
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: New access token
-          schema:
-            $ref: '#/definitions/response.TokenResponse'
-        "401":
-          description: Invalid refresh token
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Refresh access token
-      tags:
-      - auth
   /auth/register:
     post:
       consumes:
@@ -408,14 +323,14 @@ paths:
         name: register
         required: true
         schema:
-          $ref: '#/definitions/request.RegisterRequest'
+          $ref: '#/definitions/request.RegisterUserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Successfully registered
           schema:
-            $ref: '#/definitions/response.UserResponse'
+            $ref: '#/definitions/response.SuccessResponse'
         "400":
           description: Invalid request
           schema:
@@ -424,61 +339,151 @@ paths:
           description: User already exists
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "429":
+          description: Too many requests
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Register a new user
       tags:
-      - auth
-  /auth/resend-otp:
+      - authentication
+  /auth/register/business/business-details:
     post:
       consumes:
       - application/json
-      description: Resend OTP for verification
+      description: Update business details for a registered user
       parameters:
-      - description: Resend OTP data
+      - description: Business details
         in: body
-        name: resend
+        name: businessDetails
         required: true
         schema:
-          $ref: '#/definitions/request.ResendOTPRequest'
+          $ref: '#/definitions/request.RegisterBusinessDetailsRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: OTP sent successfully
+          description: Successfully updated business details
           schema:
             $ref: '#/definitions/response.SuccessResponse'
         "400":
           description: Invalid request
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Resend OTP
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Update business details
       tags:
-      - auth
-  /auth/verify-email:
+      - authentication
+  /auth/register/user/address-details:
     post:
       consumes:
       - application/json
-      description: Verify user email using OTP
+      description: Update address details for a registered user
       parameters:
-      - description: Email verification data
+      - description: User address details
         in: body
-        name: verification
+        name: addressDetails
         required: true
         schema:
-          $ref: '#/definitions/request.VerifyEmailRequest'
+          $ref: '#/definitions/request.RegisterAddressDetailsRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: Email verified successfully
+          description: Successfully updated address details
           schema:
             $ref: '#/definitions/response.SuccessResponse'
         "400":
           description: Invalid request
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Verify user email
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Update user address details
       tags:
-      - auth
+      - authentication
+  /auth/register/user/check-email:
+    post:
+      consumes:
+      - application/json
+      description: Check if an email address is already registered
+      parameters:
+      - description: Email to check
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/request.CheckEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email check result
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Check if email exists
+      tags:
+      - authentication
+  /auth/register/user/personal-details:
+    post:
+      consumes:
+      - application/json
+      description: Update personal details for a registered user
+      parameters:
+      - description: User personal details
+        in: body
+        name: personalDetails
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterPersonalDetailsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated personal details
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Update user personal details
+      tags:
+      - authentication
   /users/change-password:
     post:
       consumes:
@@ -599,7 +604,11 @@ paths:
       - waitlist
 schemes:
 - http
+- https
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  Bearer:
+    description: Type "Bearer" followed by a space and the JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

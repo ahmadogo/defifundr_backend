@@ -14,19 +14,19 @@ INSERT INTO waitlist (
   created_at,
   updated_at
 ) VALUES (
-  COALESCE($1, uuid_generate_v4()),
-  $2,
-  $3,
-  $4,
-  $5,
-  COALESCE($6, 'waiting'),
-  COALESCE($7, now()),
-  $8,
-  $9,
-  $10,
-  COALESCE($11, now()),
-  COALESCE($12, now())
-) RETURNING *;
+  COALESCE(@id, uuid_generate_v4()),
+  @email,
+  @full_name,
+  @referral_code,
+  @referral_source,
+  COALESCE(@status, 'waiting'),
+  COALESCE(@signup_date, now()),
+  @invited_date,
+  @registered_date,
+  @metadata,
+  COALESCE(@created_at, now()),
+  COALESCE(@updated_at, now())
+) RETURNING id, email, full_name, referral_code, referral_source, status, signup_date, invited_date, registered_date, metadata, created_at, updated_at;
 
 -- name: GetWaitlistEntryByEmail :one
 -- Retrieves a single waitlist entry by email address
@@ -45,6 +45,7 @@ LIMIT 1;
 SELECT * FROM waitlist
 WHERE referral_code = $1
 LIMIT 1;
+
 
 -- name: ListWaitlistEntries :many
 -- Lists waitlist entries with pagination and filtering support
@@ -65,16 +66,6 @@ SELECT COUNT(*) FROM waitlist
 WHERE 
   ($1::text IS NULL OR status = $1) AND
   ($2::text IS NULL OR referral_source = $2);
-
--- name: UpdateWaitlistEntryStatus :exec
--- Updates the status of a waitlist entry
-UPDATE waitlist
-SET
-  status = $2,
-  invited_date = CASE WHEN $2 = 'invited' AND invited_date IS NULL THEN now() ELSE invited_date END,
-  registered_date = CASE WHEN $2 = 'registered' AND registered_date IS NULL THEN now() ELSE registered_date END,
-  updated_at = now()
-WHERE id = $1;
 
 -- name: ExportWaitlistEntries :many
 -- Retrieves all waitlist entries for export

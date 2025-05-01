@@ -11,6 +11,20 @@ import (
 )
 
 type FakeUserRepository struct {
+	CheckEmailExistsStub        func(context.Context, string) (bool, error)
+	checkEmailExistsMutex       sync.RWMutex
+	checkEmailExistsArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	checkEmailExistsReturns struct {
+		result1 bool
+		result2 error
+	}
+	checkEmailExistsReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	CreateUserStub        func(context.Context, domain.User) (*domain.User, error)
 	createUserMutex       sync.RWMutex
 	createUserArgsForCall []struct {
@@ -53,21 +67,6 @@ type FakeUserRepository struct {
 		result1 *domain.User
 		result2 error
 	}
-	GetUserByProviderIDStub        func(context.Context, string, string) (*domain.User, error)
-	getUserByProviderIDMutex       sync.RWMutex
-	getUserByProviderIDArgsForCall []struct {
-		arg1 context.Context
-		arg2 string
-		arg3 string
-	}
-	getUserByProviderIDReturns struct {
-		result1 *domain.User
-		result2 error
-	}
-	getUserByProviderIDReturnsOnCall map[int]struct {
-		result1 *domain.User
-		result2 error
-	}
 	UpdatePasswordStub        func(context.Context, uuid.UUID, string) error
 	updatePasswordMutex       sync.RWMutex
 	updatePasswordArgsForCall []struct {
@@ -95,23 +94,115 @@ type FakeUserRepository struct {
 		result1 *domain.User
 		result2 error
 	}
-	ValidateWebOAuthUserStub        func(context.Context, string, string) (*domain.User, error)
-	validateWebOAuthUserMutex       sync.RWMutex
-	validateWebOAuthUserArgsForCall []struct {
+	UpdateUserAddressDetailsStub        func(context.Context, domain.User) (*domain.User, error)
+	updateUserAddressDetailsMutex       sync.RWMutex
+	updateUserAddressDetailsArgsForCall []struct {
 		arg1 context.Context
-		arg2 string
-		arg3 string
+		arg2 domain.User
 	}
-	validateWebOAuthUserReturns struct {
+	updateUserAddressDetailsReturns struct {
 		result1 *domain.User
 		result2 error
 	}
-	validateWebOAuthUserReturnsOnCall map[int]struct {
+	updateUserAddressDetailsReturnsOnCall map[int]struct {
+		result1 *domain.User
+		result2 error
+	}
+	UpdateUserBusinessDetailsStub        func(context.Context, domain.User) (*domain.User, error)
+	updateUserBusinessDetailsMutex       sync.RWMutex
+	updateUserBusinessDetailsArgsForCall []struct {
+		arg1 context.Context
+		arg2 domain.User
+	}
+	updateUserBusinessDetailsReturns struct {
+		result1 *domain.User
+		result2 error
+	}
+	updateUserBusinessDetailsReturnsOnCall map[int]struct {
+		result1 *domain.User
+		result2 error
+	}
+	UpdateUserPersonalDetailsStub        func(context.Context, domain.User) (*domain.User, error)
+	updateUserPersonalDetailsMutex       sync.RWMutex
+	updateUserPersonalDetailsArgsForCall []struct {
+		arg1 context.Context
+		arg2 domain.User
+	}
+	updateUserPersonalDetailsReturns struct {
+		result1 *domain.User
+		result2 error
+	}
+	updateUserPersonalDetailsReturnsOnCall map[int]struct {
 		result1 *domain.User
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeUserRepository) CheckEmailExists(arg1 context.Context, arg2 string) (bool, error) {
+	fake.checkEmailExistsMutex.Lock()
+	ret, specificReturn := fake.checkEmailExistsReturnsOnCall[len(fake.checkEmailExistsArgsForCall)]
+	fake.checkEmailExistsArgsForCall = append(fake.checkEmailExistsArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.CheckEmailExistsStub
+	fakeReturns := fake.checkEmailExistsReturns
+	fake.recordInvocation("CheckEmailExists", []interface{}{arg1, arg2})
+	fake.checkEmailExistsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsCallCount() int {
+	fake.checkEmailExistsMutex.RLock()
+	defer fake.checkEmailExistsMutex.RUnlock()
+	return len(fake.checkEmailExistsArgsForCall)
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsCalls(stub func(context.Context, string) (bool, error)) {
+	fake.checkEmailExistsMutex.Lock()
+	defer fake.checkEmailExistsMutex.Unlock()
+	fake.CheckEmailExistsStub = stub
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsArgsForCall(i int) (context.Context, string) {
+	fake.checkEmailExistsMutex.RLock()
+	defer fake.checkEmailExistsMutex.RUnlock()
+	argsForCall := fake.checkEmailExistsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsReturns(result1 bool, result2 error) {
+	fake.checkEmailExistsMutex.Lock()
+	defer fake.checkEmailExistsMutex.Unlock()
+	fake.CheckEmailExistsStub = nil
+	fake.checkEmailExistsReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.checkEmailExistsMutex.Lock()
+	defer fake.checkEmailExistsMutex.Unlock()
+	fake.CheckEmailExistsStub = nil
+	if fake.checkEmailExistsReturnsOnCall == nil {
+		fake.checkEmailExistsReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.checkEmailExistsReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeUserRepository) CreateUser(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
@@ -309,72 +400,6 @@ func (fake *FakeUserRepository) GetUserByIDReturnsOnCall(i int, result1 *domain.
 	}{result1, result2}
 }
 
-func (fake *FakeUserRepository) GetUserByProviderID(arg1 context.Context, arg2 string, arg3 string) (*domain.User, error) {
-	fake.getUserByProviderIDMutex.Lock()
-	ret, specificReturn := fake.getUserByProviderIDReturnsOnCall[len(fake.getUserByProviderIDArgsForCall)]
-	fake.getUserByProviderIDArgsForCall = append(fake.getUserByProviderIDArgsForCall, struct {
-		arg1 context.Context
-		arg2 string
-		arg3 string
-	}{arg1, arg2, arg3})
-	stub := fake.GetUserByProviderIDStub
-	fakeReturns := fake.getUserByProviderIDReturns
-	fake.recordInvocation("GetUserByProviderID", []interface{}{arg1, arg2, arg3})
-	fake.getUserByProviderIDMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeUserRepository) GetUserByProviderIDCallCount() int {
-	fake.getUserByProviderIDMutex.RLock()
-	defer fake.getUserByProviderIDMutex.RUnlock()
-	return len(fake.getUserByProviderIDArgsForCall)
-}
-
-func (fake *FakeUserRepository) GetUserByProviderIDCalls(stub func(context.Context, string, string) (*domain.User, error)) {
-	fake.getUserByProviderIDMutex.Lock()
-	defer fake.getUserByProviderIDMutex.Unlock()
-	fake.GetUserByProviderIDStub = stub
-}
-
-func (fake *FakeUserRepository) GetUserByProviderIDArgsForCall(i int) (context.Context, string, string) {
-	fake.getUserByProviderIDMutex.RLock()
-	defer fake.getUserByProviderIDMutex.RUnlock()
-	argsForCall := fake.getUserByProviderIDArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeUserRepository) GetUserByProviderIDReturns(result1 *domain.User, result2 error) {
-	fake.getUserByProviderIDMutex.Lock()
-	defer fake.getUserByProviderIDMutex.Unlock()
-	fake.GetUserByProviderIDStub = nil
-	fake.getUserByProviderIDReturns = struct {
-		result1 *domain.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeUserRepository) GetUserByProviderIDReturnsOnCall(i int, result1 *domain.User, result2 error) {
-	fake.getUserByProviderIDMutex.Lock()
-	defer fake.getUserByProviderIDMutex.Unlock()
-	fake.GetUserByProviderIDStub = nil
-	if fake.getUserByProviderIDReturnsOnCall == nil {
-		fake.getUserByProviderIDReturnsOnCall = make(map[int]struct {
-			result1 *domain.User
-			result2 error
-		})
-	}
-	fake.getUserByProviderIDReturnsOnCall[i] = struct {
-		result1 *domain.User
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeUserRepository) UpdatePassword(arg1 context.Context, arg2 uuid.UUID, arg3 string) error {
 	fake.updatePasswordMutex.Lock()
 	ret, specificReturn := fake.updatePasswordReturnsOnCall[len(fake.updatePasswordArgsForCall)]
@@ -503,20 +528,19 @@ func (fake *FakeUserRepository) UpdateUserReturnsOnCall(i int, result1 *domain.U
 	}{result1, result2}
 }
 
-func (fake *FakeUserRepository) ValidateWebOAuthUser(arg1 context.Context, arg2 string, arg3 string) (*domain.User, error) {
-	fake.validateWebOAuthUserMutex.Lock()
-	ret, specificReturn := fake.validateWebOAuthUserReturnsOnCall[len(fake.validateWebOAuthUserArgsForCall)]
-	fake.validateWebOAuthUserArgsForCall = append(fake.validateWebOAuthUserArgsForCall, struct {
+func (fake *FakeUserRepository) UpdateUserAddressDetails(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	ret, specificReturn := fake.updateUserAddressDetailsReturnsOnCall[len(fake.updateUserAddressDetailsArgsForCall)]
+	fake.updateUserAddressDetailsArgsForCall = append(fake.updateUserAddressDetailsArgsForCall, struct {
 		arg1 context.Context
-		arg2 string
-		arg3 string
-	}{arg1, arg2, arg3})
-	stub := fake.ValidateWebOAuthUserStub
-	fakeReturns := fake.validateWebOAuthUserReturns
-	fake.recordInvocation("ValidateWebOAuthUser", []interface{}{arg1, arg2, arg3})
-	fake.validateWebOAuthUserMutex.Unlock()
+		arg2 domain.User
+	}{arg1, arg2})
+	stub := fake.UpdateUserAddressDetailsStub
+	fakeReturns := fake.updateUserAddressDetailsReturns
+	fake.recordInvocation("UpdateUserAddressDetails", []interface{}{arg1, arg2})
+	fake.updateUserAddressDetailsMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -524,46 +548,176 @@ func (fake *FakeUserRepository) ValidateWebOAuthUser(arg1 context.Context, arg2 
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeUserRepository) ValidateWebOAuthUserCallCount() int {
-	fake.validateWebOAuthUserMutex.RLock()
-	defer fake.validateWebOAuthUserMutex.RUnlock()
-	return len(fake.validateWebOAuthUserArgsForCall)
+func (fake *FakeUserRepository) UpdateUserAddressDetailsCallCount() int {
+	fake.updateUserAddressDetailsMutex.RLock()
+	defer fake.updateUserAddressDetailsMutex.RUnlock()
+	return len(fake.updateUserAddressDetailsArgsForCall)
 }
 
-func (fake *FakeUserRepository) ValidateWebOAuthUserCalls(stub func(context.Context, string, string) (*domain.User, error)) {
-	fake.validateWebOAuthUserMutex.Lock()
-	defer fake.validateWebOAuthUserMutex.Unlock()
-	fake.ValidateWebOAuthUserStub = stub
+func (fake *FakeUserRepository) UpdateUserAddressDetailsCalls(stub func(context.Context, domain.User) (*domain.User, error)) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	defer fake.updateUserAddressDetailsMutex.Unlock()
+	fake.UpdateUserAddressDetailsStub = stub
 }
 
-func (fake *FakeUserRepository) ValidateWebOAuthUserArgsForCall(i int) (context.Context, string, string) {
-	fake.validateWebOAuthUserMutex.RLock()
-	defer fake.validateWebOAuthUserMutex.RUnlock()
-	argsForCall := fake.validateWebOAuthUserArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+func (fake *FakeUserRepository) UpdateUserAddressDetailsArgsForCall(i int) (context.Context, domain.User) {
+	fake.updateUserAddressDetailsMutex.RLock()
+	defer fake.updateUserAddressDetailsMutex.RUnlock()
+	argsForCall := fake.updateUserAddressDetailsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserRepository) ValidateWebOAuthUserReturns(result1 *domain.User, result2 error) {
-	fake.validateWebOAuthUserMutex.Lock()
-	defer fake.validateWebOAuthUserMutex.Unlock()
-	fake.ValidateWebOAuthUserStub = nil
-	fake.validateWebOAuthUserReturns = struct {
+func (fake *FakeUserRepository) UpdateUserAddressDetailsReturns(result1 *domain.User, result2 error) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	defer fake.updateUserAddressDetailsMutex.Unlock()
+	fake.UpdateUserAddressDetailsStub = nil
+	fake.updateUserAddressDetailsReturns = struct {
 		result1 *domain.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserRepository) ValidateWebOAuthUserReturnsOnCall(i int, result1 *domain.User, result2 error) {
-	fake.validateWebOAuthUserMutex.Lock()
-	defer fake.validateWebOAuthUserMutex.Unlock()
-	fake.ValidateWebOAuthUserStub = nil
-	if fake.validateWebOAuthUserReturnsOnCall == nil {
-		fake.validateWebOAuthUserReturnsOnCall = make(map[int]struct {
+func (fake *FakeUserRepository) UpdateUserAddressDetailsReturnsOnCall(i int, result1 *domain.User, result2 error) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	defer fake.updateUserAddressDetailsMutex.Unlock()
+	fake.UpdateUserAddressDetailsStub = nil
+	if fake.updateUserAddressDetailsReturnsOnCall == nil {
+		fake.updateUserAddressDetailsReturnsOnCall = make(map[int]struct {
 			result1 *domain.User
 			result2 error
 		})
 	}
-	fake.validateWebOAuthUserReturnsOnCall[i] = struct {
+	fake.updateUserAddressDetailsReturnsOnCall[i] = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetails(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	ret, specificReturn := fake.updateUserBusinessDetailsReturnsOnCall[len(fake.updateUserBusinessDetailsArgsForCall)]
+	fake.updateUserBusinessDetailsArgsForCall = append(fake.updateUserBusinessDetailsArgsForCall, struct {
+		arg1 context.Context
+		arg2 domain.User
+	}{arg1, arg2})
+	stub := fake.UpdateUserBusinessDetailsStub
+	fakeReturns := fake.updateUserBusinessDetailsReturns
+	fake.recordInvocation("UpdateUserBusinessDetails", []interface{}{arg1, arg2})
+	fake.updateUserBusinessDetailsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsCallCount() int {
+	fake.updateUserBusinessDetailsMutex.RLock()
+	defer fake.updateUserBusinessDetailsMutex.RUnlock()
+	return len(fake.updateUserBusinessDetailsArgsForCall)
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsCalls(stub func(context.Context, domain.User) (*domain.User, error)) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	defer fake.updateUserBusinessDetailsMutex.Unlock()
+	fake.UpdateUserBusinessDetailsStub = stub
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsArgsForCall(i int) (context.Context, domain.User) {
+	fake.updateUserBusinessDetailsMutex.RLock()
+	defer fake.updateUserBusinessDetailsMutex.RUnlock()
+	argsForCall := fake.updateUserBusinessDetailsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsReturns(result1 *domain.User, result2 error) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	defer fake.updateUserBusinessDetailsMutex.Unlock()
+	fake.UpdateUserBusinessDetailsStub = nil
+	fake.updateUserBusinessDetailsReturns = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsReturnsOnCall(i int, result1 *domain.User, result2 error) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	defer fake.updateUserBusinessDetailsMutex.Unlock()
+	fake.UpdateUserBusinessDetailsStub = nil
+	if fake.updateUserBusinessDetailsReturnsOnCall == nil {
+		fake.updateUserBusinessDetailsReturnsOnCall = make(map[int]struct {
+			result1 *domain.User
+			result2 error
+		})
+	}
+	fake.updateUserBusinessDetailsReturnsOnCall[i] = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetails(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	ret, specificReturn := fake.updateUserPersonalDetailsReturnsOnCall[len(fake.updateUserPersonalDetailsArgsForCall)]
+	fake.updateUserPersonalDetailsArgsForCall = append(fake.updateUserPersonalDetailsArgsForCall, struct {
+		arg1 context.Context
+		arg2 domain.User
+	}{arg1, arg2})
+	stub := fake.UpdateUserPersonalDetailsStub
+	fakeReturns := fake.updateUserPersonalDetailsReturns
+	fake.recordInvocation("UpdateUserPersonalDetails", []interface{}{arg1, arg2})
+	fake.updateUserPersonalDetailsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsCallCount() int {
+	fake.updateUserPersonalDetailsMutex.RLock()
+	defer fake.updateUserPersonalDetailsMutex.RUnlock()
+	return len(fake.updateUserPersonalDetailsArgsForCall)
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsCalls(stub func(context.Context, domain.User) (*domain.User, error)) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	defer fake.updateUserPersonalDetailsMutex.Unlock()
+	fake.UpdateUserPersonalDetailsStub = stub
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsArgsForCall(i int) (context.Context, domain.User) {
+	fake.updateUserPersonalDetailsMutex.RLock()
+	defer fake.updateUserPersonalDetailsMutex.RUnlock()
+	argsForCall := fake.updateUserPersonalDetailsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsReturns(result1 *domain.User, result2 error) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	defer fake.updateUserPersonalDetailsMutex.Unlock()
+	fake.UpdateUserPersonalDetailsStub = nil
+	fake.updateUserPersonalDetailsReturns = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsReturnsOnCall(i int, result1 *domain.User, result2 error) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	defer fake.updateUserPersonalDetailsMutex.Unlock()
+	fake.UpdateUserPersonalDetailsStub = nil
+	if fake.updateUserPersonalDetailsReturnsOnCall == nil {
+		fake.updateUserPersonalDetailsReturnsOnCall = make(map[int]struct {
+			result1 *domain.User
+			result2 error
+		})
+	}
+	fake.updateUserPersonalDetailsReturnsOnCall[i] = struct {
 		result1 *domain.User
 		result2 error
 	}{result1, result2}
@@ -572,20 +726,24 @@ func (fake *FakeUserRepository) ValidateWebOAuthUserReturnsOnCall(i int, result1
 func (fake *FakeUserRepository) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.checkEmailExistsMutex.RLock()
+	defer fake.checkEmailExistsMutex.RUnlock()
 	fake.createUserMutex.RLock()
 	defer fake.createUserMutex.RUnlock()
 	fake.getUserByEmailMutex.RLock()
 	defer fake.getUserByEmailMutex.RUnlock()
 	fake.getUserByIDMutex.RLock()
 	defer fake.getUserByIDMutex.RUnlock()
-	fake.getUserByProviderIDMutex.RLock()
-	defer fake.getUserByProviderIDMutex.RUnlock()
 	fake.updatePasswordMutex.RLock()
 	defer fake.updatePasswordMutex.RUnlock()
 	fake.updateUserMutex.RLock()
 	defer fake.updateUserMutex.RUnlock()
-	fake.validateWebOAuthUserMutex.RLock()
-	defer fake.validateWebOAuthUserMutex.RUnlock()
+	fake.updateUserAddressDetailsMutex.RLock()
+	defer fake.updateUserAddressDetailsMutex.RUnlock()
+	fake.updateUserBusinessDetailsMutex.RLock()
+	defer fake.updateUserBusinessDetailsMutex.RUnlock()
+	fake.updateUserPersonalDetailsMutex.RLock()
+	defer fake.updateUserPersonalDetailsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

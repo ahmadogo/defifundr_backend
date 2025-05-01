@@ -86,6 +86,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -146,115 +158,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login": {
-            "post": {
-                "description": "Authenticate a user and generate access token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Login a user",
-                "parameters": [
-                    {
-                        "description": "User login data",
-                        "name": "login",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.LoginRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully logged in",
-                        "schema": {
-                            "$ref": "#/definitions/response.LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid credentials",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/logout": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Invalidate user session",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Logout user",
-                "responses": {
-                    "200": {
-                        "description": "Successfully logged out",
-                        "schema": {
-                            "$ref": "#/definitions/response.SuccessResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/refresh": {
-            "post": {
-                "description": "Generate a new access token using refresh token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Refresh access token",
-                "responses": {
-                    "200": {
-                        "description": "New access token",
-                        "schema": {
-                            "$ref": "#/definitions/response.TokenResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid refresh token",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/register": {
             "post": {
                 "description": "Create a new user account",
@@ -265,7 +168,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
@@ -275,7 +178,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.RegisterRequest"
+                            "$ref": "#/definitions/request.RegisterUserRequest"
                         }
                     }
                 ],
@@ -283,7 +186,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Successfully registered",
                         "schema": {
-                            "$ref": "#/definitions/response.UserResponse"
+                            "$ref": "#/definitions/response.SuccessResponse"
                         }
                     },
                     "400": {
@@ -297,13 +200,24 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/auth/resend-otp": {
+        "/auth/register/business/business-details": {
             "post": {
-                "description": "Resend OTP for verification",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update business details for a registered user",
                 "consumes": [
                     "application/json"
                 ],
@@ -311,23 +225,23 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
-                "summary": "Resend OTP",
+                "summary": "Update business details",
                 "parameters": [
                     {
-                        "description": "Resend OTP data",
-                        "name": "resend",
+                        "description": "Business details",
+                        "name": "businessDetails",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.ResendOTPRequest"
+                            "$ref": "#/definitions/request.RegisterBusinessDetailsRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OTP sent successfully",
+                        "description": "Successfully updated business details",
                         "schema": {
                             "$ref": "#/definitions/response.SuccessResponse"
                         }
@@ -337,13 +251,30 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/auth/verify-email": {
+        "/auth/register/user/address-details": {
             "post": {
-                "description": "Verify user email using OTP",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update address details for a registered user",
                 "consumes": [
                     "application/json"
                 ],
@@ -351,29 +282,144 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
-                "summary": "Verify user email",
+                "summary": "Update user address details",
                 "parameters": [
                     {
-                        "description": "Email verification data",
-                        "name": "verification",
+                        "description": "User address details",
+                        "name": "addressDetails",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.VerifyEmailRequest"
+                            "$ref": "#/definitions/request.RegisterAddressDetailsRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Email verified successfully",
+                        "description": "Successfully updated address details",
                         "schema": {
                             "$ref": "#/definitions/response.SuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/user/check-email": {
+            "post": {
+                "description": "Check if an email address is already registered",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Check if email exists",
+                "parameters": [
+                    {
+                        "description": "Email to check",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CheckEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email check result",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/user/personal-details": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update personal details for a registered user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Update user personal details",
+                "parameters": [
+                    {
+                        "description": "User personal details",
+                        "name": "personalDetails",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RegisterPersonalDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated personal details",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -584,85 +630,127 @@ const docTemplate = `{
                 }
             }
         },
-        "request.LoginRequest": {
+        "request.CheckEmailRequest": {
             "type": "object",
             "required": [
-                "email",
-                "password"
+                "email"
             ],
             "properties": {
                 "email": {
                     "type": "string"
+                }
+            }
+        },
+        "request.RegisterAddressDetailsRequest": {
+            "type": "object",
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
                 },
-                "password": {
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "state": {
                     "type": "string"
                 }
             }
         },
-        "request.RegisterRequest": {
+        "request.RegisterBusinessDetailsRequest": {
+            "type": "object",
+            "properties": {
+                "company_address": {
+                    "type": "string"
+                },
+                "company_city": {
+                    "type": "string"
+                },
+                "company_country": {
+                    "type": "string"
+                },
+                "company_description": {
+                    "type": "string"
+                },
+                "company_email": {
+                    "type": "string"
+                },
+                "company_industry": {
+                    "type": "string"
+                },
+                "company_name": {
+                    "type": "string"
+                },
+                "company_phone": {
+                    "type": "string"
+                },
+                "company_postal_code": {
+                    "type": "string"
+                },
+                "company_size": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "company_website": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.RegisterPersonalDetailsRequest": {
             "type": "object",
             "required": [
-                "account_type",
-                "email",
-                "first_name",
-                "last_name",
-                "nationality",
-                "password"
+                "nationality"
             ],
             "properties": {
                 "account_type": {
                     "type": "string"
                 },
-                "company_website": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "employment_type": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "gender": {
-                    "type": "string"
-                },
-                "job_role": {
-                    "type": "string"
-                },
-                "last_name": {
+                "date_of_birth": {
                     "type": "string"
                 },
                 "nationality": {
                     "type": "string"
                 },
-                "password": {
-                    "type": "string"
-                },
                 "personal_account_type": {
                     "type": "string"
                 },
-                "residential_country": {
+                "phone_number": {
                     "type": "string"
                 }
             }
         },
-        "request.ResendOTPRequest": {
+        "request.RegisterUserRequest": {
             "type": "object",
             "required": [
-                "contact_method",
-                "purpose",
-                "user_id"
+                "web_auth_token"
             ],
             "properties": {
-                "contact_method": {
+                "email": {
                     "type": "string"
                 },
-                "purpose": {
+                "first_name": {
                     "type": "string"
                 },
-                "user_id": {
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "provider_id": {
+                    "type": "string"
+                },
+                "web_auth_token": {
                     "type": "string"
                 }
             }
@@ -701,21 +789,6 @@ const docTemplate = `{
                 }
             }
         },
-        "request.VerifyEmailRequest": {
-            "type": "object",
-            "required": [
-                "otp_code",
-                "user_id"
-            ],
-            "properties": {
-                "otp_code": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "request.WaitlistJoinRequest": {
             "type": "object",
             "required": [
@@ -739,37 +812,11 @@ const docTemplate = `{
         "response.ErrorResponse": {
             "type": "object",
             "properties": {
-                "details": {
+                "message": {
                     "type": "string"
                 },
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "email_verified": {
+                "success": {
                     "type": "boolean"
-                },
-                "expires_at": {
-                    "type": "string"
-                },
-                "refresh_token": {
-                    "type": "string"
-                },
-                "session_id": {
-                    "type": "string"
-                },
-                "token_type": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/response.UserResponse"
                 }
             }
         },
@@ -797,32 +844,15 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "response.TokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
                 },
-                "expires_at": {
-                    "type": "string"
-                },
-                "token_type": {
-                    "type": "string"
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
         "response.UserResponse": {
             "type": "object",
             "properties": {
-                "account_type": {
-                    "type": "string"
-                },
-                "company_website": {
-                    "type": "string"
-                },
                 "created_at": {
                     "type": "string"
                 },
@@ -832,34 +862,19 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "employment_type": {
-                    "type": "string"
-                },
                 "first_name": {
-                    "type": "string"
-                },
-                "gender": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "job_role": {
-                    "type": "string"
-                },
                 "last_name": {
                     "type": "string"
                 },
-                "nationality": {
+                "provider": {
                     "type": "string"
                 },
-                "personal_account_type": {
-                    "type": "string"
-                },
-                "profile_picture": {
-                    "type": "string"
-                },
-                "residential_country": {
+                "provider_id": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -927,8 +942,11 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and the JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -936,9 +954,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "defifundr.koyeb.app",
+	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"http", "https"},
 	Title:            "DefiFundr API",
 	Description:      "Decentralized Payroll and Invoicing Platform for Remote Teams",
 	InfoInstanceName: "swagger",

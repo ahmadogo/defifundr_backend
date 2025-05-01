@@ -38,7 +38,7 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
-			Error: "Unauthorized",
+			Message: "Unauthorized",
 		})
 		return
 	}
@@ -47,7 +47,7 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 	userUUID, ok := userID.(uuid.UUID)
 	if !ok {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Invalid user ID",
+			Message: "Invalid user ID",
 		})
 		return
 	}
@@ -56,12 +56,12 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 	user, err := h.userService.GetUserByID(ctx, userUUID)
 	if err != nil {
 		errResponse := response.ErrorResponse{
-			Error: app_errors.ErrInternalServer.Error(),
+			Message: app_errors.ErrInternalServer.Error(),
 		}
 
 		if app_errors.IsAppError(err) {
 			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
+			errResponse.Message = appErr.Error()
 
 			if appErr.ErrorType == app_errors.ErrorTypeNotFound {
 				ctx.JSON(http.StatusNotFound, errResponse)
@@ -78,34 +78,11 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
 	// Create response DTO
 	userResponse := response.UserResponse{
-		ID:                  user.ID,
-		Email:               user.Email,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		AccountType:         user.AccountType,
-		PersonalAccountType: user.PersonalAccountType,
-		Nationality:         user.Nationality,
-		CreatedAt:           user.CreatedAt,
-	}
-
-	if user.Gender != nil {
-		userResponse.Gender = *user.Gender
-	}
-
-	if user.ResidentialCountry != nil {
-		userResponse.ResidentialCountry = *user.ResidentialCountry
-	}
-
-	if user.JobRole != nil {
-		userResponse.JobRole = *user.JobRole
-	}
-
-	if user.CompanyWebsite != nil {
-		userResponse.CompanyWebsite = *user.CompanyWebsite
-	}
-
-	if user.EmploymentType != nil {
-		userResponse.EmploymentType = *user.EmploymentType
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		CreatedAt: user.CreatedAt,
 	}
 
 	ctx.JSON(http.StatusOK, response.SuccessResponse{
@@ -131,7 +108,7 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
-			Error: "Unauthorized",
+			Message: "Unauthorized",
 		})
 		return
 	}
@@ -140,7 +117,7 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	userUUID, ok := userID.(uuid.UUID)
 	if !ok {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Invalid user ID",
+			Message: "Invalid user ID",
 		})
 		return
 	}
@@ -148,8 +125,8 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	var req request.UpdateProfileRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Message: app_errors.ErrInvalidRequest.Error(),
+			Success: false,
 		})
 		return
 	}
@@ -157,8 +134,8 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	// Validate request data
 	if err := req.Validate(); err != nil {
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Message: app_errors.ErrInvalidRequest.Error(),
+			Success: false,
 		})
 		return
 	}
@@ -167,7 +144,7 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	currentUser, err := h.userService.GetUserByID(ctx, userUUID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Failed to retrieve user profile",
+			Message: "Failed to retrieve user profile",
 		})
 		return
 	}
@@ -192,12 +169,12 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	user, err := h.userService.UpdateUser(ctx, updatedUser)
 	if err != nil {
 		errResponse := response.ErrorResponse{
-			Error: app_errors.ErrInternalServer.Error(),
+			Message: app_errors.ErrInternalServer.Error(),
 		}
 
 		if app_errors.IsAppError(err) {
 			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
+			errResponse.Message = appErr.Error()
 			ctx.JSON(http.StatusBadRequest, errResponse)
 			return
 		}
@@ -208,35 +185,12 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 
 	// Create response DTO
 	userResponse := response.UserResponse{
-		ID:                  user.ID,
-		Email:               user.Email,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		AccountType:         user.AccountType,
-		PersonalAccountType: user.PersonalAccountType,
-		Nationality:         user.Nationality,
-		CreatedAt:           user.CreatedAt,
-		UpdatedAt:           user.UpdatedAt,
-	}
-
-	if user.Gender != nil {
-		userResponse.Gender = *user.Gender
-	}
-
-	if user.ResidentialCountry != nil {
-		userResponse.ResidentialCountry = *user.ResidentialCountry
-	}
-
-	if user.JobRole != nil {
-		userResponse.JobRole = *user.JobRole
-	}
-
-	if user.CompanyWebsite != nil {
-		userResponse.CompanyWebsite = *user.CompanyWebsite
-	}
-
-	if user.EmploymentType != nil {
-		userResponse.EmploymentType = *user.EmploymentType
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 
 	ctx.JSON(http.StatusOK, response.SuccessResponse{
@@ -262,7 +216,7 @@ func (h *UserHandler) ChangePassword(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
-			Error: "Unauthorized",
+			Message: "Unauthorized",
 		})
 		return
 	}
@@ -271,7 +225,7 @@ func (h *UserHandler) ChangePassword(ctx *gin.Context) {
 	userUUID, ok := userID.(uuid.UUID)
 	if !ok {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Invalid user ID",
+			Message: "Invalid user ID",
 		})
 		return
 	}
@@ -279,8 +233,8 @@ func (h *UserHandler) ChangePassword(ctx *gin.Context) {
 	var req request.ChangePasswordRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Message: app_errors.ErrInvalidRequest.Error(),
+			Success: false,
 		})
 		return
 	}
@@ -288,8 +242,8 @@ func (h *UserHandler) ChangePassword(ctx *gin.Context) {
 	// Validate request data
 	if err := req.Validate(); err != nil {
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Message: app_errors.ErrInvalidRequest.Error(),
+			Success: false,
 		})
 		return
 	}
@@ -298,12 +252,12 @@ func (h *UserHandler) ChangePassword(ctx *gin.Context) {
 	err := h.userService.UpdatePassword(ctx, userUUID, req.OldPassword, req.NewPassword)
 	if err != nil {
 		errResponse := response.ErrorResponse{
-			Error: app_errors.ErrInternalServer.Error(),
+			Message: app_errors.ErrInternalServer.Error(),
 		}
 
 		if app_errors.IsAppError(err) {
 			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
+			errResponse.Message = appErr.Error()
 
 			if appErr.ErrorType == app_errors.ErrorTypeUnauthorized {
 				ctx.JSON(http.StatusUnauthorized, errResponse)

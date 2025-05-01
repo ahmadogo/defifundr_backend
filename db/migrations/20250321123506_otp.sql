@@ -2,6 +2,8 @@
 -- Create otp_verifications table for managing one-time password verifications
 
 -- Create an enum for OTP purpose
+DROP TYPE IF EXISTS otp_purpose;
+
 CREATE TYPE otp_purpose AS ENUM (
     'email_verification',
     'password_reset',

@@ -48,8 +48,8 @@ func (h *WaitlistHandler) JoinWaitlist(ctx *gin.Context) {
 	var req request.WaitlistJoinRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Message: app_errors.ErrInvalidRequest.Error(),
+			Success: false,
 		})
 		return
 	}
@@ -57,8 +57,8 @@ func (h *WaitlistHandler) JoinWaitlist(ctx *gin.Context) {
 	// Validate request data
 	if err := req.Validate(); err != nil {
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Message: app_errors.ErrInvalidRequest.Error(),
+			Success: false,
 		})
 		return
 	}
@@ -67,12 +67,13 @@ func (h *WaitlistHandler) JoinWaitlist(ctx *gin.Context) {
 	entry, err := h.waitlistService.JoinWaitlist(ctx, req.Email, req.FullName, req.ReferralSource)
 	if err != nil {
 		errResponse := response.ErrorResponse{
-			Error: app_errors.ErrInternalServer.Error(),
+			Message: app_errors.ErrInternalServer.Error(),
+			Success: false,
 		}
 
 		if app_errors.IsAppError(err) {
 			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
+			errResponse.Message = appErr.Error()
 
 			if appErr.ErrorType == app_errors.ErrorTypeConflict {
 				ctx.JSON(http.StatusConflict, errResponse)
@@ -114,7 +115,6 @@ func (h *WaitlistHandler) JoinWaitlist(ctx *gin.Context) {
 	})
 }
 
-
 // ListWaitlist godoc
 // @Summary List waitlist entries
 // @Description List waitlist entries with pagination and filtering
@@ -128,6 +128,8 @@ func (h *WaitlistHandler) JoinWaitlist(ctx *gin.Context) {
 // @Param order query string false "Order by (signup_date_asc, signup_date_desc)"
 // @Success 200 {object} response.PageResponse "Paginated list of waitlist entries"
 // @Failure 400 {object} response.ErrorResponse "Invalid request"
+// @Failure 403 {object} response.ErrorResponse "Access denied"
+// @Failure 500 {object} response.ErrorResponse "Internal server error"
 // @Security BearerAuth
 // @Router /admin/waitlist [get]
 func (h *WaitlistHandler) ListWaitlist(ctx *gin.Context) {
@@ -135,7 +137,8 @@ func (h *WaitlistHandler) ListWaitlist(ctx *gin.Context) {
 	role, exists := ctx.Get("user_role")
 	if !exists || role != "admin" {
 		ctx.JSON(http.StatusForbidden, response.ErrorResponse{
-			Error: "Access denied",
+			Message: "Access denied",
+			Success: false,
 		})
 		return
 	}
@@ -177,7 +180,8 @@ func (h *WaitlistHandler) ListWaitlist(ctx *gin.Context) {
 	entries, total, err := h.waitlistService.ListWaitlist(ctx, page, pageSize, filters)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Failed to retrieve waitlist entries",
+			Message: "Failed to retrieve waitlist entries",
+			Success: false,
 		})
 		return
 	}
@@ -230,7 +234,8 @@ func (h *WaitlistHandler) GetWaitlistStats(ctx *gin.Context) {
 	role, exists := ctx.Get("user_role")
 	if !exists || role != "admin" {
 		ctx.JSON(http.StatusForbidden, response.ErrorResponse{
-			Error: "Access denied",
+			Message: "Access denied",
+			Success: false,
 		})
 		return
 	}
@@ -239,7 +244,8 @@ func (h *WaitlistHandler) GetWaitlistStats(ctx *gin.Context) {
 	stats, err := h.waitlistService.GetWaitlistStats(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Failed to retrieve waitlist statistics",
+			Message: "Failed to retrieve waitlist statistics",
+			Success: false,
 		})
 		return
 	}
@@ -264,7 +270,8 @@ func (h *WaitlistHandler) ExportWaitlist(ctx *gin.Context) {
 	role, exists := ctx.Get("user_role")
 	if !exists || role != "admin" {
 		ctx.JSON(http.StatusForbidden, response.ErrorResponse{
-			Error: "Access denied",
+			Message: "Access denied",
+			Success: false,
 		})
 		return
 	}
@@ -273,7 +280,8 @@ func (h *WaitlistHandler) ExportWaitlist(ctx *gin.Context) {
 	csvData, err := h.waitlistService.ExportWaitlist(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Failed to export waitlist data",
+			Message: "Failed to export waitlist data",
+			Success: false,
 		})
 		return
 	}
@@ -281,11 +289,11 @@ func (h *WaitlistHandler) ExportWaitlist(ctx *gin.Context) {
 	// Set response headers
 	currentTime := time.Now().Format("2006-01-02")
 	filename := "waitlist-export-" + currentTime + ".csv"
-	
+
 	ctx.Header("Content-Description", "File Transfer")
 	ctx.Header("Content-Disposition", "attachment; filename="+filename)
 	ctx.Header("Content-Type", "text/csv")
 	ctx.Header("Content-Length", strconv.Itoa(len(csvData)))
-	
+
 	ctx.Data(http.StatusOK, "text/csv", csvData)
 }

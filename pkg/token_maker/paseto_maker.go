@@ -29,7 +29,7 @@ func NewTokenMaker(symmetricKey string) (Maker, error) {
 		symmetricKey: []byte(symmetricKey),
 	}
 
-	return maker, nil 
+	return maker, nil
 }
 
 func (maker *PasetoMaker) CreateToken(email string, userID string, duration time.Duration) (string, *Payload, error) {
