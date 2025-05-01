@@ -86,6 +86,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -146,116 +158,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login": {
-            "post": {
-                "description": "Authenticate a user and generate access token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Login a user",
-                "parameters": [
-                    {
-                        "description": "User login data",
-                        "name": "login",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.LoginRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully logged in",
-                        "schema": {
-                            "$ref": "#/definitions/response.LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid credentials",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/logout": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Invalidate user session",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Logout user",
-                "responses": {
-                    "200": {
-                        "description": "Successfully logged out",
-                        "schema": {
-                            "$ref": "#/definitions/response.SuccessResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/refresh": {
-            "post": {
-                "description": "Generate a new access token using refresh token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Refresh access token",
-                "responses": {
-                    "200": {
-                        "description": "New access token",
-                        "schema": {
-                            "$ref": "#/definitions/response.TokenResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid refresh token",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/register": {
+        "/auth/register/user": {
             "post": {
                 "description": "Create a new user account",
                 "consumes": [
@@ -265,7 +168,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Business-User"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
@@ -275,7 +178,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.RegisterRequest"
+                            "$ref": "#/definitions/request.RegisterUserRequest"
                         }
                     }
                 ],
@@ -297,83 +200,9 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
-                    }
-                }
-            }
-        },
-        "/auth/resend-otp": {
-            "post": {
-                "description": "Resend OTP for verification",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Resend OTP",
-                "parameters": [
-                    {
-                        "description": "Resend OTP data",
-                        "name": "resend",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.ResendOTPRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OTP sent successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.SuccessResponse"
-                        }
                     },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/verify-email": {
-            "post": {
-                "description": "Verify user email using OTP",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Verify user email",
-                "parameters": [
-                    {
-                        "description": "Email verification data",
-                        "name": "verification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.VerifyEmailRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Email verified successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.SuccessResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
+                    "429": {
+                        "description": "Too many requests",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -584,85 +413,33 @@ const docTemplate = `{
                 }
             }
         },
-        "request.LoginRequest": {
+        "request.RegisterUserRequest": {
             "type": "object",
             "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.RegisterRequest": {
-            "type": "object",
-            "required": [
-                "account_type",
                 "email",
                 "first_name",
-                "last_name",
-                "nationality",
-                "password"
+                "last_name"
             ],
             "properties": {
-                "account_type": {
-                    "type": "string"
-                },
-                "company_website": {
-                    "type": "string"
-                },
                 "email": {
-                    "type": "string"
-                },
-                "employment_type": {
                     "type": "string"
                 },
                 "first_name": {
                     "type": "string"
                 },
-                "gender": {
-                    "type": "string"
-                },
-                "job_role": {
-                    "type": "string"
-                },
                 "last_name": {
-                    "type": "string"
-                },
-                "nationality": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
                 },
-                "personal_account_type": {
+                "provider": {
                     "type": "string"
                 },
-                "residential_country": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.ResendOTPRequest": {
-            "type": "object",
-            "required": [
-                "contact_method",
-                "purpose",
-                "user_id"
-            ],
-            "properties": {
-                "contact_method": {
+                "provider_id": {
                     "type": "string"
                 },
-                "purpose": {
-                    "type": "string"
-                },
-                "user_id": {
+                "web_auth_token": {
                     "type": "string"
                 }
             }
@@ -701,21 +478,6 @@ const docTemplate = `{
                 }
             }
         },
-        "request.VerifyEmailRequest": {
-            "type": "object",
-            "required": [
-                "otp_code",
-                "user_id"
-            ],
-            "properties": {
-                "otp_code": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "request.WaitlistJoinRequest": {
             "type": "object",
             "required": [
@@ -739,37 +501,11 @@ const docTemplate = `{
         "response.ErrorResponse": {
             "type": "object",
             "properties": {
-                "details": {
+                "message": {
                     "type": "string"
                 },
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "email_verified": {
+                "success": {
                     "type": "boolean"
-                },
-                "expires_at": {
-                    "type": "string"
-                },
-                "refresh_token": {
-                    "type": "string"
-                },
-                "session_id": {
-                    "type": "string"
-                },
-                "token_type": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/response.UserResponse"
                 }
             }
         },
@@ -797,32 +533,15 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "response.TokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
                 },
-                "expires_at": {
-                    "type": "string"
-                },
-                "token_type": {
-                    "type": "string"
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
         "response.UserResponse": {
             "type": "object",
             "properties": {
-                "account_type": {
-                    "type": "string"
-                },
-                "company_website": {
-                    "type": "string"
-                },
                 "created_at": {
                     "type": "string"
                 },
@@ -832,34 +551,19 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "employment_type": {
-                    "type": "string"
-                },
                 "first_name": {
-                    "type": "string"
-                },
-                "gender": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "job_role": {
-                    "type": "string"
-                },
                 "last_name": {
                     "type": "string"
                 },
-                "nationality": {
+                "provider": {
                     "type": "string"
                 },
-                "personal_account_type": {
-                    "type": "string"
-                },
-                "profile_picture": {
-                    "type": "string"
-                },
-                "residential_country": {
+                "provider_id": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -936,9 +640,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "defifundr.koyeb.app",
+	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"http", "https"},
 	Title:            "DefiFundr API",
 	Description:      "Decentralized Payroll and Invoicing Platform for Remote Teams",
 	InfoInstanceName: "swagger",

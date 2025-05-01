@@ -12,7 +12,7 @@ import (
 // AuthService defines the use cases for authentication
 type AuthService interface {
 	// User authentication
-	Login(ctx context.Context, email, password, userAgent, clientIP string) (*domain.Session, *domain.User, error)
+	Login(ctx context.Context, email string, password string, userAgent string, clientIP string, provider, providerId string) (*domain.Session, *domain.User, error)
 	RegisterUser(ctx context.Context, user domain.User, password string) (*domain.User, error)
 	RegisterBusiness(ctx context.Context, user domain.User, password string) (*domain.User, error)
 	RegisterPersonalDetails(ctx context.Context, user domain.User, password string) (*domain.User, error)
@@ -61,7 +61,4 @@ type EmailService interface {
 	SendBatchUpdate(ctx context.Context, emails []string, subject, message string) error
 }
 
-type OAuthService interface {
-	ValidateWebAuthToken(ctx context.Context, tokenString string) (map[string]interface{}, error)
-	GetUserInfo(ctx context.Context, token string) (map[string]interface{}, error)
-}
+

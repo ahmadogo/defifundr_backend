@@ -40,14 +40,30 @@ dockerlogs:
 	docker logs defi
 
 dropdb:
-	docker exec -it defi dropdb $(DB_NAME)  
+	docker exec -it defi dropdb $(DB_NAME) 
 
-# Smart contract commands
-gencontract:
-	solc --abi --bin smart-contracts/ethereum/Payroll.sol -o smart-contracts/build
-	solc --abi --bin smart-contracts/ethereum/Invoice.sol -o smart-contracts/build
-	abigen --bin=smart-contracts/build/Payroll.bin --abi=smart-contracts/build/Payroll.abi --pkg=contracts --out=internal/adapters/secondary/blockchain/contracts/payroll.go
-	abigen --bin=smart-contracts/build/Invoice.bin --abi=smart-contracts/build/Invoice.abi --pkg=contracts --out=internal/adapters/secondary/blockchain/contracts/invoice.go
+# Migration commands (using goose)
+migrate-create:
+	@read -p "Enter migration name: " name; \
+	goose -dir db/migrations create $${name} sql
+
+migrate-up:
+	goose -dir db/migrations postgres "postgres://root:secret@localhost:5433/defi?sslmode=disable" up
+
+migrate-up-one:
+	goose -dir db/migrations postgres "$(DB_URL)" up-by-one
+
+migrate-down:
+	goose -dir db/migrations postgres "$(DB_URL)" down
+
+migrate-down-one:
+	goose -dir db/migrations postgres "$(DB_URL)" down-by-one
+
+migrate-status:
+	goose -dir db/migrations postgres "$(DB_URL)" status
+
+migrate-reset:
+	goose -dir db/migrations postgres "$(DB_URL)" reset 
 
 # Documentation commands
 db_docs:
@@ -74,8 +90,8 @@ seed:
 
 # Mock generation
 mock:
-	@mkdir -p internal/adapters/secondary/db/postgres/mock
-	mockgen -package mockdb -destination internal/adapters/secondary/db/postgres/mock/querier.go -source internal/adapters/secondary/db/postgres/sqlc/querier.go
+	@mkdir -p db/mock
+	mockgen -package sqlc -destination db/sqlc/querier.go -source db/sqlc/querier.go
 
 # Linting
 lint:

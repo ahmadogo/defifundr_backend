@@ -1,15 +1,16 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/demola234/defifundr/infrastructure/common/logging"
 	"github.com/demola234/defifundr/internal/adapters/dto/request"
 	"github.com/demola234/defifundr/internal/adapters/dto/response"
 	"github.com/demola234/defifundr/internal/core/domain"
 	"github.com/demola234/defifundr/internal/core/ports"
-	"github.com/demola234/defifundr/pkg/app_errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -27,304 +28,193 @@ func NewAuthHandler(authService ports.AuthService, logger logging.Logger) *AuthH
 	}
 }
 
-// Register godoc
+// RegisterUser handles user registration
 // @Summary Register a new user
 // @Description Create a new user account
-// @Tags auth
+// @Tags Business-User
 // @Accept json
 // @Produce json
-// @Param register body request.RegisterRequest true "User registration data"
+// @Param register body request.RegisterUserRequest true "User registration data"
 // @Success 201 {object} response.UserResponse "Successfully registered"
 // @Failure 400 {object} response.ErrorResponse "Invalid request"
 // @Failure 409 {object} response.ErrorResponse "User already exists"
-// @Router /auth/register [post]
-func (h *AuthHandler) Register(ctx *gin.Context) {
-	// Extract request co-relation ID
+// @Failure 429 {object} response.ErrorResponse "Too many requests"
+// @Router /auth/register/user [post]
+func (h *AuthHandler) RegisterUser(ctx *gin.Context) {
+	// Extract request correlation ID
 	requestID, _ := ctx.Get("RequestID")
 	reqLogger := h.logger.With("request_id", requestID)
 	reqLogger.Debug("Processing register user request")
 
-	var req request.RegisterRequest
-
+	var req request.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		reqLogger.Error("Invalid registration request", err, map[string]interface{}{
+			"error": err.Error(),
+		})
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Success: false,
+			Message: "Invalid registration request",
 		})
 		return
 	}
 
-	// Validate request data
-	if err := req.Validate(); err != nil {
+	// Basic validation
+	if req.Provider != "" && req.Provider != "email" && req.WebAuthToken == "" {
+		reqLogger.Error("Missing web auth token for provider", nil, map[string]interface{}{
+			"provider": req.Provider,
+			"email":    req.Email,
+		})
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
+			Success: false,
+			Message: "Web auth token is required for provider authentication",
 		})
 		return
 	}
 
-	// Create domain User object from request
+	// Create user domain model from request
 	user := domain.User{
-		Email:               req.Email,
-		FirstName:           req.FirstName,
-		LastName:            req.LastName,
-		AccountType:         req.AccountType,
-		PersonalAccountType: req.PersonalAccountType,
-		Nationality:         req.Nationality,
-		Gender:              &req.Gender,
-		ResidentialCountry:  &req.ResidentialCountry,
-		JobRole:             &req.JobRole,
-		CompanyWebsite:      &req.CompanyWebsite,
-		EmploymentType:      &req.EmploymentType,
+		ID:           uuid.New(),
+		Email:        req.Email,
+		FirstName:    req.FirstName,
+		LastName:     req.LastName,
+		AuthProvider: req.Provider,
+		ProviderID:   req.ProviderID,
+		WebAuthToken: req.WebAuthToken,
+		// Set default values for required fields
+		AccountType:         "personal", // Default account type
+		PersonalAccountType: "user",     // Default personal account type
+		Nationality:         "unknown",  // This will need to be updated later
 	}
 
 	// Register the user
-	registeredUser, err := h.authService.RegisterUser(ctx, user, req.Password)
+	createdUser, err := h.authService.RegisterUser(ctx, user, req.Password)
 	if err != nil {
-		errResponse := response.ErrorResponse{
-			Error: app_errors.ErrInternalServer.Error(),
+		statusCode := http.StatusInternalServerError
+		errorMessage := fmt.Sprintf("Failed to register user: %w", err)
+
+		// Map specific errors to appropriate status codes
+		if strings.Contains(strings.ToLower(err.Error()), "already registered") ||
+			strings.Contains(strings.ToLower(err.Error()), "already exists") {
+			statusCode = http.StatusConflict
+			errorMessage = "Email already registered"
+		} else if strings.Contains(strings.ToLower(err.Error()), "invalid") ||
+			strings.Contains(strings.ToLower(err.Error()), "required") {
+			statusCode = http.StatusBadRequest
+			errorMessage = err.Error()
 		}
 
-		if app_errors.IsAppError(err) {
-			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
+		reqLogger.Error("Failed to register user", err, map[string]interface{}{
+			"email": req.Email,
+			"error": err.Error(),
+		})
 
-			if appErr.ErrorType == app_errors.ErrorTypeConflict {
-				ctx.JSON(http.StatusConflict, errResponse)
-				return
-			}
-
-			ctx.JSON(http.StatusBadRequest, errResponse)
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, errResponse)
+		ctx.JSON(statusCode, response.ErrorResponse{
+			Success: false,
+			Message: errorMessage,
+		})
 		return
 	}
 
-	// Create response DTO
-	userResponse := response.UserResponse{
-		ID:                  registeredUser.ID,
-		Email:               registeredUser.Email,
-		FirstName:           registeredUser.FirstName,
-		LastName:            registeredUser.LastName,
-		AccountType:         registeredUser.AccountType,
-		PersonalAccountType: registeredUser.PersonalAccountType,
-		Nationality:         registeredUser.Nationality,
-		CreatedAt:           registeredUser.CreatedAt,
-	}
+	// Log successful registration
+	reqLogger.Info("User registered successfully", map[string]interface{}{
+		"user_id": createdUser.ID.String(),
+		"email":   createdUser.Email,
+	})
 
-	if registeredUser.Gender != nil {
-		userResponse.Gender = *registeredUser.Gender
-	}
-
-	if registeredUser.ResidentialCountry != nil {
-		userResponse.ResidentialCountry = *registeredUser.ResidentialCountry
-	}
-
-	if registeredUser.JobRole != nil {
-		userResponse.JobRole = *registeredUser.JobRole
-	}
-
-	if registeredUser.CompanyWebsite != nil {
-		userResponse.CompanyWebsite = *registeredUser.CompanyWebsite
-	}
-
-	if registeredUser.EmploymentType != nil {
-		userResponse.EmploymentType = *registeredUser.EmploymentType
-	}
-
+	// Return success response
 	ctx.JSON(http.StatusCreated, response.SuccessResponse{
+		Success: true,
 		Message: "User registered successfully",
-		Data:    userResponse,
-	})
-}
-
-// Login godoc
-// @Summary Login a user
-// @Description Authenticate a user and generate access token
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param login body request.LoginRequest true "User login data"
-// @Success 200 {object} response.LoginResponse "Successfully logged in"
-// @Failure 400 {object} response.ErrorResponse "Invalid request"
-// @Failure 401 {object} response.ErrorResponse "Invalid credentials"
-// @Router /auth/login [post]
-func (h *AuthHandler) Login(ctx *gin.Context) {
-	var req request.LoginRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Error:   app_errors.ErrInvalidRequest.Error(),
-			Details: err.Error(),
-		})
-		return
-	}
-
-	// Get user agent and client IP
-	userAgent := ctx.Request.UserAgent()
-	clientIP := ctx.ClientIP()
-
-	// Authenticate user
-	session, user, err := h.authService.Login(ctx, req.Email, req.Password, userAgent, clientIP)
-	if err != nil {
-		errResponse := response.ErrorResponse{
-			Error: app_errors.ErrInternalServer.Error(),
-		}
-
-		if app_errors.IsAppError(err) {
-			appErr := err.(*app_errors.AppError)
-			errResponse.Error = appErr.Error()
-
-			if appErr.ErrorType == app_errors.ErrorTypeUnauthorized {
-				ctx.JSON(http.StatusUnauthorized, errResponse)
-				return
-			}
-
-			ctx.JSON(http.StatusBadRequest, errResponse)
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, errResponse)
-		return
-	}
-
-	// Set refresh token as HTTP-only cookie
-	ctx.SetCookie(
-		"refresh_token",
-		session.RefreshToken,
-		int(time.Until(session.ExpiresAt).Seconds()),
-		"/",
-		"",
-		true, // Secure
-		true, // HttpOnly
-	)
-
-	// Create login response
-	loginResponse := response.LoginResponse{
-		User: response.UserResponse{
-			ID:                  user.ID,
-			Email:               user.Email,
-			FirstName:           user.FirstName,
-			LastName:            user.LastName,
-			AccountType:         user.AccountType,
-			PersonalAccountType: user.PersonalAccountType,
-			Nationality:         user.Nationality,
-		},
-		SessionID: session.ID,
-		ExpiresAt: session.ExpiresAt,
-	}
-
-	ctx.JSON(http.StatusOK, response.SuccessResponse{
-		Message: "Login successful",
-		Data:    loginResponse,
-	})
-}
-
-// RefreshToken godoc
-// @Summary Refresh access token
-// @Description Generate a new access token using refresh token
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Success 200 {object} response.TokenResponse "New access token"
-// @Failure 401 {object} response.ErrorResponse "Invalid refresh token"
-// @Router /auth/refresh [post]
-func (h *AuthHandler) RefreshToken(ctx *gin.Context) {
-	// Get refresh token from cookie
-	refreshToken, err := ctx.Cookie("refresh_token")
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
-			Error: "Refresh token required",
-		})
-		return
-	}
-
-	// Get user agent and client IP
-	userAgent := ctx.Request.UserAgent()
-	clientIP := ctx.ClientIP()
-
-	// Refresh token
-	session, accessToken, err := h.authService.RefreshToken(ctx, refreshToken, userAgent, clientIP)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
-			Error: "Invalid refresh token",
-		})
-		return
-	}
-
-	// Set new refresh token cookie if token was rotated
-	ctx.SetCookie(
-		"refresh_token",
-		session.RefreshToken,
-		int(time.Until(session.ExpiresAt).Seconds()),
-		"/",
-		"",
-		true, // Secure
-		true, // HttpOnly
-	)
-
-	ctx.JSON(http.StatusOK, response.SuccessResponse{
-		Message: "Token refreshed",
-		Data: response.TokenResponse{
-			AccessToken: accessToken,
-			TokenType:   "Bearer",
-			ExpiresAt:   session.ExpiresAt,
+		Data: response.UserResponse{
+			ID:        createdUser.ID.String(),
+			Email:     createdUser.Email,
+			FirstName: createdUser.FirstName,
+			LastName:  createdUser.LastName,
+			CreatedAt: createdUser.CreatedAt,
+			UpdatedAt: createdUser.UpdatedAt,
 		},
 	})
 }
 
-// Logout godoc
-// @Summary Logout user
-// @Description Invalidate user session
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} response.SuccessResponse "Successfully logged out"
-// @Failure 401 {object} response.ErrorResponse "Unauthorized"
-// @Router /auth/logout [post]
-func (h *AuthHandler) Logout(ctx *gin.Context) {
-	// Get session ID from context (set by auth middleware)
-	sessionID, exists := ctx.Get("session_id")
-	if !exists {
-		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
-			Error: "Unauthorized",
-		})
-		return
+// Helper functions
+
+// validateRegistrationRequest validates the registration request
+func validateRegistrationRequest(req request.RegisterUserRequest) error {
+	// Basic validation logic
+	if req.Email == "" {
+		return errors.New("email is required")
 	}
 
-	// Convert session ID to UUID
-	sessionUUID, ok := sessionID.(uuid.UUID)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Invalid session ID",
-		})
-		return
+	// If using email auth, password is required
+	if (req.Provider == "" || req.Provider == "email") && req.Password == "" {
+		return errors.New("password is required for email authentication")
 	}
 
-	// Logout user
-	err := h.authService.Logout(ctx, sessionUUID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Error: "Failed to logout",
-		})
-		return
+	if req.FirstName == "" {
+		return errors.New("first name is required")
 	}
 
-	// Clear refresh token cookie
-	ctx.SetCookie(
-		"refresh_token",
-		"",
-		-1,
-		"/",
-		"",
-		true,
-		true,
-	)
+	if req.LastName == "" {
+		return errors.New("last name is required")
+	}
 
-	ctx.JSON(http.StatusOK, response.SuccessResponse{
-		Message: "Logged out successfully",
-	})
+	return nil
+}
+
+// mapRegisterRequestToUser maps registration request to user domain model
+func mapRegisterRequestToUser(req request.RegisterUserRequest) domain.User {
+	return domain.User{
+		ID:         uuid.New(),
+		Email:      req.Email,
+		FirstName:  req.FirstName,
+		LastName:   req.LastName,
+		ProviderID: req.ProviderID,
+	}
+}
+
+// getStringPtrValue safely extracts string value from pointer
+func getStringPtrValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+func (h *AuthHandler) VerifyEmail(ctx *gin.Context) {
+	// Extract request co-relation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing verify email request")
+}
+
+// RegisterBusiness
+func (h *AuthHandler) RegisterBusiness(ctx *gin.Context) {
+	// Extract request co-relation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing register business request")
+}
+
+// RegisterUserPersonalDetails
+func (h *AuthHandler) RegisterUserPersonalDetails(ctx *gin.Context) {
+	// Extract request co-relation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing register user personal details_request")
+}
+
+// RegisterUserAddressDetails
+func (h *AuthHandler) RegisterUserAddressDetails(ctx *gin.Context) {
+	// Extract request co-relation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing register user address details request")
+}
+
+// RegisterBusinessDetails
+func (h *AuthHandler) RegisterBusinessDetails(ctx *gin.Context) {
+	// Extract request co-relation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing register business details request")
 }

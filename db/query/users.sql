@@ -13,33 +13,47 @@ INSERT INTO users (
   nationality,
   residential_country,
   job_role,
+  company_name,
+  company_address,
+  company_city,
+  company_postal_code,
+  company_country,
+  auth_provider,
+  provider_id,
+  employee_type,
   company_website,
   employment_type,
   created_at,
   updated_at
 ) VALUES (
-  COALESCE($1, uuid_generate_v4()),
-  $2,
-  $3,
- COALESCE($4, ''),
-  $5,
-  $6,
-  $7,
-  $8,
-  $9,
-  $10,
-  $11,
-  $12,
-  $13,
-  $14,
-  COALESCE($15, now()),
-  COALESCE($16, now())
+  COALESCE(@id, uuid_generate_v4()),
+  @email,
+  @password_hash,
+  COALESCE(@profile_picture, ''),
+  @account_type,
+  @gender,
+  @personal_account_type,
+  @first_name,
+  @last_name,
+  @nationality,
+  @residential_country,
+  @job_role,
+  COALESCE(@company_name, ''),
+  COALESCE(@company_address, ''),
+  COALESCE(@company_city, ''),
+  COALESCE(@company_postal_code, ''),
+  COALESCE(@company_country, ''),
+  @auth_provider,
+  @provider_id,
+  @employee_type,
+  COALESCE(@company_website, ''),
+  COALESCE(@employment_type, ''),
+  COALESCE(@created_at, now()),
+  COALESCE(@updated_at, now())
 ) RETURNING *;
-
 
 -- name: GetUser :one
 SELECT * FROM users WHERE id = $1 OR id::text = $1 LIMIT 1;
-
 
 -- name: GetUserByEmail :one
 -- Retrieves a single user by their email address
@@ -102,6 +116,13 @@ SET
   job_role = $11,
   company_website = $12,
   employment_type = $13,
+  company_name = $14,
+  company_address = $15,
+  company_city = $16,
+  company_postal_code = $17,
+  company_country = $18,
+  auth_provider = COALESCE($19, auth_provider),
+  provider_id = COALESCE($20, provider_id),
   updated_at = now()
 WHERE id = $1
 RETURNING *;

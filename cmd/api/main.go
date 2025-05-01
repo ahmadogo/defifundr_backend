@@ -70,7 +70,7 @@ func main() {
 
 	// Create repositories
 	userRepo := repositories.NewUserRepository(*dbQueries)
-	otpRepo := repositories.NewOtpRepository(*dbQueries)
+	oAuthRepo := repositories.NewOAuthRepository(*dbQueries)
 	sessionRepo := repositories.NewSessionRepository(*dbQueries)
 	waitlistRepo := repositories.NewWaitlistRepository(*dbQueries)
 
@@ -106,7 +106,7 @@ func main() {
 	emailService := services.NewEmailService(configs, logger, emailSender)
 
 	// Create services
-	authService := services.NewAuthService(userRepo, otpRepo, sessionRepo, tokenMaker, configs)
+	authService := services.NewAuthService(userRepo, sessionRepo, oAuthRepo, tokenMaker, configs, logger)
 	userService := services.NewUserService(userRepo)
 	waitlistService := services.NewWaitlistService(waitlistRepo, emailService)
 

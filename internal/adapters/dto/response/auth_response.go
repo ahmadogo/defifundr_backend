@@ -8,52 +8,46 @@ import (
 
 // SuccessResponse is a generic success response
 type SuccessResponse struct {
+	Success bool        `json:"success"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
-// ErrorResponse is a generic error response
+// ErrorResponse represents an error response
 type ErrorResponse struct {
-	Error   string `json:"error"`
-	Details string `json:"details,omitempty"`
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
 // UserResponse represents the user data in responses
 type UserResponse struct {
-	ID                  uuid.UUID  `json:"id"`
-	Email               string     `json:"email"`
-	FirstName           string     `json:"first_name"`
-	LastName            string     `json:"last_name"`
-	AccountType         string     `json:"account_type"`
-	PersonalAccountType string     `json:"personal_account_type,omitempty"`
-	Nationality         string     `json:"nationality"`
-	Gender              string     `json:"gender,omitempty"`
-	ResidentialCountry  string     `json:"residential_country,omitempty"`
-	JobRole             string     `json:"job_role,omitempty"`
-	CompanyWebsite      string     `json:"company_website,omitempty"`
-	EmploymentType      string     `json:"employment_type,omitempty"`
-	ProfilePicture      string     `json:"profile_picture,omitempty"`
-	CreatedAt           time.Time  `json:"created_at"`
-	UpdatedAt           time.Time  `json:"updated_at,omitempty"`
-	DeletedAt           *time.Time `json:"deleted_at,omitempty"`
+	ID         string     `json:"id"`
+	Email      string     `json:"email"`
+	FirstName  string     `json:"first_name"`
+	LastName   string     `json:"last_name"`
+	Provider   string     `json:"provider"`
+	ProviderID string     `json:"provider_id"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at,omitempty"`
+	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
 }
 
 // LoginResponse represents the login response
 type LoginResponse struct {
-	User           UserResponse `json:"user"`
-	AccessToken    string       `json:"access_token,omitempty"`
-	RefreshToken   string       `json:"refresh_token,omitempty"`
-	SessionID      uuid.UUID    `json:"session_id"`
-	ExpiresAt      time.Time    `json:"expires_at"`
-	TokenType      string       `json:"token_type,omitempty"`
-	EmailVerified  bool         `json:"email_verified,omitempty"`
+	User          UserResponse `json:"user"`
+	AccessToken   string       `json:"access_token,omitempty"`
+	RefreshToken  string       `json:"refresh_token,omitempty"`
+	SessionID     uuid.UUID    `json:"session_id"`
+	ExpiresAt     time.Time    `json:"expires_at"`
+	TokenType     string       `json:"token_type,omitempty"`
+	EmailVerified bool         `json:"email_verified,omitempty"`
 }
 
 // TokenResponse represents a token response
 type TokenResponse struct {
-	AccessToken  string    `json:"access_token"`
-	TokenType    string    `json:"token_type"`
-	ExpiresAt    time.Time `json:"expires_at"`
+	AccessToken string    `json:"access_token"`
+	TokenType   string    `json:"token_type"`
+	ExpiresAt   time.Time `json:"expires_at"`
 }
 
 // OTPResponse represents an OTP verification response

@@ -8,24 +8,18 @@ import (
 )
 
 // RegisterRequest represents the user registration request
-type RegisterRequest struct {
-	Email               string `json:"email" binding:"required,email"`
-	Password            string `json:"password" binding:"required"`
-	FirstName           string `json:"first_name" binding:"required"`
-	LastName            string `json:"last_name" binding:"required"`
-	AccountType         string `json:"account_type" binding:"required"`
-	PersonalAccountType string `json:"personal_account_type"`
-	Nationality         string `json:"nationality" binding:"required"`
-	Gender              string `json:"gender"`
-	ResidentialCountry  string `json:"residential_country"`
-	JobRole             string `json:"job_role"`
-	CompanyWebsite      string `json:"company_website"`
-	EmploymentType      string `json:"employment_type"`
-
+type RegisterUserRequest struct {
+	Email        string `json:"email" binding:"omitempty"`
+	Password     string `json:"password,omitempty" binding:"omitempty,min=8"`
+	FirstName    string `json:"first_name" binding:"omitempty"`
+	LastName     string `json:"last_name" binding:"omitempty"`
+	Provider     string `json:"provider" binding:"omitempty"`
+	ProviderID   string `json:"provider_id" binding:"omitempty"`
+	WebAuthToken string `json:"web_auth_token" binding:"required"`
 }
 
 // Validate validates the register request
-func (r *RegisterRequest) Validate() error {
+func (r *RegisterUserRequest) Validate() error {
 	// Validate email
 	if !isValidEmail(r.Email) {
 		return errors.New("invalid email format")
@@ -34,11 +28,6 @@ func (r *RegisterRequest) Validate() error {
 	// Validate password
 	if err := validatePassword(r.Password); err != nil {
 		return err
-	}
-
-	// Validate account type
-	if !isValidAccountType(r.AccountType) {
-		return errors.New("invalid account type")
 	}
 
 	// Additional validations as needed

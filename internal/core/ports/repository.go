@@ -13,7 +13,6 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	UpdateUser(ctx context.Context, user domain.User) (*domain.User, error)
-	// GetUserByProviderID(ctx context.Context, provider, providerID string) (*domain.User, error)
 	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 }
 
@@ -55,4 +54,9 @@ type WaitlistRepository interface {
 	GetWaitlistEntryByReferralCode(ctx context.Context, code string) (*domain.WaitlistEntry, error)
 	ListWaitlistEntries(ctx context.Context, limit, offset int, filters map[string]string) ([]domain.WaitlistEntry, int64, error)
 	ExportWaitlistToCsv(ctx context.Context) ([]byte, error)
+}
+
+type OAuthRepository interface {
+	ValidateWebAuthToken(ctx context.Context, tokenString string) (map[string]interface{}, error)
+	GetUserInfo(ctx context.Context, token string) (*domain.User, error)
 }
