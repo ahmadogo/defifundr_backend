@@ -86,7 +86,7 @@ type Querier interface {
 	// Retrieves transactions for a specific user with a specific status
 	GetTransactionsByUserIDAndStatus(ctx context.Context, arg GetTransactionsByUserIDAndStatusParams) ([]Transactions, error)
 	GetUnverifiedOTPsForUser(ctx context.Context, userID pgtype.UUID) ([]OtpVerifications, error)
-	GetUser(ctx context.Context, id uuid.UUID) (Users, error)
+	GetUser(ctx context.Context, dollar_1 uuid.UUID) (Users, error)
 	// Retrieves a single user by their email address
 	GetUserByEmail(ctx context.Context, email string) (Users, error)
 	GetUserDeviceTokenByDeviceToken(ctx context.Context, deviceToken string) (UserDeviceTokens, error)

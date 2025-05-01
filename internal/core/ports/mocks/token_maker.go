@@ -6,14 +6,15 @@ import (
 	"time"
 
 	tokenMaker "github.com/demola234/defifundr/pkg/token_maker"
+	"github.com/google/uuid"
 )
 
 type FakeMaker struct {
-	CreateTokenStub        func(string, string, time.Duration) (string, *tokenMaker.Payload, error)
+	CreateTokenStub        func(string, uuid.UUID, time.Duration) (string, *tokenMaker.Payload, error)
 	createTokenMutex       sync.RWMutex
 	createTokenArgsForCall []struct {
 		arg1 string
-		arg2 string
+		arg2 uuid.UUID
 		arg3 time.Duration
 	}
 	createTokenReturns struct {
@@ -43,12 +44,12 @@ type FakeMaker struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeMaker) CreateToken(arg1 string, arg2 string, arg3 time.Duration) (string, *tokenMaker.Payload, error) {
+func (fake *FakeMaker) CreateToken(arg1 string, arg2 uuid.UUID, arg3 time.Duration) (string, *tokenMaker.Payload, error) {
 	fake.createTokenMutex.Lock()
 	ret, specificReturn := fake.createTokenReturnsOnCall[len(fake.createTokenArgsForCall)]
 	fake.createTokenArgsForCall = append(fake.createTokenArgsForCall, struct {
 		arg1 string
-		arg2 string
+		arg2 uuid.UUID
 		arg3 time.Duration
 	}{arg1, arg2, arg3})
 	stub := fake.CreateTokenStub
@@ -70,13 +71,13 @@ func (fake *FakeMaker) CreateTokenCallCount() int {
 	return len(fake.createTokenArgsForCall)
 }
 
-func (fake *FakeMaker) CreateTokenCalls(stub func(string, string, time.Duration) (string, *tokenMaker.Payload, error)) {
+func (fake *FakeMaker) CreateTokenCalls(stub func(string, uuid.UUID, time.Duration) (string, *tokenMaker.Payload, error)) {
 	fake.createTokenMutex.Lock()
 	defer fake.createTokenMutex.Unlock()
 	fake.CreateTokenStub = stub
 }
 
-func (fake *FakeMaker) CreateTokenArgsForCall(i int) (string, string, time.Duration) {
+func (fake *FakeMaker) CreateTokenArgsForCall(i int) (string, uuid.UUID, time.Duration) {
 	fake.createTokenMutex.RLock()
 	defer fake.createTokenMutex.RUnlock()
 	argsForCall := fake.createTokenArgsForCall[i]

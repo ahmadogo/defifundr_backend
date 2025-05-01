@@ -2,16 +2,18 @@ package tokenMaker
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Payload struct {
 	Email     string    `json:"email"`
-	UserID    string    `json:"user_id"`
+	UserID    uuid.UUID    `json:"user_id"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
-func NewPayload(email string, userID string, duration time.Duration) (*Payload, error) {
+func NewPayload(email string, userID uuid.UUID, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
 		Email:     email,
