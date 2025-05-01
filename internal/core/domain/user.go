@@ -29,6 +29,11 @@ type User struct {
 	CompanyCountry      string    `json:"company_country,omitempty"`
 	CompanyWebsite      *string   `json:"company_website,omitempty"`
 	EmploymentType      *string   `json:"employment_type,omitempty"`
+	UserCity            *string   `json:"user_city,omitempty"`
+	UserAddress         *string   `json:"user_address,omitempty"`
+	UserPostalCode      *string   `json:"user_postal_code,omitempty"`
+	PhoneNumber         *string   `json:"phone_number,omitempty"`
+	PhoneNumberVerified *bool     `json:"phone_number_verified,omitempty"`
 	Address             string    `json:"address"`
 	City                string    `json:"city"`
 	PostalCode          string    `json:"postal_code"`

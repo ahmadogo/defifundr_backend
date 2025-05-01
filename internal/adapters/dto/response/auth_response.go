@@ -32,15 +32,32 @@ type UserResponse struct {
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
 }
 
+type SessionResponse struct {
+	ID               uuid.UUID `json:"id"`
+	UserID           uuid.UUID `json:"user_id"`
+	AccessToken      string    `json:"access_token"`
+	RefreshToken     string    `json:"-"`
+	UserAgent        string    `json:"user_agent"`
+	WebOAuthClientID *string   `json:"web_oauth_client_id,omitempty"`
+	OAuthAccessToken *string   `json:"oauth_access_token,omitempty"`
+	OAuthIDToken     *string   `json:"oauth_id_token,omitempty"`
+	UserLoginType    string    `json:"user_login_type"`
+	MFAEnabled       bool      `json:"mfa_enabled"`
+	ClientIP         string    `json:"client_ip"`
+	IsBlocked        bool      `json:"is_blocked"`
+	ExpiresAt        time.Time `json:"expires_at"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
 // LoginResponse represents the login response
 type LoginResponse struct {
-	User          UserResponse `json:"user"`
-	AccessToken   string       `json:"access_token,omitempty"`
-	RefreshToken  string       `json:"refresh_token,omitempty"`
-	SessionID     uuid.UUID    `json:"session_id"`
-	ExpiresAt     time.Time    `json:"expires_at"`
-	TokenType     string       `json:"token_type,omitempty"`
-	EmailVerified bool         `json:"email_verified,omitempty"`
+	User          UserResponse    `json:"user"`
+	AccessToken   SessionResponse `json:"access_token,omitempty"`
+	RefreshToken  string          `json:"refresh_token,omitempty"`
+	SessionID     uuid.UUID       `json:"session_id"`
+	ExpiresAt     time.Time       `json:"expires_at"`
+	TokenType     string          `json:"token_type,omitempty"`
+	EmailVerified bool            `json:"email_verified,omitempty"`
 }
 
 // TokenResponse represents a token response

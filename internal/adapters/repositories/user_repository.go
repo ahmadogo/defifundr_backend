@@ -21,40 +21,32 @@ func NewUserRepository(store db.Queries) *UserRepository {
 	return &UserRepository{store: store}
 }
 
-// Helper function to safely handle string pointers
-func getStringValue(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
 // RegisterUser implements the user registration functionality
 func (r *UserRepository) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	// Convert domain user to database parameters
+
 	params := db.CreateUserParams{
 		ID:                  user.ID,
 		Email:               user.Email,
-		PasswordHash:        pgtype.Text{String: user.PasswordHash, Valid: user.PasswordHash != ""},
-		ProfilePicture:      pgtype.Text{String: getStringValue(user.ProfilePicture), Valid: user.ProfilePicture != nil},
+		PasswordHash:        toPgText(user.PasswordHash),
+		ProfilePicture:      toPgTextPtr(user.ProfilePicture),
+		Gender:              toPgTextPtr(user.Gender),
 		AccountType:         user.AccountType,
-		Gender:              pgtype.Text{String: getStringValue(user.Gender), Valid: user.Gender != nil},
 		PersonalAccountType: user.PersonalAccountType,
 		FirstName:           user.FirstName,
 		LastName:            user.LastName,
 		Nationality:         user.Nationality,
-		ResidentialCountry:  pgtype.Text{String: getStringValue(user.ResidentialCountry), Valid: user.ResidentialCountry != nil},
-		JobRole:             pgtype.Text{String: getStringValue(user.JobRole), Valid: user.JobRole != nil},
-		CompanyName:         pgtype.Text{String: user.CompanyName, Valid: user.CompanyName != ""},
-		CompanyAddress:      pgtype.Text{String: user.CompanyAddress, Valid: user.CompanyAddress != ""},
-		CompanyCity:         pgtype.Text{String: user.CompanyCity, Valid: user.CompanyCity != ""},
-		CompanyPostalCode:   pgtype.Text{String: user.CompanyPostalCode, Valid: user.CompanyPostalCode != ""},
-		CompanyCountry:      pgtype.Text{String: user.CompanyCountry, Valid: user.CompanyCountry != ""},
-		AuthProvider:        pgtype.Text{String: user.AuthProvider, Valid: user.AuthProvider != ""},
-		ProviderID:          pgtype.Text{String: user.ProviderID, Valid: user.ProviderID != ""},
-		EmployeeType:        pgtype.Text{String: user.EmployeeType, Valid: user.EmployeeType != ""},
-		CompanyWebsite:      pgtype.Text{String: getStringValue(user.CompanyWebsite), Valid: user.CompanyWebsite != nil},
-		EmploymentType:      pgtype.Text{String: getStringValue(user.EmploymentType), Valid: user.EmploymentType != nil},
+		ResidentialCountry:  toPgTextPtr(user.ResidentialCountry),
+		JobRole:             toPgTextPtr(user.JobRole),
+		CompanyName:         toPgText(user.CompanyName),
+		CompanyAddress:      toPgText(user.CompanyAddress),
+		CompanyCity:         toPgText(user.CompanyCity),
+		CompanyPostalCode:   toPgText(user.CompanyPostalCode),
+		CompanyCountry:      toPgText(user.CompanyCountry),
+		AuthProvider:        toPgText(user.AuthProvider),
+		ProviderID:          user.ProviderID,
+		EmployeeType:        toPgText(user.EmployeeType),
+		CompanyWebsite:      toPgTextPtr(user.CompanyWebsite),
+		EmploymentType:      toPgTextPtr(user.EmploymentType),
 		CreatedAt:           pgtype.Timestamp{Time: time.Now(), Valid: true},
 		UpdatedAt:           pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}
@@ -94,24 +86,27 @@ func (r *UserRepository) UpdateUser(ctx context.Context, user domain.User) (*dom
 	params := db.UpdateUserParams{
 		ID:                  user.ID,
 		Email:               user.Email,
-		ProfilePicture:      pgtype.Text{String: getStringValue(user.ProfilePicture), Valid: user.ProfilePicture != nil},
+		ProfilePicture:      toPgTextPtr(user.ProfilePicture),
 		AccountType:         user.AccountType,
-		Gender:              pgtype.Text{String: getStringValue(user.Gender), Valid: user.Gender != nil},
+		Gender:              toPgTextPtr(user.Gender),
 		PersonalAccountType: user.PersonalAccountType,
 		FirstName:           user.FirstName,
 		LastName:            user.LastName,
 		Nationality:         user.Nationality,
-		ResidentialCountry:  pgtype.Text{String: getStringValue(user.ResidentialCountry), Valid: user.ResidentialCountry != nil},
-		JobRole:             pgtype.Text{String: getStringValue(user.JobRole), Valid: user.JobRole != nil},
-		CompanyWebsite:      pgtype.Text{String: getStringValue(user.CompanyWebsite), Valid: user.CompanyWebsite != nil},
-		EmploymentType:      pgtype.Text{String: getStringValue(user.EmploymentType), Valid: user.EmploymentType != nil},
-		CompanyName:         pgtype.Text{String: user.CompanyName, Valid: user.CompanyName != ""},
-		CompanyAddress:      pgtype.Text{String: user.CompanyAddress, Valid: user.CompanyAddress != ""},
-		CompanyCity:         pgtype.Text{String: user.CompanyCity, Valid: user.CompanyCity != ""},
-		CompanyPostalCode:   pgtype.Text{String: user.CompanyPostalCode, Valid: user.CompanyPostalCode != ""},
-		CompanyCountry:      pgtype.Text{String: user.CompanyCountry, Valid: user.CompanyCountry != ""},
-		AuthProvider:        pgtype.Text{String: user.AuthProvider, Valid: user.AuthProvider != ""},
-		ProviderID:          pgtype.Text{String: user.ProviderID, Valid: user.ProviderID != ""},
+		ResidentialCountry:  toPgTextPtr(user.ResidentialCountry),
+		JobRole:             toPgTextPtr(user.JobRole),
+		CompanyWebsite:      toPgTextPtr(user.CompanyWebsite),
+		EmploymentType:      toPgTextPtr(user.EmploymentType),
+		CompanyName:         toPgText(user.CompanyName),
+		CompanyAddress:      toPgText(user.CompanyAddress),
+		CompanyCity:         toPgText(user.CompanyCity),
+		CompanyPostalCode:   toPgText(user.CompanyPostalCode),
+		CompanyCountry:      toPgText(user.CompanyCountry),
+		AuthProvider:        toPgText(user.AuthProvider),
+		ProviderID:          user.ProviderID,
+		UserAddress:         toPgTextPtr(user.UserAddress),
+		UserCity:            toPgTextPtr(user.UserCity),
+		UserPostalCode:      toPgTextPtr(user.UserPostalCode),
 	}
 
 	dbUser, err := r.store.UpdateUser(ctx, params)
@@ -185,16 +180,83 @@ func mapDBUserToDomainUser(dbUser db.Users) *domain.User {
 		CompanyPostalCode:   getTextString(dbUser.CompanyPostalCode),
 		CompanyCountry:      getTextString(dbUser.CompanyCountry),
 		AuthProvider:        getTextString(dbUser.AuthProvider),
-		ProviderID:          getTextString(dbUser.ProviderID),
+		ProviderID:          dbUser.ProviderID,
 		EmployeeType:        getTextString(dbUser.EmployeeType),
 		CompanyWebsite:      strPtr(getTextString(dbUser.CompanyWebsite)),
 		EmploymentType:      strPtr(getTextString(dbUser.EmploymentType)),
 		// Fill in missing fields with empty values
-		Address:      "",
-		City:         "",
-		PostalCode:   "",
+		Address:      getTextString(dbUser.UserAddress),
+		City:         getTextString(dbUser.UserCity),
+		PostalCode:   getTextString(dbUser.UserPostalCode),
 		WebAuthToken: "",
 		CreatedAt:    dbUser.CreatedAt,
 		UpdatedAt:    dbUser.UpdatedAt,
 	}
+}
+
+// UpdateUserPersonalDetails(ctx context.Context, user domain.User) (*domain.User, error)
+// UpdateUserBusinessDetails(ctx context.Context, user domain.User) (*domain.User, error)
+// UpdateUserAddressDetails(ctx context.Context, user domain.User) (*domain.User, error)
+
+func (r *UserRepository) UpdateUserPersonalDetails(ctx context.Context, user domain.User) (*domain.User, error) {
+	params := db.UpdateUserPersonalDetailsParams{
+		ID:                  user.ID,
+		PhoneNumber:         toPgTextPtr(user.PhoneNumber),
+		Nationality:         user.Nationality,
+		ResidentialCountry:  toPgTextPtr(user.ResidentialCountry),
+		AccountType:         user.AccountType,
+		PersonalAccountType: user.PersonalAccountType,
+	}
+
+	dbUser, err := r.store.UpdateUserPersonalDetails(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapDBUserToDomainUser(dbUser), nil
+}
+func (r *UserRepository) UpdateUserBusinessDetails(ctx context.Context, user domain.User) (*domain.User, error) {
+	params := db.UpdateUserCompanyDetailsParams{
+		ID:                user.ID,
+		CompanyName:       toPgText(user.CompanyName),
+		CompanyAddress:    toPgText(user.CompanyAddress),
+		CompanyCity:       toPgText(user.CompanyCity),
+		CompanyPostalCode: toPgText(user.CompanyPostalCode),
+		CompanyCountry:    toPgText(user.CompanyCountry),
+		CompanyWebsite:    toPgTextPtr(user.CompanyWebsite),
+		EmploymentType:    toPgTextPtr(user.EmploymentType),
+	}
+
+	
+
+	dbUser, err := r.store.UpdateUserCompanyDetails(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return mapDBUserToDomainUser(dbUser), nil
+}
+
+func (r *UserRepository) UpdateUserAddressDetails(ctx context.Context, user domain.User) (*domain.User, error) {
+	params := db.UpdateUserAddressParams{
+		ID:             user.ID,
+		UserAddress:    toPgTextPtr(user.UserAddress),
+		UserCity:       toPgTextPtr(user.UserCity),
+		UserPostalCode: toPgTextPtr(user.UserPostalCode),
+	}
+	dbUser, err := r.store.UpdateUserAddress(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return mapDBUserToDomainUser(dbUser), nil
+}
+
+func toPgText(s string) pgtype.Text {
+	return pgtype.Text{String: s, Valid: s != ""}
+}
+
+func toPgTextPtr(s *string) pgtype.Text {
+	if s == nil {
+		return pgtype.Text{Valid: false}
+	}
+	return pgtype.Text{String: *s, Valid: true}
 }

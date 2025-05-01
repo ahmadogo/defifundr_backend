@@ -407,7 +407,7 @@ func (s *Seeder) seedSessions(ctx context.Context) error {
 				MfaEnabled:       mfaEnabled,
 				ClientIp:         clientIp,
 				IsBlocked:        isBlocked,
-				ExpiresAt:        expiresAt,
+				ExpiresAt:        pgtype.Timestamp{Time: expiresAt, Valid: true},
 			})
 
 			if err != nil {

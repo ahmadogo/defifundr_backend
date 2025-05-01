@@ -91,19 +91,19 @@ type OtpVerifications struct {
 }
 
 type Sessions struct {
-	ID               uuid.UUID   `json:"id"`
-	UserID           uuid.UUID   `json:"user_id"`
-	RefreshToken     string      `json:"refresh_token"`
-	UserAgent        string      `json:"user_agent"`
-	WebOauthClientID pgtype.Text `json:"web_oauth_client_id"`
-	OauthAccessToken pgtype.Text `json:"oauth_access_token"`
-	OauthIDToken     pgtype.Text `json:"oauth_id_token"`
-	UserLoginType    string      `json:"user_login_type"`
-	MfaEnabled       bool        `json:"mfa_enabled"`
-	ClientIp         string      `json:"client_ip"`
-	IsBlocked        bool        `json:"is_blocked"`
-	ExpiresAt        time.Time   `json:"expires_at"`
-	CreatedAt        time.Time   `json:"created_at"`
+	ID               uuid.UUID        `json:"id"`
+	UserID           uuid.UUID        `json:"user_id"`
+	RefreshToken     string           `json:"refresh_token"`
+	UserAgent        string           `json:"user_agent"`
+	WebOauthClientID pgtype.Text      `json:"web_oauth_client_id"`
+	OauthAccessToken pgtype.Text      `json:"oauth_access_token"`
+	OauthIDToken     pgtype.Text      `json:"oauth_id_token"`
+	UserLoginType    string           `json:"user_login_type"`
+	MfaEnabled       bool             `json:"mfa_enabled"`
+	ClientIp         string           `json:"client_ip"`
+	IsBlocked        bool             `json:"is_blocked"`
+	ExpiresAt        pgtype.Timestamp `json:"expires_at"`
+	CreatedAt        pgtype.Timestamp `json:"created_at"`
 }
 
 type Transactions struct {
@@ -147,24 +147,30 @@ type Users struct {
 	AccountType string      `json:"account_type"`
 	Gender      pgtype.Text `json:"gender"`
 	// contractor, freelancer, employee
-	PersonalAccountType string      `json:"personal_account_type"`
-	FirstName           string      `json:"first_name"`
-	LastName            string      `json:"last_name"`
-	Nationality         string      `json:"nationality"`
-	ResidentialCountry  pgtype.Text `json:"residential_country"`
-	JobRole             pgtype.Text `json:"job_role"`
-	CompanyName         pgtype.Text `json:"company_name"`
-	CompanyAddress      pgtype.Text `json:"company_address"`
-	CompanyCity         pgtype.Text `json:"company_city"`
-	CompanyPostalCode   pgtype.Text `json:"company_postal_code"`
-	CompanyCountry      pgtype.Text `json:"company_country"`
-	EmployeeType        pgtype.Text `json:"employee_type"`
-	AuthProvider        pgtype.Text `json:"auth_provider"`
-	ProviderID          pgtype.Text `json:"provider_id"`
-	CompanyWebsite      pgtype.Text `json:"company_website"`
-	EmploymentType      pgtype.Text `json:"employment_type"`
-	CreatedAt           time.Time   `json:"created_at"`
-	UpdatedAt           time.Time   `json:"updated_at"`
+	PersonalAccountType   string             `json:"personal_account_type"`
+	PhoneNumber           pgtype.Text        `json:"phone_number"`
+	PhoneNumberVerified   pgtype.Bool        `json:"phone_number_verified"`
+	PhoneNumberVerifiedAt pgtype.Timestamptz `json:"phone_number_verified_at"`
+	FirstName             string             `json:"first_name"`
+	LastName              string             `json:"last_name"`
+	Nationality           string             `json:"nationality"`
+	ResidentialCountry    pgtype.Text        `json:"residential_country"`
+	JobRole               pgtype.Text        `json:"job_role"`
+	CompanyName           pgtype.Text        `json:"company_name"`
+	CompanyAddress        pgtype.Text        `json:"company_address"`
+	CompanyCity           pgtype.Text        `json:"company_city"`
+	CompanyPostalCode     pgtype.Text        `json:"company_postal_code"`
+	CompanyCountry        pgtype.Text        `json:"company_country"`
+	UserAddress           pgtype.Text        `json:"user_address"`
+	UserCity              pgtype.Text        `json:"user_city"`
+	UserPostalCode        pgtype.Text        `json:"user_postal_code"`
+	EmployeeType          pgtype.Text        `json:"employee_type"`
+	AuthProvider          pgtype.Text        `json:"auth_provider"`
+	ProviderID            string             `json:"provider_id"`
+	CompanyWebsite        pgtype.Text        `json:"company_website"`
+	EmploymentType        pgtype.Text        `json:"employment_type"`
+	CreatedAt             time.Time          `json:"created_at"`
+	UpdatedAt             time.Time          `json:"updated_at"`
 }
 
 type Waitlist struct {

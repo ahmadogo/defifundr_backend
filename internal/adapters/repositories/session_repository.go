@@ -20,39 +20,19 @@ func NewSessionRepository(store db.Queries) *SessionRepository {
 
 // CreateSession creates a new session in the database
 func (r *SessionRepository) CreateSession(ctx context.Context, session domain.Session) (*domain.Session, error) {
-	// Convert optional fields to db nullable types
-	webOAuthClientID := pgtype.Text{}
-	if session.WebOAuthClientID != nil {
-		webOAuthClientID.String = *session.WebOAuthClientID
-		webOAuthClientID.Valid = true
-	}
-
-	oauthAccessToken := pgtype.Text{}
-	if session.OAuthAccessToken != nil {
-		oauthAccessToken.String = *session.OAuthAccessToken
-		oauthAccessToken.Valid = true
-	}
-
-	oauthIDToken := pgtype.Text{}
-	if session.OAuthIDToken != nil {
-		oauthIDToken.String = *session.OAuthIDToken
-		oauthIDToken.Valid = true
-	}
 
 	// Call the dbC-generated query
 	dbSession, err := r.store.CreateSession(ctx, db.CreateSessionParams{
 		ID:               session.ID,
 		UserID:           session.UserID,
 		RefreshToken:     session.RefreshToken,
+		OauthAccessToken: pgtype.Text{String: session.OAuthAccessToken, Valid: true},
 		UserAgent:        session.UserAgent,
-		WebOauthClientID: webOAuthClientID,
-		OauthAccessToken: oauthAccessToken,
-		OauthIDToken:     oauthIDToken,
 		UserLoginType:    session.UserLoginType,
 		MfaEnabled:       session.MFAEnabled,
 		ClientIp:         session.ClientIP,
 		IsBlocked:        session.IsBlocked,
-		ExpiresAt:        session.ExpiresAt,
+		ExpiresAt:        pgtype.Timestamp{Time: session.ExpiresAt, Valid: true},
 	})
 
 	if err != nil {
@@ -113,16 +93,17 @@ func (r *SessionRepository) BlockSession(ctx context.Context, id uuid.UUID) erro
 // Helper function to map DB model to domain model
 func mapDbSessionToDomain(dbSession db.Sessions) *domain.Session {
 	session := &domain.Session{
-		ID:            dbSession.ID,
-		UserID:        dbSession.UserID,
-		RefreshToken:  dbSession.RefreshToken,
-		UserAgent:     dbSession.UserAgent,
-		UserLoginType: dbSession.UserLoginType,
-		MFAEnabled:    dbSession.MfaEnabled,
-		ClientIP:      dbSession.ClientIp,
-		IsBlocked:     dbSession.IsBlocked,
-		ExpiresAt:     dbSession.ExpiresAt,
-		CreatedAt:     dbSession.CreatedAt,
+		ID:               dbSession.ID,
+		UserID:           dbSession.UserID,
+		RefreshToken:     dbSession.RefreshToken,
+		UserAgent:        dbSession.UserAgent,
+		UserLoginType:    dbSession.UserLoginType,
+		MFAEnabled:       dbSession.MfaEnabled,
+		ClientIP:         dbSession.ClientIp,
+		IsBlocked:        dbSession.IsBlocked,
+		OAuthAccessToken: dbSession.OauthAccessToken.String,
+		ExpiresAt:        dbSession.ExpiresAt.Time,
+		CreatedAt:        dbSession.CreatedAt.Time,
 	}
 
 	// Handle nullable fields
@@ -133,7 +114,7 @@ func mapDbSessionToDomain(dbSession db.Sessions) *domain.Session {
 
 	if dbSession.OauthAccessToken.Valid {
 		oauthAccessToken := dbSession.OauthAccessToken.String
-		session.OAuthAccessToken = &oauthAccessToken
+		session.OAuthAccessToken = oauthAccessToken
 	}
 
 	if dbSession.OauthIDToken.Valid {

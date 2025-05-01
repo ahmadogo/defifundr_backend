@@ -14,17 +14,22 @@ type AuthService interface {
 	// User authentication
 	Login(ctx context.Context, email string, password string, userAgent string, clientIP string, provider, providerId string) (*domain.Session, *domain.User, error)
 	RegisterUser(ctx context.Context, user domain.User, password string) (*domain.User, error)
-	RegisterBusiness(ctx context.Context, user domain.User, password string) (*domain.User, error)
-	RegisterPersonalDetails(ctx context.Context, user domain.User, password string) (*domain.User, error)
-	RegisterAddressDetails(ctx context.Context, user domain.User, password string) (*domain.User, error)
-	RegisterBusinessDetails(ctx context.Context, user domain.User, password string) (*domain.User, error)
+	RegisterBusiness(ctx context.Context, user domain.User) (*domain.User, error)
+	RegisterPersonalDetails(ctx context.Context, user domain.User) (*domain.User, error)
+	RegisterAddressDetails(ctx context.Context, user domain.User) (*domain.User, error)
+	RegisterBusinessDetails(ctx context.Context, user domain.User) (*domain.User, error)
 
-	// Forgot password
-	SendPasswordResetEmail(ctx context.Context, email string) error
-	ResetPassword(ctx context.Context, email, code, newPassword string) error
+	// // Forgot password
+	// SendPasswordResetEmail(ctx context.Context, email string) error
+	// ResetPassword(ctx context.Context, email, code, newPassword string) error
+
+	GetUserByID(ctx context.Context, userID uuid.UUID) (*domain.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+	CheckEmailExists(ctx context.Context, email string) (bool, error)
 
 	// Session management
 	RefreshToken(ctx context.Context, refreshToken, userAgent, clientIP string) (*domain.Session, string, error)
+	CreateSession(ctx context.Context, userID string, userAgent, clientIP string, webOAuthClientID string, email string, login_type string) (*domain.Session, error)
 	Logout(ctx context.Context, sessionID uuid.UUID) error
 }
 
@@ -60,5 +65,3 @@ type EmailService interface {
 	SendWaitlistInvitation(ctx context.Context, email, name string, inviteLink string) error
 	SendBatchUpdate(ctx context.Context, emails []string, subject, message string) error
 }
-
-

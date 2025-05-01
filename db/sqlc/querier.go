@@ -6,7 +6,6 @@ package sqlc
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -47,7 +46,7 @@ type Querier interface {
 	DeleteExpiredDeviceTokens(ctx context.Context) error
 	DeleteExpiredOTPs(ctx context.Context) error
 	// Cleans up expired sessions that are older than the specified date
-	DeleteExpiredSessions(ctx context.Context, expiresAt time.Time) error
+	DeleteExpiredSessions(ctx context.Context, expiresAt pgtype.Timestamp) error
 	// Deletes a session by its ID
 	DeleteSession(ctx context.Context, id uuid.UUID) error
 	// Deletes all sessions for a specific user
@@ -131,10 +130,20 @@ type Querier interface {
 	UpdateTransactionStatus(ctx context.Context, arg UpdateTransactionStatusParams) (Transactions, error)
 	// Updates user details and returns the updated user
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
+	// Updates a user's address
+	UpdateUserAddress(ctx context.Context, arg UpdateUserAddressParams) (Users, error)
+	// Updates a user's company details
+	UpdateUserCompanyDetails(ctx context.Context, arg UpdateUserCompanyDetailsParams) (Users, error)
 	// Updates a user's email address with validation that the new email is unique
 	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (Users, error)
+	// Updates a user's job role
+	UpdateUserJobRole(ctx context.Context, arg UpdateUserJobRoleParams) (Users, error)
 	// Updates a user's password
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	// Updates a user's personal details
+	UpdateUserPersonalDetails(ctx context.Context, arg UpdateUserPersonalDetailsParams) (Users, error)
+	// Updates a user's profile information
+	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (Users, error)
 	UpsertUserDeviceToken(ctx context.Context, arg UpsertUserDeviceTokenParams) (UserDeviceTokens, error)
 	VerifyOTP(ctx context.Context, arg VerifyOTPParams) (OtpVerifications, error)
 }

@@ -11,6 +11,20 @@ import (
 )
 
 type FakeUserRepository struct {
+	CheckEmailExistsStub        func(context.Context, string) (bool, error)
+	checkEmailExistsMutex       sync.RWMutex
+	checkEmailExistsArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	checkEmailExistsReturns struct {
+		result1 bool
+		result2 error
+	}
+	checkEmailExistsReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	CreateUserStub        func(context.Context, domain.User) (*domain.User, error)
 	createUserMutex       sync.RWMutex
 	createUserArgsForCall []struct {
@@ -80,8 +94,115 @@ type FakeUserRepository struct {
 		result1 *domain.User
 		result2 error
 	}
+	UpdateUserAddressDetailsStub        func(context.Context, domain.User) (*domain.User, error)
+	updateUserAddressDetailsMutex       sync.RWMutex
+	updateUserAddressDetailsArgsForCall []struct {
+		arg1 context.Context
+		arg2 domain.User
+	}
+	updateUserAddressDetailsReturns struct {
+		result1 *domain.User
+		result2 error
+	}
+	updateUserAddressDetailsReturnsOnCall map[int]struct {
+		result1 *domain.User
+		result2 error
+	}
+	UpdateUserBusinessDetailsStub        func(context.Context, domain.User) (*domain.User, error)
+	updateUserBusinessDetailsMutex       sync.RWMutex
+	updateUserBusinessDetailsArgsForCall []struct {
+		arg1 context.Context
+		arg2 domain.User
+	}
+	updateUserBusinessDetailsReturns struct {
+		result1 *domain.User
+		result2 error
+	}
+	updateUserBusinessDetailsReturnsOnCall map[int]struct {
+		result1 *domain.User
+		result2 error
+	}
+	UpdateUserPersonalDetailsStub        func(context.Context, domain.User) (*domain.User, error)
+	updateUserPersonalDetailsMutex       sync.RWMutex
+	updateUserPersonalDetailsArgsForCall []struct {
+		arg1 context.Context
+		arg2 domain.User
+	}
+	updateUserPersonalDetailsReturns struct {
+		result1 *domain.User
+		result2 error
+	}
+	updateUserPersonalDetailsReturnsOnCall map[int]struct {
+		result1 *domain.User
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeUserRepository) CheckEmailExists(arg1 context.Context, arg2 string) (bool, error) {
+	fake.checkEmailExistsMutex.Lock()
+	ret, specificReturn := fake.checkEmailExistsReturnsOnCall[len(fake.checkEmailExistsArgsForCall)]
+	fake.checkEmailExistsArgsForCall = append(fake.checkEmailExistsArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.CheckEmailExistsStub
+	fakeReturns := fake.checkEmailExistsReturns
+	fake.recordInvocation("CheckEmailExists", []interface{}{arg1, arg2})
+	fake.checkEmailExistsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsCallCount() int {
+	fake.checkEmailExistsMutex.RLock()
+	defer fake.checkEmailExistsMutex.RUnlock()
+	return len(fake.checkEmailExistsArgsForCall)
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsCalls(stub func(context.Context, string) (bool, error)) {
+	fake.checkEmailExistsMutex.Lock()
+	defer fake.checkEmailExistsMutex.Unlock()
+	fake.CheckEmailExistsStub = stub
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsArgsForCall(i int) (context.Context, string) {
+	fake.checkEmailExistsMutex.RLock()
+	defer fake.checkEmailExistsMutex.RUnlock()
+	argsForCall := fake.checkEmailExistsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsReturns(result1 bool, result2 error) {
+	fake.checkEmailExistsMutex.Lock()
+	defer fake.checkEmailExistsMutex.Unlock()
+	fake.CheckEmailExistsStub = nil
+	fake.checkEmailExistsReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) CheckEmailExistsReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.checkEmailExistsMutex.Lock()
+	defer fake.checkEmailExistsMutex.Unlock()
+	fake.CheckEmailExistsStub = nil
+	if fake.checkEmailExistsReturnsOnCall == nil {
+		fake.checkEmailExistsReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.checkEmailExistsReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeUserRepository) CreateUser(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
@@ -407,9 +528,206 @@ func (fake *FakeUserRepository) UpdateUserReturnsOnCall(i int, result1 *domain.U
 	}{result1, result2}
 }
 
+func (fake *FakeUserRepository) UpdateUserAddressDetails(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	ret, specificReturn := fake.updateUserAddressDetailsReturnsOnCall[len(fake.updateUserAddressDetailsArgsForCall)]
+	fake.updateUserAddressDetailsArgsForCall = append(fake.updateUserAddressDetailsArgsForCall, struct {
+		arg1 context.Context
+		arg2 domain.User
+	}{arg1, arg2})
+	stub := fake.UpdateUserAddressDetailsStub
+	fakeReturns := fake.updateUserAddressDetailsReturns
+	fake.recordInvocation("UpdateUserAddressDetails", []interface{}{arg1, arg2})
+	fake.updateUserAddressDetailsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) UpdateUserAddressDetailsCallCount() int {
+	fake.updateUserAddressDetailsMutex.RLock()
+	defer fake.updateUserAddressDetailsMutex.RUnlock()
+	return len(fake.updateUserAddressDetailsArgsForCall)
+}
+
+func (fake *FakeUserRepository) UpdateUserAddressDetailsCalls(stub func(context.Context, domain.User) (*domain.User, error)) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	defer fake.updateUserAddressDetailsMutex.Unlock()
+	fake.UpdateUserAddressDetailsStub = stub
+}
+
+func (fake *FakeUserRepository) UpdateUserAddressDetailsArgsForCall(i int) (context.Context, domain.User) {
+	fake.updateUserAddressDetailsMutex.RLock()
+	defer fake.updateUserAddressDetailsMutex.RUnlock()
+	argsForCall := fake.updateUserAddressDetailsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) UpdateUserAddressDetailsReturns(result1 *domain.User, result2 error) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	defer fake.updateUserAddressDetailsMutex.Unlock()
+	fake.UpdateUserAddressDetailsStub = nil
+	fake.updateUserAddressDetailsReturns = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserAddressDetailsReturnsOnCall(i int, result1 *domain.User, result2 error) {
+	fake.updateUserAddressDetailsMutex.Lock()
+	defer fake.updateUserAddressDetailsMutex.Unlock()
+	fake.UpdateUserAddressDetailsStub = nil
+	if fake.updateUserAddressDetailsReturnsOnCall == nil {
+		fake.updateUserAddressDetailsReturnsOnCall = make(map[int]struct {
+			result1 *domain.User
+			result2 error
+		})
+	}
+	fake.updateUserAddressDetailsReturnsOnCall[i] = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetails(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	ret, specificReturn := fake.updateUserBusinessDetailsReturnsOnCall[len(fake.updateUserBusinessDetailsArgsForCall)]
+	fake.updateUserBusinessDetailsArgsForCall = append(fake.updateUserBusinessDetailsArgsForCall, struct {
+		arg1 context.Context
+		arg2 domain.User
+	}{arg1, arg2})
+	stub := fake.UpdateUserBusinessDetailsStub
+	fakeReturns := fake.updateUserBusinessDetailsReturns
+	fake.recordInvocation("UpdateUserBusinessDetails", []interface{}{arg1, arg2})
+	fake.updateUserBusinessDetailsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsCallCount() int {
+	fake.updateUserBusinessDetailsMutex.RLock()
+	defer fake.updateUserBusinessDetailsMutex.RUnlock()
+	return len(fake.updateUserBusinessDetailsArgsForCall)
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsCalls(stub func(context.Context, domain.User) (*domain.User, error)) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	defer fake.updateUserBusinessDetailsMutex.Unlock()
+	fake.UpdateUserBusinessDetailsStub = stub
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsArgsForCall(i int) (context.Context, domain.User) {
+	fake.updateUserBusinessDetailsMutex.RLock()
+	defer fake.updateUserBusinessDetailsMutex.RUnlock()
+	argsForCall := fake.updateUserBusinessDetailsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsReturns(result1 *domain.User, result2 error) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	defer fake.updateUserBusinessDetailsMutex.Unlock()
+	fake.UpdateUserBusinessDetailsStub = nil
+	fake.updateUserBusinessDetailsReturns = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserBusinessDetailsReturnsOnCall(i int, result1 *domain.User, result2 error) {
+	fake.updateUserBusinessDetailsMutex.Lock()
+	defer fake.updateUserBusinessDetailsMutex.Unlock()
+	fake.UpdateUserBusinessDetailsStub = nil
+	if fake.updateUserBusinessDetailsReturnsOnCall == nil {
+		fake.updateUserBusinessDetailsReturnsOnCall = make(map[int]struct {
+			result1 *domain.User
+			result2 error
+		})
+	}
+	fake.updateUserBusinessDetailsReturnsOnCall[i] = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetails(arg1 context.Context, arg2 domain.User) (*domain.User, error) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	ret, specificReturn := fake.updateUserPersonalDetailsReturnsOnCall[len(fake.updateUserPersonalDetailsArgsForCall)]
+	fake.updateUserPersonalDetailsArgsForCall = append(fake.updateUserPersonalDetailsArgsForCall, struct {
+		arg1 context.Context
+		arg2 domain.User
+	}{arg1, arg2})
+	stub := fake.UpdateUserPersonalDetailsStub
+	fakeReturns := fake.updateUserPersonalDetailsReturns
+	fake.recordInvocation("UpdateUserPersonalDetails", []interface{}{arg1, arg2})
+	fake.updateUserPersonalDetailsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsCallCount() int {
+	fake.updateUserPersonalDetailsMutex.RLock()
+	defer fake.updateUserPersonalDetailsMutex.RUnlock()
+	return len(fake.updateUserPersonalDetailsArgsForCall)
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsCalls(stub func(context.Context, domain.User) (*domain.User, error)) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	defer fake.updateUserPersonalDetailsMutex.Unlock()
+	fake.UpdateUserPersonalDetailsStub = stub
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsArgsForCall(i int) (context.Context, domain.User) {
+	fake.updateUserPersonalDetailsMutex.RLock()
+	defer fake.updateUserPersonalDetailsMutex.RUnlock()
+	argsForCall := fake.updateUserPersonalDetailsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsReturns(result1 *domain.User, result2 error) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	defer fake.updateUserPersonalDetailsMutex.Unlock()
+	fake.UpdateUserPersonalDetailsStub = nil
+	fake.updateUserPersonalDetailsReturns = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepository) UpdateUserPersonalDetailsReturnsOnCall(i int, result1 *domain.User, result2 error) {
+	fake.updateUserPersonalDetailsMutex.Lock()
+	defer fake.updateUserPersonalDetailsMutex.Unlock()
+	fake.UpdateUserPersonalDetailsStub = nil
+	if fake.updateUserPersonalDetailsReturnsOnCall == nil {
+		fake.updateUserPersonalDetailsReturnsOnCall = make(map[int]struct {
+			result1 *domain.User
+			result2 error
+		})
+	}
+	fake.updateUserPersonalDetailsReturnsOnCall[i] = struct {
+		result1 *domain.User
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUserRepository) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.checkEmailExistsMutex.RLock()
+	defer fake.checkEmailExistsMutex.RUnlock()
 	fake.createUserMutex.RLock()
 	defer fake.createUserMutex.RUnlock()
 	fake.getUserByEmailMutex.RLock()
@@ -420,6 +738,12 @@ func (fake *FakeUserRepository) Invocations() map[string][][]interface{} {
 	defer fake.updatePasswordMutex.RUnlock()
 	fake.updateUserMutex.RLock()
 	defer fake.updateUserMutex.RUnlock()
+	fake.updateUserAddressDetailsMutex.RLock()
+	defer fake.updateUserAddressDetailsMutex.RUnlock()
+	fake.updateUserBusinessDetailsMutex.RLock()
+	defer fake.updateUserBusinessDetailsMutex.RUnlock()
+	fake.updateUserPersonalDetailsMutex.RLock()
+	defer fake.updateUserPersonalDetailsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

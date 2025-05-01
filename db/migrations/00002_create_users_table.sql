@@ -9,6 +9,9 @@ CREATE TABLE users (
   account_type VARCHAR(50) NOT NULL, -- business, personal
   gender VARCHAR(50) DEFAULT '',
   personal_account_type VARCHAR(50) NOT NULL, -- contractor, freelancer, employee
+  phone_number VARCHAR(50) DEFAULT '',
+  phone_number_verified BOOLEAN DEFAULT false,
+  phone_number_verified_at TIMESTAMPTZ,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   nationality VARCHAR(255) NOT NULL,
@@ -19,6 +22,9 @@ CREATE TABLE users (
   company_city VARCHAR(255) DEFAULT '',
   company_postal_code VARCHAR(255) DEFAULT '',
   company_country VARCHAR(255) DEFAULT '',
+  user_address VARCHAR(255) DEFAULT '',
+  user_city VARCHAR(255) DEFAULT '',
+  user_postal_code VARCHAR(255) DEFAULT '',
   employee_type VARCHAR(255) DEFAULT '',
   auth_provider VARCHAR(255),
   provider_id VARCHAR(255) NOT NULL,

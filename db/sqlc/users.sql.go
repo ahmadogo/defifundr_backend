@@ -98,6 +98,9 @@ INSERT INTO users (
   employee_type,
   company_website,
   employment_type,
+  user_address,
+  user_city,
+  user_postal_code,
   created_at,
   updated_at
 ) VALUES (
@@ -123,9 +126,12 @@ INSERT INTO users (
   $20,
   COALESCE($21, ''),
   COALESCE($22, ''),
-  COALESCE($23, now()),
-  COALESCE($24, now())
-) RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+  COALESCE($23, ''),
+  COALESCE($24, ''),
+  COALESCE($25, ''),
+  COALESCE($26, now()),
+  COALESCE($27, now())
+) RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -147,10 +153,13 @@ type CreateUserParams struct {
 	CompanyPostalCode   interface{} `json:"company_postal_code"`
 	CompanyCountry      interface{} `json:"company_country"`
 	AuthProvider        pgtype.Text `json:"auth_provider"`
-	ProviderID          pgtype.Text `json:"provider_id"`
+	ProviderID          string      `json:"provider_id"`
 	EmployeeType        pgtype.Text `json:"employee_type"`
 	CompanyWebsite      interface{} `json:"company_website"`
 	EmploymentType      interface{} `json:"employment_type"`
+	UserAddress         interface{} `json:"user_address"`
+	UserCity            interface{} `json:"user_city"`
+	UserPostalCode      interface{} `json:"user_postal_code"`
 	CreatedAt           interface{} `json:"created_at"`
 	UpdatedAt           interface{} `json:"updated_at"`
 }
@@ -180,6 +189,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		arg.EmployeeType,
 		arg.CompanyWebsite,
 		arg.EmploymentType,
+		arg.UserAddress,
+		arg.UserCity,
+		arg.UserPostalCode,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -192,6 +204,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		&i.AccountType,
 		&i.Gender,
 		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
@@ -202,6 +217,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		&i.CompanyCity,
 		&i.CompanyPostalCode,
 		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
 		&i.EmployeeType,
 		&i.AuthProvider,
 		&i.ProviderID,
@@ -225,7 +243,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at FROM users WHERE id = $1 OR id::text = $1 LIMIT 1
+SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at FROM users WHERE id = $1 OR id::text = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
@@ -239,6 +257,9 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
 		&i.AccountType,
 		&i.Gender,
 		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
@@ -249,6 +270,9 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
 		&i.CompanyCity,
 		&i.CompanyPostalCode,
 		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
 		&i.EmployeeType,
 		&i.AuthProvider,
 		&i.ProviderID,
@@ -261,7 +285,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at FROM users
+SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at FROM users
 WHERE email = $1
 LIMIT 1
 `
@@ -278,6 +302,9 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 		&i.AccountType,
 		&i.Gender,
 		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
@@ -288,6 +315,9 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 		&i.CompanyCity,
 		&i.CompanyPostalCode,
 		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
 		&i.EmployeeType,
 		&i.AuthProvider,
 		&i.ProviderID,
@@ -300,7 +330,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
 FROM users
 ORDER BY 
   CASE WHEN $3::text = 'ASC' THEN created_at END ASC,
@@ -333,6 +363,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]Users, 
 			&i.AccountType,
 			&i.Gender,
 			&i.PersonalAccountType,
+			&i.PhoneNumber,
+			&i.PhoneNumberVerified,
+			&i.PhoneNumberVerifiedAt,
 			&i.FirstName,
 			&i.LastName,
 			&i.Nationality,
@@ -343,6 +376,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]Users, 
 			&i.CompanyCity,
 			&i.CompanyPostalCode,
 			&i.CompanyCountry,
+			&i.UserAddress,
+			&i.UserCity,
+			&i.UserPostalCode,
 			&i.EmployeeType,
 			&i.AuthProvider,
 			&i.ProviderID,
@@ -362,7 +398,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]Users, 
 }
 
 const listUsersByAccountType = `-- name: ListUsersByAccountType :many
-SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
 FROM users
 WHERE account_type = $3
 ORDER BY 
@@ -402,6 +438,9 @@ func (q *Queries) ListUsersByAccountType(ctx context.Context, arg ListUsersByAcc
 			&i.AccountType,
 			&i.Gender,
 			&i.PersonalAccountType,
+			&i.PhoneNumber,
+			&i.PhoneNumberVerified,
+			&i.PhoneNumberVerifiedAt,
 			&i.FirstName,
 			&i.LastName,
 			&i.Nationality,
@@ -412,6 +451,9 @@ func (q *Queries) ListUsersByAccountType(ctx context.Context, arg ListUsersByAcc
 			&i.CompanyCity,
 			&i.CompanyPostalCode,
 			&i.CompanyCountry,
+			&i.UserAddress,
+			&i.UserCity,
+			&i.UserPostalCode,
 			&i.EmployeeType,
 			&i.AuthProvider,
 			&i.ProviderID,
@@ -431,7 +473,7 @@ func (q *Queries) ListUsersByAccountType(ctx context.Context, arg ListUsersByAcc
 }
 
 const searchUsers = `-- name: SearchUsers :many
-SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
 FROM users
 WHERE 
   (
@@ -477,6 +519,9 @@ func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]Use
 			&i.AccountType,
 			&i.Gender,
 			&i.PersonalAccountType,
+			&i.PhoneNumber,
+			&i.PhoneNumberVerified,
+			&i.PhoneNumberVerifiedAt,
 			&i.FirstName,
 			&i.LastName,
 			&i.Nationality,
@@ -487,6 +532,9 @@ func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]Use
 			&i.CompanyCity,
 			&i.CompanyPostalCode,
 			&i.CompanyCountry,
+			&i.UserAddress,
+			&i.UserCity,
+			&i.UserPostalCode,
 			&i.EmployeeType,
 			&i.AuthProvider,
 			&i.ProviderID,
@@ -527,9 +575,12 @@ SET
   company_country = $18,
   auth_provider = COALESCE($19, auth_provider),
   provider_id = COALESCE($20, provider_id),
+  user_address = COALESCE($21, user_address),
+  user_city = COALESCE($22, user_city),
+  user_postal_code = COALESCE($23, user_postal_code),
   updated_at = now()
 WHERE id = $1
-RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -552,7 +603,10 @@ type UpdateUserParams struct {
 	CompanyPostalCode   pgtype.Text `json:"company_postal_code"`
 	CompanyCountry      pgtype.Text `json:"company_country"`
 	AuthProvider        pgtype.Text `json:"auth_provider"`
-	ProviderID          pgtype.Text `json:"provider_id"`
+	ProviderID          string      `json:"provider_id"`
+	UserAddress         pgtype.Text `json:"user_address"`
+	UserCity            pgtype.Text `json:"user_city"`
+	UserPostalCode      pgtype.Text `json:"user_postal_code"`
 }
 
 // Updates user details and returns the updated user
@@ -578,6 +632,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		arg.CompanyCountry,
 		arg.AuthProvider,
 		arg.ProviderID,
+		arg.UserAddress,
+		arg.UserCity,
+		arg.UserPostalCode,
 	)
 	var i Users
 	err := row.Scan(
@@ -588,6 +645,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		&i.AccountType,
 		&i.Gender,
 		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
@@ -598,6 +658,145 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		&i.CompanyCity,
 		&i.CompanyPostalCode,
 		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
+		&i.EmployeeType,
+		&i.AuthProvider,
+		&i.ProviderID,
+		&i.CompanyWebsite,
+		&i.EmploymentType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserAddress = `-- name: UpdateUserAddress :one
+UPDATE users
+SET
+  user_address = COALESCE($2, user_address),
+  user_city = COALESCE($3, user_city),
+  user_postal_code = COALESCE($4, user_postal_code),
+  updated_at = now()
+WHERE id = $1
+RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+`
+
+type UpdateUserAddressParams struct {
+	ID             uuid.UUID   `json:"id"`
+	UserAddress    pgtype.Text `json:"user_address"`
+	UserCity       pgtype.Text `json:"user_city"`
+	UserPostalCode pgtype.Text `json:"user_postal_code"`
+}
+
+// Updates a user's address
+func (q *Queries) UpdateUserAddress(ctx context.Context, arg UpdateUserAddressParams) (Users, error) {
+	row := q.db.QueryRow(ctx, updateUserAddress,
+		arg.ID,
+		arg.UserAddress,
+		arg.UserCity,
+		arg.UserPostalCode,
+	)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.ProfilePicture,
+		&i.AccountType,
+		&i.Gender,
+		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.Nationality,
+		&i.ResidentialCountry,
+		&i.JobRole,
+		&i.CompanyName,
+		&i.CompanyAddress,
+		&i.CompanyCity,
+		&i.CompanyPostalCode,
+		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
+		&i.EmployeeType,
+		&i.AuthProvider,
+		&i.ProviderID,
+		&i.CompanyWebsite,
+		&i.EmploymentType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserCompanyDetails = `-- name: UpdateUserCompanyDetails :one
+UPDATE users
+SET
+  company_name = COALESCE($2, company_name),
+  company_address = COALESCE($3, company_address),
+  company_city = COALESCE($4, company_city),
+  company_postal_code = COALESCE($5, company_postal_code),
+  company_country = COALESCE($6, company_country),
+  company_website = COALESCE($7, company_website),
+  employment_type = COALESCE($8, employment_type),
+  updated_at = now()
+WHERE id = $1
+RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+`
+
+type UpdateUserCompanyDetailsParams struct {
+	ID                uuid.UUID   `json:"id"`
+	CompanyName       pgtype.Text `json:"company_name"`
+	CompanyAddress    pgtype.Text `json:"company_address"`
+	CompanyCity       pgtype.Text `json:"company_city"`
+	CompanyPostalCode pgtype.Text `json:"company_postal_code"`
+	CompanyCountry    pgtype.Text `json:"company_country"`
+	CompanyWebsite    pgtype.Text `json:"company_website"`
+	EmploymentType    pgtype.Text `json:"employment_type"`
+}
+
+// Updates a user's company details
+func (q *Queries) UpdateUserCompanyDetails(ctx context.Context, arg UpdateUserCompanyDetailsParams) (Users, error) {
+	row := q.db.QueryRow(ctx, updateUserCompanyDetails,
+		arg.ID,
+		arg.CompanyName,
+		arg.CompanyAddress,
+		arg.CompanyCity,
+		arg.CompanyPostalCode,
+		arg.CompanyCountry,
+		arg.CompanyWebsite,
+		arg.EmploymentType,
+	)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.ProfilePicture,
+		&i.AccountType,
+		&i.Gender,
+		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.Nationality,
+		&i.ResidentialCountry,
+		&i.JobRole,
+		&i.CompanyName,
+		&i.CompanyAddress,
+		&i.CompanyCity,
+		&i.CompanyPostalCode,
+		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
 		&i.EmployeeType,
 		&i.AuthProvider,
 		&i.ProviderID,
@@ -615,7 +814,7 @@ SET
   email = $2,
   updated_at = now()
 WHERE id = $1
-RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
 `
 
 type UpdateUserEmailParams struct {
@@ -635,6 +834,9 @@ func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams
 		&i.AccountType,
 		&i.Gender,
 		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.Nationality,
@@ -645,6 +847,62 @@ func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams
 		&i.CompanyCity,
 		&i.CompanyPostalCode,
 		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
+		&i.EmployeeType,
+		&i.AuthProvider,
+		&i.ProviderID,
+		&i.CompanyWebsite,
+		&i.EmploymentType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserJobRole = `-- name: UpdateUserJobRole :one
+UPDATE users
+SET
+  job_role = COALESCE($2, job_role),
+  updated_at = now()
+WHERE id = $1
+RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+`
+
+type UpdateUserJobRoleParams struct {
+	ID      uuid.UUID   `json:"id"`
+	JobRole pgtype.Text `json:"job_role"`
+}
+
+// Updates a user's job role
+func (q *Queries) UpdateUserJobRole(ctx context.Context, arg UpdateUserJobRoleParams) (Users, error) {
+	row := q.db.QueryRow(ctx, updateUserJobRole, arg.ID, arg.JobRole)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.ProfilePicture,
+		&i.AccountType,
+		&i.Gender,
+		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.Nationality,
+		&i.ResidentialCountry,
+		&i.JobRole,
+		&i.CompanyName,
+		&i.CompanyAddress,
+		&i.CompanyCity,
+		&i.CompanyPostalCode,
+		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
 		&i.EmployeeType,
 		&i.AuthProvider,
 		&i.ProviderID,
@@ -673,4 +931,133 @@ type UpdateUserPasswordParams struct {
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
 	return err
+}
+
+const updateUserPersonalDetails = `-- name: UpdateUserPersonalDetails :one
+UPDATE users
+SET
+  nationality = COALESCE($2, nationality),
+  phone_number = COALESCE($3, phone_number),
+  residential_country = COALESCE($4, residential_country),
+  account_type = COALESCE($5, account_type),
+  personal_account_type = COALESCE($6, personal_account_type),
+  updated_at = now()
+  WHERE id = $1
+  RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+`
+
+type UpdateUserPersonalDetailsParams struct {
+	ID                  uuid.UUID   `json:"id"`
+	Nationality         string      `json:"nationality"`
+	PhoneNumber         pgtype.Text `json:"phone_number"`
+	ResidentialCountry  pgtype.Text `json:"residential_country"`
+	AccountType         string      `json:"account_type"`
+	PersonalAccountType string      `json:"personal_account_type"`
+}
+
+// Updates a user's personal details
+func (q *Queries) UpdateUserPersonalDetails(ctx context.Context, arg UpdateUserPersonalDetailsParams) (Users, error) {
+	row := q.db.QueryRow(ctx, updateUserPersonalDetails,
+		arg.ID,
+		arg.Nationality,
+		arg.PhoneNumber,
+		arg.ResidentialCountry,
+		arg.AccountType,
+		arg.PersonalAccountType,
+	)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.ProfilePicture,
+		&i.AccountType,
+		&i.Gender,
+		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.Nationality,
+		&i.ResidentialCountry,
+		&i.JobRole,
+		&i.CompanyName,
+		&i.CompanyAddress,
+		&i.CompanyCity,
+		&i.CompanyPostalCode,
+		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
+		&i.EmployeeType,
+		&i.AuthProvider,
+		&i.ProviderID,
+		&i.CompanyWebsite,
+		&i.EmploymentType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserProfile = `-- name: UpdateUserProfile :one
+UPDATE users
+SET
+  profile_picture = COALESCE($2, profile_picture),
+  first_name = COALESCE($3, first_name),
+  last_name = COALESCE($4, last_name)
+WHERE id = $1
+RETURNING id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at
+`
+
+type UpdateUserProfileParams struct {
+	ID             uuid.UUID   `json:"id"`
+	ProfilePicture pgtype.Text `json:"profile_picture"`
+	FirstName      string      `json:"first_name"`
+	LastName       string      `json:"last_name"`
+}
+
+// Updates a user's profile information
+func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (Users, error) {
+	row := q.db.QueryRow(ctx, updateUserProfile,
+		arg.ID,
+		arg.ProfilePicture,
+		arg.FirstName,
+		arg.LastName,
+	)
+	var i Users
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.ProfilePicture,
+		&i.AccountType,
+		&i.Gender,
+		&i.PersonalAccountType,
+		&i.PhoneNumber,
+		&i.PhoneNumberVerified,
+		&i.PhoneNumberVerifiedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.Nationality,
+		&i.ResidentialCountry,
+		&i.JobRole,
+		&i.CompanyName,
+		&i.CompanyAddress,
+		&i.CompanyCity,
+		&i.CompanyPostalCode,
+		&i.CompanyCountry,
+		&i.UserAddress,
+		&i.UserCity,
+		&i.UserPostalCode,
+		&i.EmployeeType,
+		&i.AuthProvider,
+		&i.ProviderID,
+		&i.CompanyWebsite,
+		&i.EmploymentType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

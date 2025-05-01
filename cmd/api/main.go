@@ -24,7 +24,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// IMPORTANT: Do not include protocol in host (no http:// or https://)
 // @title DefiFundr API
 // @version 1.0
 // @description Decentralized Payroll and Invoicing Platform for Remote Teams
@@ -37,7 +36,10 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host localhost:8080
 // @BasePath /api/v1
-// @securityDefinitions.basic BasicAuth
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and the JWT token.
 
 func main() {
 	// Load configuration
@@ -149,7 +151,11 @@ func main() {
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = swaggerHost
 	docs.SwaggerInfo.BasePath = "/api/v1"
-	docs.SwaggerInfo.Schemes = []string{"https", "http"}
+	if configs.Environment == "production" {
+		docs.SwaggerInfo.Schemes = []string{"https", "http"}
+	} else {
+		docs.SwaggerInfo.Schemes = []string{"http"}
+	}
 
 	// Setup Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -158,7 +158,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register/user": {
+        "/auth/register": {
             "post": {
                 "description": "Create a new user account",
                 "consumes": [
@@ -168,7 +168,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Business-User"
+                    "authentication"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
@@ -186,7 +186,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Successfully registered",
                         "schema": {
-                            "$ref": "#/definitions/response.UserResponse"
+                            "$ref": "#/definitions/response.SuccessResponse"
                         }
                     },
                     "400": {
@@ -203,6 +203,223 @@ const docTemplate = `{
                     },
                     "429": {
                         "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/business/business-details": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update business details for a registered user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Update business details",
+                "parameters": [
+                    {
+                        "description": "Business details",
+                        "name": "businessDetails",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RegisterBusinessDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated business details",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/user/address-details": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update address details for a registered user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Update user address details",
+                "parameters": [
+                    {
+                        "description": "User address details",
+                        "name": "addressDetails",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RegisterAddressDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated address details",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/user/check-email": {
+            "post": {
+                "description": "Check if an email address is already registered",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Check if email exists",
+                "parameters": [
+                    {
+                        "description": "Email to check",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CheckEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email check result",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/user/personal-details": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update personal details for a registered user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Update user personal details",
+                "parameters": [
+                    {
+                        "description": "User personal details",
+                        "name": "personalDetails",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RegisterPersonalDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated personal details",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -413,12 +630,105 @@ const docTemplate = `{
                 }
             }
         },
+        "request.CheckEmailRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.RegisterAddressDetailsRequest": {
+            "type": "object",
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.RegisterBusinessDetailsRequest": {
+            "type": "object",
+            "properties": {
+                "company_address": {
+                    "type": "string"
+                },
+                "company_city": {
+                    "type": "string"
+                },
+                "company_country": {
+                    "type": "string"
+                },
+                "company_description": {
+                    "type": "string"
+                },
+                "company_email": {
+                    "type": "string"
+                },
+                "company_industry": {
+                    "type": "string"
+                },
+                "company_name": {
+                    "type": "string"
+                },
+                "company_phone": {
+                    "type": "string"
+                },
+                "company_postal_code": {
+                    "type": "string"
+                },
+                "company_size": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "company_website": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.RegisterPersonalDetailsRequest": {
+            "type": "object",
+            "required": [
+                "nationality"
+            ],
+            "properties": {
+                "account_type": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "nationality": {
+                    "type": "string"
+                },
+                "personal_account_type": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
         "request.RegisterUserRequest": {
             "type": "object",
             "required": [
-                "email",
-                "first_name",
-                "last_name"
+                "web_auth_token"
             ],
             "properties": {
                 "email": {
@@ -431,7 +741,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8
                 },
                 "provider": {
                     "type": "string"
@@ -631,8 +942,11 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and the JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

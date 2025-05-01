@@ -9,13 +9,12 @@ func RegisterAuthRoutes(rg *gin.RouterGroup, authHandler *handlers.AuthHandler, 
 	authRoutes := rg.Group("/auth")
 
 	{
-		authRoutes.POST("/register/user", authHandler.RegisterUser)
+		authRoutes.POST("/register", authHandler.RegisterUser)
 
-		authRoutes.POST("/register/user/verify-email", authHandler.VerifyEmail)
-		authRoutes.POST("/register/business", authHandler.RegisterBusiness)
-		authRoutes.POST("/register/user/personal-details", authHandler.RegisterUserPersonalDetails)
-		authRoutes.POST("/register/user/address-details", authHandler.RegisterUserAddressDetails)
-		authRoutes.POST("/register/business/business-details", authHandler.RegisterBusinessDetails)
+		authRoutes.POST("/register/user/check-email", authMiddleware, authHandler.CheckEmailExists)
+		authRoutes.POST("/register/user/personal-details", authMiddleware, authHandler.RegisterUserPersonalDetails)
+		authRoutes.POST("/register/user/address-details", authMiddleware, authHandler.RegisterUserAddressDetails)
+		authRoutes.POST("/register/business/business-details", authMiddleware, authHandler.RegisterBusinessDetails)
 
 		// authRoutes.POST("/login", authHandler.Login)
 
