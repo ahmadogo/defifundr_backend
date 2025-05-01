@@ -121,7 +121,7 @@ func (h *AuthHandler) RegisterUser(ctx *gin.Context) {
 	}
 
 	// Create session and generate access token
-	session, err := h.authService.CreateSession(ctx, createdUser.ID.String(), ctx.Request.UserAgent(), ctx.ClientIP(), req.WebAuthToken, createdUser.Email, "registration")
+	session, err := h.authService.CreateSession(ctx, createdUser.ID, ctx.Request.UserAgent(), ctx.ClientIP(), req.WebAuthToken, createdUser.Email, "registration")
 	if err != nil {
 		reqLogger.Error("Failed to generate access token", err, map[string]interface{}{
 			"user_id": createdUser.ID,
@@ -226,22 +226,10 @@ func (h *AuthHandler) RegisterUserPersonalDetails(ctx *gin.Context) {
 		return
 	}
 
-	// Create domain user model with the updated personal details
-	uid, err := uuid.Parse(user.UserID)
-	if err != nil {
-		reqLogger.Error("Invalid user ID format", err, map[string]interface{}{
-			"user_id": user.UserID,
-		})
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Success: false,
-			Message: "Invalid user ID format",
-		})
-		return
-	}
 
 	// Create user domain model with updated fields
 	userDetails := domain.User{
-		ID:                  uid,
+		ID:                  user.UserID,
 		Nationality:         req.Nationality,
 		AccountType:         req.AccountType,
 		PersonalAccountType: req.PersonalAccountType,
@@ -339,22 +327,11 @@ func (h *AuthHandler) RegisterUserAddressDetails(ctx *gin.Context) {
 		return
 	}
 
-	// Parse user ID
-	uid, err := uuid.Parse(user.UserID)
-	if err != nil {
-		reqLogger.Error("Invalid user ID format", err, map[string]interface{}{
-			"user_id": user.UserID,
-		})
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Success: false,
-			Message: "Invalid user ID format",
-		})
-		return
-	}
+	
 
 	// Create user domain model with the updated address details
 	userDetails := domain.User{
-		ID:          uid,
+		ID:          user.UserID,
 		UserAddress: &req.AddressLine1,
 		City:        req.City,
 		PostalCode:  req.PostalCode,
@@ -435,25 +412,12 @@ func (h *AuthHandler) RegisterBusinessDetails(ctx *gin.Context) {
 		return
 	}
 
-	// Parse user ID
-	uid, err := uuid.Parse(user.UserID)
-	if err != nil {
-		reqLogger.Error("Invalid user ID format", err, map[string]interface{}{
-			"user_id": user.UserID,
-		})
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Success: false,
-			Message: "Invalid user ID format",
-		})
-		return
-	}
-
 	// Create user domain model with the updated business details
 	companyWebsite := req.CompanyWebsite
 	employmentType := req.CompanyType
 
 	userDetails := domain.User{
-		ID:                uid,
+		ID:                user.UserID,
 		CompanyName:       req.CompanyName,
 		CompanyAddress:    req.CompanyAddress,
 		CompanyCity:       req.CompanyCity,

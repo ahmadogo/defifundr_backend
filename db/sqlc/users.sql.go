@@ -243,11 +243,11 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at FROM users WHERE id = $1 OR id::text = $1 LIMIT 1
+SELECT id, email, password_hash, profile_picture, account_type, gender, personal_account_type, phone_number, phone_number_verified, phone_number_verified_at, first_name, last_name, nationality, residential_country, job_role, company_name, company_address, company_city, company_postal_code, company_country, user_address, user_city, user_postal_code, employee_type, auth_provider, provider_id, company_website, employment_type, created_at, updated_at FROM users WHERE id = $1::uuid LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (Users, error) {
-	row := q.db.QueryRow(ctx, getUser, id)
+func (q *Queries) GetUser(ctx context.Context, dollar_1 uuid.UUID) (Users, error) {
+	row := q.db.QueryRow(ctx, getUser, dollar_1)
 	var i Users
 	err := row.Scan(
 		&i.ID,

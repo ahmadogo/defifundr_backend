@@ -29,7 +29,7 @@ type AuthService interface {
 
 	// Session management
 	RefreshToken(ctx context.Context, refreshToken, userAgent, clientIP string) (*domain.Session, string, error)
-	CreateSession(ctx context.Context, userID string, userAgent, clientIP string, webOAuthClientID string, email string, login_type string) (*domain.Session, error)
+	CreateSession(ctx context.Context, userID uuid.UUID, userAgent, clientIP string, webOAuthClientID string, email string, login_type string) (*domain.Session, error)
 	Logout(ctx context.Context, sessionID uuid.UUID) error
 }
 

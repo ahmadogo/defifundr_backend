@@ -7,9 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/demola234/defifundr/pkg/token_maker"
+	tokenMaker "github.com/demola234/defifundr/pkg/token_maker"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -29,7 +30,7 @@ func (m *MockTokenMaker) VerifyToken(token string) (*tokenMaker.Payload, error) 
 }
 
 // Mock the CreateToken method to satisfy the token.Maker interface
-func (m *MockTokenMaker) CreateToken(email string, userID string, duration time.Duration) (string, *tokenMaker.Payload, error) {
+func (m *MockTokenMaker) CreateToken(email string, userID uuid.UUID, duration time.Duration) (string, *tokenMaker.Payload, error) {
 	args := m.Called(email, userID, duration)
 	if payload, ok := args.Get(1).(*tokenMaker.Payload); ok {
 		return args.String(0), payload, args.Error(2)
@@ -95,7 +96,7 @@ func TestAuthMiddleware(t *testing.T) {
 	})
 
 	t.Run("valid token", func(t *testing.T) {
-		payload := &tokenMaker.Payload{Email: "12345", UserID: "12345"} // Replace 'ID' with the actual field name
+		payload := &tokenMaker.Payload{Email: "12345", UserID: uuid.New()} // Replace 'ID' with the actual field name
 		mockTokenMaker.On("VerifyToken", "valid_token").Return(payload, nil).Once()
 
 		req, _ := http.NewRequest(http.MethodGet, "/test", nil)

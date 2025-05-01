@@ -11,7 +11,7 @@ func RegisterAuthRoutes(rg *gin.RouterGroup, authHandler *handlers.AuthHandler, 
 	{
 		authRoutes.POST("/register", authHandler.RegisterUser)
 
-		authRoutes.POST("/register/user/check-email", authMiddleware, authHandler.CheckEmailExists)
+		authRoutes.POST("/register/user/check-email", authHandler.CheckEmailExists)
 		authRoutes.POST("/register/user/personal-details", authMiddleware, authHandler.RegisterUserPersonalDetails)
 		authRoutes.POST("/register/user/address-details", authMiddleware, authHandler.RegisterUserAddressDetails)
 		authRoutes.POST("/register/business/business-details", authMiddleware, authHandler.RegisterBusinessDetails)

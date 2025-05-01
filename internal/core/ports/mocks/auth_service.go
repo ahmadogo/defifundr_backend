@@ -25,11 +25,11 @@ type FakeAuthService struct {
 		result1 bool
 		result2 error
 	}
-	CreateSessionStub        func(context.Context, string, string, string, string, string, string) (*domain.Session, error)
+	CreateSessionStub        func(context.Context, uuid.UUID, string, string, string, string, string) (*domain.Session, error)
 	createSessionMutex       sync.RWMutex
 	createSessionArgsForCall []struct {
 		arg1 context.Context
-		arg2 string
+		arg2 uuid.UUID
 		arg3 string
 		arg4 string
 		arg5 string
@@ -263,12 +263,12 @@ func (fake *FakeAuthService) CheckEmailExistsReturnsOnCall(i int, result1 bool, 
 	}{result1, result2}
 }
 
-func (fake *FakeAuthService) CreateSession(arg1 context.Context, arg2 string, arg3 string, arg4 string, arg5 string, arg6 string, arg7 string) (*domain.Session, error) {
+func (fake *FakeAuthService) CreateSession(arg1 context.Context, arg2 uuid.UUID, arg3 string, arg4 string, arg5 string, arg6 string, arg7 string) (*domain.Session, error) {
 	fake.createSessionMutex.Lock()
 	ret, specificReturn := fake.createSessionReturnsOnCall[len(fake.createSessionArgsForCall)]
 	fake.createSessionArgsForCall = append(fake.createSessionArgsForCall, struct {
 		arg1 context.Context
-		arg2 string
+		arg2 uuid.UUID
 		arg3 string
 		arg4 string
 		arg5 string
@@ -294,13 +294,13 @@ func (fake *FakeAuthService) CreateSessionCallCount() int {
 	return len(fake.createSessionArgsForCall)
 }
 
-func (fake *FakeAuthService) CreateSessionCalls(stub func(context.Context, string, string, string, string, string, string) (*domain.Session, error)) {
+func (fake *FakeAuthService) CreateSessionCalls(stub func(context.Context, uuid.UUID, string, string, string, string, string) (*domain.Session, error)) {
 	fake.createSessionMutex.Lock()
 	defer fake.createSessionMutex.Unlock()
 	fake.CreateSessionStub = stub
 }
 
-func (fake *FakeAuthService) CreateSessionArgsForCall(i int) (context.Context, string, string, string, string, string, string) {
+func (fake *FakeAuthService) CreateSessionArgsForCall(i int) (context.Context, uuid.UUID, string, string, string, string, string) {
 	fake.createSessionMutex.RLock()
 	defer fake.createSessionMutex.RUnlock()
 	argsForCall := fake.createSessionArgsForCall[i]

@@ -435,7 +435,7 @@ func (a *authService) CheckEmailExists(ctx context.Context, email string) (bool,
 }
 
 // CreateSession creates a new session for the user
-func (a *authService) CreateSession(ctx context.Context, userID string, userAgent, clientIP string, webOAuthClientID string, email string, login_type string) (*domain.Session, error) {
+func (a *authService) CreateSession(ctx context.Context, userID uuid.UUID, userAgent, clientIP string, webOAuthClientID string, email string, login_type string) (*domain.Session, error) {
 	a.logger.Info("Creating new session", map[string]interface{}{
 		"user_id": userID,
 		"ip":      clientIP,
@@ -454,15 +454,15 @@ func (a *authService) CreateSession(ctx context.Context, userID string, userAgen
 
 	// Generate Session ID
 	session := domain.Session{
-		ID:            uuid.New(),
-		UserID:        uuid.MustParse(userID),
-		OAuthAccessToken:   accessToken,
-		UserAgent:     userAgent,
-		ClientIP:      clientIP,
-		IsBlocked:     false,
-		ExpiresAt:     time.Now().Add(a.config.AccessTokenDuration),
-		CreatedAt:     time.Now(),
-		UserLoginType: login_type,
+		ID:               uuid.New(),
+		UserID:           userID,
+		OAuthAccessToken: accessToken,
+		UserAgent:        userAgent,
+		ClientIP:         clientIP,
+		IsBlocked:        false,
+		ExpiresAt:        time.Now().Add(a.config.AccessTokenDuration),
+		CreatedAt:        time.Now(),
+		UserLoginType:    login_type,
 	}
 
 	a.logger.Info("Session created", map[string]interface{}{

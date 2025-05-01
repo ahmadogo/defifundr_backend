@@ -59,7 +59,7 @@ INSERT INTO users (
 ) RETURNING *;
 
 -- name: GetUser :one
-SELECT * FROM users WHERE id = $1 OR id::text = $1 LIMIT 1;
+SELECT * FROM users WHERE id = $1::uuid LIMIT 1;
 
 -- name: GetUserByEmail :one
 -- Retrieves a single user by their email address
