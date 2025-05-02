@@ -32,6 +32,34 @@ type UserResponse struct {
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
 }
 
+type LoginUserResponse struct {
+	ID                  string    `json:"id"`
+	Email               string    `json:"email"`
+	ProfilePicture      string    `json:"profile_picture"`
+	AccountType         string    `json:"account_type"`
+	Gender              string    `json:"gender"`
+	PersonalAccountType string    `json:"personal_account_type"`
+	FirstName           string    `json:"first_name"`
+	LastName            string    `json:"last_name"`
+	Nationality         string    `json:"nationality"`
+	ResidentialCountry  string    `json:"residential_country"`
+	CompanyName         string    `json:"company_name"`
+	CompanyAddress      string    `json:"company_address"`
+	CompanyCity         string    `json:"company_city"`
+	CompanyPostalCode   string    `json:"company_postal_code"`
+	CompanyCountry      string    `json:"company_country"`
+	AuthProvider        string    `json:"auth_provider"`
+	ProviderID          string    `json:"provider_id"`
+	EmployeeType        string    `json:"employee_type"`
+	CompanyWebsite      string    `json:"company_website"`
+	EmploymentType      string    `json:"employment_type"`
+	UserAddress         string    `json:"user_address"`
+	UserCity            string    `json:"user_city"`
+	UserPostalCode      string    `json:"user_postal_code"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at,omitempty"`
+}
+
 type SessionResponse struct {
 	ID               uuid.UUID `json:"id"`
 	UserID           uuid.UUID `json:"user_id"`
@@ -51,6 +79,17 @@ type SessionResponse struct {
 
 // LoginResponse represents the login response
 type LoginResponse struct {
+	User          LoginUserResponse    `json:"user"`
+	AccessToken   SessionResponse `json:"access_token,omitempty"`
+	RefreshToken  string          `json:"refresh_token,omitempty"`
+	SessionID     uuid.UUID       `json:"session_id"`
+	ExpiresAt     time.Time       `json:"expires_at"`
+	TokenType     string          `json:"token_type,omitempty"`
+	EmailVerified bool            `json:"email_verified,omitempty"`
+}
+
+// LoginResponse represents the login response
+type RegistrationResponse struct {
 	User          UserResponse    `json:"user"`
 	AccessToken   SessionResponse `json:"access_token,omitempty"`
 	RefreshToken  string          `json:"refresh_token,omitempty"`

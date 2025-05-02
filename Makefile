@@ -48,7 +48,7 @@ migrate-create:
 	goose -dir db/migrations create $${name} sql
 
 migrate-up:
-	goose -dir db/migrations postgres "postgres://root:secret@localhost:5433/defi?sslmode=disable" up
+	goose -dir db/migrations postgres "$(DB_URL)" up
 
 migrate-up-one:
 	goose -dir db/migrations postgres "$(DB_URL)" up-by-one
