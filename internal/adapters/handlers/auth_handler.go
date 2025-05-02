@@ -751,21 +751,6 @@ func (h *AuthHandler) UpdateAddressDetails(ctx *gin.Context) {
 		return
 	}
 
-	// Create user response
-	userResponse := response.LoginUserResponse{
-		ID:          updatedUser.ID.String(),
-		Email:       updatedUser.Email,
-		AccountType: updatedUser.AccountType,
-		FirstName:   updatedUser.FirstName,
-		LastName:    updatedUser.LastName,
-		UserAddress: *updatedUser.UserAddress,
-		City:        updatedUser.City,
-		PostalCode:  updatedUser.PostalCode,
-		Country:     *updatedUser.ResidentialCountry,
-		CreatedAt:   updatedUser.CreatedAt,
-		UpdatedAt:   updatedUser.UpdatedAt,
-	}
-
 	// Get updated profile completion
 	profileCompletion, err := h.authService.GetProfileCompletionStatus(ctx, updatedUser.ID)
 	var completionData *response.ProfileCompletionResponse
@@ -783,7 +768,7 @@ func (h *AuthHandler) UpdateAddressDetails(ctx *gin.Context) {
 		Success: true,
 		Message: "Address details updated successfully",
 		Data: map[string]interface{}{
-			"user":               userResponse,
+			"user":               updatedUser,
 			"profile_completion": completionData,
 		},
 	})
