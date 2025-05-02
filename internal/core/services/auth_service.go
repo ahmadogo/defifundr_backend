@@ -866,7 +866,6 @@ func (a *authService) detectSuspiciousActivity(ctx context.Context, userID uuid.
 
 		// Send Email Alert
 		fmt.Printf("Security alert: New login detected from %s at %s\n", deviceInfo, loginTime)
-		fmt.Print("Device Info: %s\n", deviceInfo)
 		fmt.Printf("Login Time: %s\n", loginTime)
 		fmt.Printf("Send Email Alert: %s\n", user.Email)
 

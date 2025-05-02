@@ -117,6 +117,23 @@ type Sessions struct {
 	CreatedAt        pgtype.Timestamp `json:"created_at"`
 }
 
+type SessionsV2 struct {
+	ID               uuid.UUID        `json:"id"`
+	UserID           uuid.UUID        `json:"user_id"`
+	RefreshToken     string           `json:"refresh_token"`
+	UserAgent        string           `json:"user_agent"`
+	LastUsedAt       pgtype.Timestamp `json:"last_used_at"`
+	WebOauthClientID pgtype.Text      `json:"web_oauth_client_id"`
+	OauthAccessToken pgtype.Text      `json:"oauth_access_token"`
+	OauthIDToken     pgtype.Text      `json:"oauth_id_token"`
+	UserLoginType    string           `json:"user_login_type"`
+	MfaEnabled       bool             `json:"mfa_enabled"`
+	ClientIp         string           `json:"client_ip"`
+	IsBlocked        bool             `json:"is_blocked"`
+	ExpiresAt        pgtype.Timestamp `json:"expires_at"`
+	CreatedAt        pgtype.Timestamp `json:"created_at"`
+}
+
 type Transactions struct {
 	ID     uuid.UUID `json:"id"`
 	UserID uuid.UUID `json:"user_id"`
