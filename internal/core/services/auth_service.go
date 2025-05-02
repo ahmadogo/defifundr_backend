@@ -339,7 +339,39 @@ func (a *authService) RegisterUser(ctx context.Context, user domain.User, passwo
 func (a *authService) RegisterBusiness(ctx context.Context, user domain.User) (*domain.User, error) {
 	// Add Users business details
 	// Update the user with business details
-	panic("unimplemented")
+	a.logger.Info("Starting user personal details update process", map[string]interface{}{
+		"user_id": user.ID,
+	})
+
+	// Get the existing user by ID
+	existingUser, err := a.userRepo.GetUserByID(ctx, user.ID)
+	if err != nil {
+		a.logger.Error("Failed to get user by ID", err, map[string]interface{}{
+			"user_id": user.ID,
+		})
+		return nil, fmt.Errorf("failed to get user by ID: %w", err)
+	}
+
+	// Update only the personal details fields, keeping other fields as they are
+	updatedUser := *existingUser
+	// Update only the company details fields, keeping other fields as they are
+	updatedUser.CompanyName = user.CompanyName
+	updatedUser.CompanyAddress = user.CompanyAddress
+	updatedUser.CompanyCity = user.CompanyCity
+	updatedUser.CompanyCountry = user.CompanyCountry
+	updatedUser.CompanyPostalCode = user.CompanyPostalCode
+	updatedUser.CompanyWebsite = user.CompanyWebsite
+
+	// Update the user in the database
+	users, err := a.userRepo.UpdateUserBusinessDetails(ctx, updatedUser)
+	if err != nil {
+		a.logger.Error("Failed to update user", err, map[string]interface{}{
+			"user_id": user.ID,
+		})
+		return nil, fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return users, nil
 }
 
 // RegisterPersonalDetails implements ports.AuthService
