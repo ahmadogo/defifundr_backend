@@ -28,6 +28,168 @@ func NewAuthHandler(authService ports.AuthService, logger logging.Logger) *AuthH
 	}
 }
 
+// Login handles user login
+// @Summary Login a user
+// @Description Logs in a user with the provided credentials
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param loginRequest body request.LoginRequest true "Login request"
+// @Success 200 {object} response.SuccessResponse "Successfully logged in"
+// @Failure 400 {object} response.ErrorResponse "Invalid request"
+// @Failure 404 {object} response.ErrorResponse "User not found"
+// @Failure 500 {object} response.ErrorResponse "Internal server error"
+// @Router /auth/login [post]
+func (h *AuthHandler) Login(ctx *gin.Context) {
+	// Extract request correlation ID
+	requestID, _ := ctx.Get("RequestID")
+	reqLogger := h.logger.With("request_id", requestID)
+	reqLogger.Debug("Processing login request")
+
+	var req request.LoginRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		reqLogger.Error("Invalid request format", err, map[string]interface{}{
+			"error": err.Error(),
+		})
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Success: false,
+			Message: "Invalid request format",
+		})
+		return
+	}
+
+	// Validate request
+	if err := req.Validate(); err != nil {
+		reqLogger.Error("Invalid login credentials", err, map[string]interface{}{
+			"error": err.Error(),
+		})
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Success: false,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// Create user data for login
+	userData := domain.User{
+		Email:        req.Email,
+		Password:     &req.Password,
+		ProviderID:   req.ProviderID,
+		AuthProvider: req.Provider,
+		WebAuthToken: req.WebAuthToken,
+	}
+
+	// Attempt login
+	authUser, err := h.authService.Login(ctx, req.Email, userData, req.Password)
+	if err != nil {
+		reqLogger.Error("Failed to login", err, map[string]interface{}{
+			"email": req.Email,
+			"error": err.Error(),
+		})
+		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{
+			Success: false,
+			Message: "Invalid credentials",
+		})
+		return
+	}
+
+	// If Provider is "email", then ProviderID is set to the email
+	if req.Provider == "email" {
+		authUser.ProviderID = req.Email
+	}
+
+	// Create session and generate access token
+	session, err := h.authService.CreateSession(ctx, authUser.ID, ctx.Request.UserAgent(), ctx.ClientIP(), req.WebAuthToken, authUser.Email, "login")
+	if err != nil {
+		reqLogger.Error("Failed to generate access token", err, map[string]interface{}{
+			"user_id": authUser.ID,
+		})
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Success: false,
+			Message: "Failed to generate access token",
+		})
+		return
+	}
+
+	// Log successful login
+	reqLogger.Info("User logged in successfully", map[string]interface{}{
+		"user_id": authUser.ID.String(),
+		"email":   authUser.Email,
+	})
+
+	// Create the session response
+	sessionResponse := response.SessionResponse{
+		ID:            session.ID,
+		UserID:        authUser.ID,
+		UserAgent:     session.UserAgent,
+		ClientIP:      session.ClientIP,
+		AccessToken:   session.OAuthAccessToken,
+		UserLoginType: req.Provider,
+		ExpiresAt:     session.ExpiresAt,
+		CreatedAt:     session.CreatedAt,
+	}
+
+	// Create the user response based on account type
+	var userResponse response.LoginUserResponse
+
+	// Fill in common fields
+	userResponse = response.LoginUserResponse{
+		ID:             authUser.ID.String(),
+		Email:          authUser.Email,
+		ProfilePicture: *authUser.ProfilePicture,
+		AccountType:    authUser.AccountType,
+		FirstName:      authUser.FirstName,
+		LastName:       authUser.LastName,
+		AuthProvider:   authUser.AuthProvider,
+		ProviderID:     authUser.ProviderID,
+		CreatedAt:      authUser.CreatedAt,
+		UpdatedAt:      authUser.UpdatedAt,
+	}
+
+	// Add account-specific fields
+	if authUser.AccountType == "business" {
+		// Add business-specific fields
+		userResponse.CompanyName = authUser.CompanyName
+		userResponse.CompanyAddress = authUser.CompanyAddress
+		userResponse.CompanyCity = authUser.CompanyCity
+		userResponse.CompanyPostalCode = authUser.CompanyPostalCode
+		userResponse.CompanyCountry = authUser.CompanyCountry
+
+		// Add optional fields if available
+		if authUser.CompanyWebsite != nil {
+			userResponse.CompanyWebsite = *authUser.CompanyWebsite
+		}
+
+		if authUser.EmploymentType != nil {
+			userResponse.EmploymentType = *authUser.EmploymentType
+		}
+	} else {
+		// Add personal account fields
+
+		userResponse.PersonalAccountType = authUser.PersonalAccountType
+		userResponse.Nationality = authUser.Nationality
+		userResponse.UserCity = authUser.City
+		userResponse.UserPostalCode = authUser.PostalCode
+
+		// Add optional fields if available
+		if authUser.UserAddress != nil {
+			userResponse.UserAddress = *authUser.UserAddress
+		}
+	}
+
+	// Return success response with user and token information
+	ctx.JSON(http.StatusOK, response.SuccessResponse{
+		Success: true,
+		Message: "User logged in successfully",
+		Data: response.LoginResponse{
+			User:        userResponse,
+			AccessToken: sessionResponse,
+			ExpiresAt:   session.ExpiresAt,
+			SessionID:   session.ID,
+		},
+	})
+}
+
 // RegisterUser handles user registration
 // @Summary Register a new user
 // @Description Create a new user account
@@ -156,7 +318,7 @@ func (h *AuthHandler) RegisterUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, response.SuccessResponse{
 		Success: true,
 		Message: "User registered successfully",
-		Data: response.LoginResponse{
+		Data: response.RegistrationResponse{
 			User: response.UserResponse{
 				ID:         createdUser.ID.String(),
 				Email:      createdUser.Email,
@@ -225,7 +387,6 @@ func (h *AuthHandler) RegisterUserPersonalDetails(ctx *gin.Context) {
 		})
 		return
 	}
-
 
 	// Create user domain model with updated fields
 	userDetails := domain.User{
@@ -326,8 +487,6 @@ func (h *AuthHandler) RegisterUserAddressDetails(ctx *gin.Context) {
 		})
 		return
 	}
-
-	
 
 	// Create user domain model with the updated address details
 	userDetails := domain.User{

@@ -171,22 +171,47 @@ func (r *RegisterBusinessDetailsRequest) Validate() error {
 
 // LoginRequest represents the user login request
 type LoginRequest struct {
-	Email      string `json:"email" binding:"required,email"`
-	Password   string `json:"password" binding:"required"`
-	Provider   string `json:"provider"`
-	ProviderID string `json:"provider_id"`
+	Email        string `json:"email" binding:"omitempty"`
+	Password     string `json:"password,omitempty" binding:"omitempty,min=8"`
+	Provider     string `json:"provider" binding:"omitempty"`
+	ProviderID   string `json:"provider_id" binding:"omitempty"`
+	WebAuthToken string `json:"web_auth_token" binding:"required"`
 }
 
 // Validate validates the login request
 func (r *LoginRequest) Validate() error {
-	// Validate email
-	if !isValidEmail(r.Email) {
-		return errors.New("invalid email format")
+	// Validate provider is email, google or apple
+	if r.Provider != "email" && r.Provider != "google" && r.Provider != "apple" {
+		return errors.New("invalid provider")
 	}
 
-	// Validate password is not empty
-	if strings.TrimSpace(r.Password) == "" {
-		return errors.New("password cannot be empty")
+	// Validate email is not empty if provider is email
+	if r.Provider == "email" && r.Email == "" {
+		if !isValidEmail(r.Email) {
+			return errors.New("invalid email format")
+		}
+	}
+	// Validate password is not empty if provider is email
+	if r.Provider == "email" && r.Password == "" {
+		return errors.New("password is required")
+	}
+
+	// Validate provider ID is not empty if provider is google or apple
+	if r.Provider != "email" && r.ProviderID == "" {
+		return errors.New("provider ID is required")
+	}
+	// Validate web auth token is not empty if provider is apple
+	if r.Provider == "apple" && r.WebAuthToken == "" {
+		return errors.New("web auth token is required")
+	}
+
+	if r.Provider == "google" && r.WebAuthToken == "" {
+		return errors.New("web auth token is required")
+	}
+
+	// WebAuthToken is required for both Google and Apple providers
+	if r.WebAuthToken == "" {
+		return errors.New("web auth token is required")
 	}
 
 	return nil

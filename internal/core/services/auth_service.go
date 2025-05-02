@@ -47,8 +47,108 @@ func NewAuthService(
 }
 
 // Login implements ports.AuthService.
-func (a *authService) Login(ctx context.Context, email string, password string, userAgent string, clientIP string, provider, providerId string) (*domain.Session, *domain.User, error) {
-	panic("unimplemented")
+func (a *authService) Login(ctx context.Context, email string, user domain.User, password string) (*domain.User, error) {
+	a.logger.Info("Starting user registration process", map[string]interface{}{
+		"email":    email,
+		"provider": user.AuthProvider,
+	})
+
+	if user.AuthProvider == "email" {
+		// Email-based authentication requires a password
+		if password == "" {
+			a.logger.Error("Password required for email authentication", nil, map[string]interface{}{
+				"email": user.Email,
+			})
+			return nil, errors.New("password is required for email authentication")
+		}
+
+		// Check if the user exists
+		existingUser, err := a.userRepo.GetUserByEmail(ctx, email)
+		if err != nil {
+			a.logger.Error("Failed to get user by email", err, map[string]interface{}{
+				"email": email,
+			})
+			return nil, fmt.Errorf("failed to get user by email: %w", err)
+		}
+		if existingUser == nil {
+			a.logger.Error("User not found", nil, map[string]interface{}{
+				"email": email,
+			})
+			return nil, errors.New("user not found")
+		}
+
+		// Verify the password
+		checkedPassword, err := commons.CheckPassword(password, existingUser.PasswordHash)
+		if err != nil {
+			a.logger.Error("Validation Failed", err, map[string]interface{}{
+				"email": email,
+			})
+			return nil, fmt.Errorf("failed to check password: %w", err)
+		}
+
+		if !checkedPassword {
+			a.logger.Error("Invalid password", nil, map[string]interface{}{
+				"email": email,
+			})
+			return nil, errors.New("invalid password")
+		}
+	} else if user.AuthProvider != "" && user.WebAuthToken != "" {
+		// For OAuth or Web3Auth, validate the token and fill user data
+		claims, err := a.oauthRepo.ValidateWebAuthToken(ctx, user.WebAuthToken)
+		if err != nil {
+			a.logger.Error("Failed to validate WebAuth token", err, map[string]interface{}{
+				"provider": user.AuthProvider,
+			})
+			return nil, fmt.Errorf("invalid authentication token: %w", err)
+		}
+
+		// Extract user information from OAuth claims
+		if claims.Email != "" {
+			user.Email = claims.Email
+		}
+	} else {
+		a.logger.Error("Missing authentication credentials", nil, map[string]interface{}{
+			"provider": user.AuthProvider,
+		})
+		return nil, errors.New("missing authentication credentials")
+	}
+	// Step 2: Check if user with same email already exists
+	existingUser, err := a.userRepo.GetUserByEmail(ctx, user.Email)
+	if err != nil {
+		a.logger.Error("Failed to get user by email", err, map[string]interface{}{
+			"email": user.Email,
+		})
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
+	}
+	if existingUser == nil {
+		a.logger.Warn("Login attempt for non-existing email", map[string]interface{}{
+			"email": user.Email,
+		})
+		return nil, errors.New("email not registered")
+	}
+
+	// // Check if user has already finish onboarding for business companyName, companyAddress, companyCity, companyPostalCode, companyCountry
+	// if existingUser.AccountType == "business" {
+	// 	if existingUser.CompanyName == "" || existingUser.CompanyAddress == "" || existingUser.CompanyCity == "" || existingUser.CompanyPostalCode == "" || existingUser.CompanyCountry == "" {
+	// 		a.logger.Error("User has not finished onboarding", nil, map[string]interface{}{
+	// 			"email": user.Email,
+	// 		})
+	// 		return nil, errors.New("user has not finished onboarding")
+	// 	}
+	// }
+
+	// // Check if user has already finish onboarding for personal account
+	// if existingUser.AccountType == "personal" {
+	// 	if existingUser.FirstName == "" || existingUser.LastName == "" || existingUser.Address == "" || existingUser.City == "" || existingUser.PostalCode == "" || existingUser.Nationality == "" {
+	// 		a.logger.Error("User has not finished onboarding", nil, map[string]interface{}{
+	// 			"email": user.Email,
+	// 		})
+	// 		return nil, errors.New("user has not finished onboarding")
+	// 	}
+	// }
+
+	// Return the user
+	return existingUser, nil
 }
 
 // Logout implements ports.AuthService.

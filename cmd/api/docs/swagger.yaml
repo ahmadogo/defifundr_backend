@@ -17,6 +17,22 @@ definitions:
     required:
     - email
     type: object
+  request.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      provider:
+        type: string
+      provider_id:
+        type: string
+      web_auth_token:
+        type: string
+    required:
+    - web_auth_token
+    type: object
   request.RegisterAddressDetailsRequest:
     properties:
       address_line_1:
@@ -312,6 +328,40 @@ paths:
       summary: Get waitlist statistics
       tags:
       - waitlist
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user with the provided credentials
+      parameters:
+      - description: Login request
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged in
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Login a user
+      tags:
+      - authentication
   /auth/register:
     post:
       consumes:
