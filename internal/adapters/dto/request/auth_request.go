@@ -72,10 +72,6 @@ type VerifyMFARequest struct {
 	Code string `json:"code" binding:"required"`
 }
 
-// ResetPasswordRequest represents the request to reset a password
-type ResetPasswordRequest struct {
-	Email string `json:"email" binding:"required,email"`
-}
 
 // ConfirmResetPasswordRequest represents the request to confirm a password reset
 type ConfirmResetPasswordRequest struct {
@@ -414,4 +410,22 @@ func isValidIDType(idType string) bool {
 		}
 	}
 	return false
+}
+
+// ForgotPasswordRequest represents the forgot password request
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+// VerifyResetOTPRequest represents the OTP verification request
+type VerifyResetOTPRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	OTP   string `json:"otp" binding:"required"`
+}
+
+// CompletePasswordResetRequest represents the final password reset request
+type CompletePasswordResetRequest struct {
+	Email       string `json:"email" binding:"required,email"`
+	OTP         string `json:"otp" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8"`
 }
