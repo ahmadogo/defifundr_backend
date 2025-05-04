@@ -79,6 +79,12 @@ sqlc:
 test:
 	go test -v -cover ./...
 
+test-e2e:
+	@echo "Running end-to-end tests..."
+	@go test -v ./e2e/... -tags=e2e
+	@echo "Running performance tests..."
+	@go test -v ./e2e/auth/performance -tags=performance
+
 server:
 	go run cmd/api/main.go
 
@@ -147,10 +153,10 @@ help:
 	@echo ""
 	@echo "Development Commands:"
 	@echo "  sqlc                - Generate SQL code with sqlc"
-	@echo "  mock                - Generate mock code for testing"
+	@echo "  test                - Run unit tests"
+	@echo "  test-e2e            - Run end-to-end tests"
 	@echo "  server              - Run the API server"
 	@echo "  air                 - Run the server with hot reload"
-	@echo "  test                - Run tests"
 	@echo "  lint                - Run linters"
 	@echo "  build               - Build the application"
 	@echo "  clean               - Clean build artifacts"
@@ -170,4 +176,4 @@ help:
 	@echo "  swagger             - Generate Swagger documentation"
 	@echo ""
 
-.PHONY: postgres createdb dockerlogs dropdb migrate-create migrate-up migrate-up-one migrate-down migrate-down-one migrate-status migrate-reset migrateup migrateup1 migratedown migratedown1 db_docs db_schema sqlc test server air mock gencontract docker-up docker-down docker-logs docker-ps docker-build docker-restart help seed lint build clean install-tools
+.PHONY: postgres createdb dockerlogs dropdb migrate-create migrate-up migrate-up-one migrate-down migrate-down-one migrate-status migrate-reset migrateup migrateup1 migratedown migratedown1 db_docs db_schema sqlc test test-e2e server air mock gencontract docker-up docker-down docker-logs docker-ps docker-build docker-restart help seed lint build clean install-tools
