@@ -72,9 +72,12 @@ func main() {
 
 	// Create repositories
 	userRepo := repositories.NewUserRepository(*dbQueries)
-	oAuthRepo := repositories.NewOAuthRepository(*dbQueries)
+	oAuthRepo := repositories.NewOAuthRepository(*dbQueries, logger)
 	sessionRepo := repositories.NewSessionRepository(*dbQueries)
 	waitlistRepo := repositories.NewWaitlistRepository(*dbQueries)
+	walletRepo := repositories.NewWalletRepository(*dbQueries)
+	securityRepo := repositories.NewSecurityRepository(*dbQueries)
+	otpRepo := repositories.NewOtpRepository(*dbQueries)
 
 	tokenMaker, err := tokenMaker.NewTokenMaker(configs.TokenSymmetricKey)
 	if err != nil {
@@ -107,9 +110,10 @@ func main() {
 	// Create email service using the email sender
 	emailService := services.NewEmailService(configs, logger, emailSender)
 
-	// Create services
-	authService := services.NewAuthService(userRepo, sessionRepo, oAuthRepo, tokenMaker, configs, logger)
 	userService := services.NewUserService(userRepo)
+
+	// Create services
+	authService := services.NewAuthService(userRepo, sessionRepo, oAuthRepo, walletRepo, securityRepo, emailService, tokenMaker, configs, logger, otpRepo, userService)
 	waitlistService := services.NewWaitlistService(waitlistRepo, emailService)
 
 	// Create handlers
@@ -186,10 +190,10 @@ func setupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHand
 	}
 
 	// Middleware to check if the user is authenticated
-	authMiddleware := middleware.AuthMiddleware(tokenMaker)
+	authMiddleware := middleware.AuthMiddleware(tokenMaker, logger)
 
 	// Register routes
-	routers.RegisterAuthRoutes(v1, authHandler, authMiddleware)
+	routers.RegisterAuthRoutes(router, authHandler, tokenMaker, logger)
 	routers.RegisterUserRoutes(v1, userHandler, authMiddleware)
 	routers.RegisterWaitlistRoutes(v1, waitlistHandler, authMiddleware)
 }

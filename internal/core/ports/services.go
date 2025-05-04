@@ -1,4 +1,3 @@
-// internal/core/ports/input_ports.go
 package ports
 
 import (
@@ -9,28 +8,47 @@ import (
 	"github.com/google/uuid"
 )
 
-// AuthService defines the use cases for authentication
 type AuthService interface {
+	// Web3Auth authentication
+	AuthenticateWithWeb3(ctx context.Context, webAuthToken string, userAgent string, clientIP string) (*domain.User, *domain.Session, error)
+
 	// User authentication
 	Login(ctx context.Context, email string, user domain.User, password string) (*domain.User, error)
 	RegisterUser(ctx context.Context, user domain.User, password string) (*domain.User, error)
-	RegisterBusiness(ctx context.Context, user domain.User) (*domain.User, error)
+
+	// User profile completion
 	RegisterPersonalDetails(ctx context.Context, user domain.User) (*domain.User, error)
 	RegisterAddressDetails(ctx context.Context, user domain.User) (*domain.User, error)
 	RegisterBusinessDetails(ctx context.Context, user domain.User) (*domain.User, error)
+	GetProfileCompletionStatus(ctx context.Context, userID uuid.UUID) (*domain.ProfileCompletion, error)
 
-	// // Forgot password
-	// SendPasswordResetEmail(ctx context.Context, email string) error
-	// ResetPassword(ctx context.Context, email, code, newPassword string) error
+	// Multi-factor authentication
+	SetupMFA(ctx context.Context, userID uuid.UUID) (string, error)
+	VerifyMFA(ctx context.Context, userID uuid.UUID, code string) (bool, error)
 
+	// Wallet management
+	LinkWallet(ctx context.Context, userID uuid.UUID, walletAddress string, walletType string, chain string) error
+	GetUserWallets(ctx context.Context, userID uuid.UUID) ([]domain.UserWallet, error)
+
+	// Session management
+	CreateSession(ctx context.Context, userID uuid.UUID, userAgent, clientIP string, webOAuthClientID string, email string, loginType string) (*domain.Session, error)
+	GetActiveDevices(ctx context.Context, userID uuid.UUID) ([]domain.DeviceInfo, error)
+	RevokeSession(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error
+	Logout(ctx context.Context, sessionID uuid.UUID) error
+	RefreshToken(ctx context.Context, refreshToken, userAgent, clientIP string) (*domain.Session, string, error)
+
+	// User operations
 	GetUserByID(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	CheckEmailExists(ctx context.Context, email string) (bool, error)
 
-	// Session management
-	RefreshToken(ctx context.Context, refreshToken, userAgent, clientIP string) (*domain.Session, string, error)
-	CreateSession(ctx context.Context, userID uuid.UUID, userAgent, clientIP string, webOAuthClientID string, email string, login_type string) (*domain.Session, error)
-	Logout(ctx context.Context, sessionID uuid.UUID) error
+	// Security
+	LogSecurityEvent(ctx context.Context, eventType string, userID uuid.UUID, metadata map[string]interface{}) error
+
+	// Forgot password
+	InitiatePasswordReset(ctx context.Context, email string) error
+	VerifyResetOTP(ctx context.Context, email string, otp string) error  // Just verify, don't invalidate
+	ResetPassword(ctx context.Context, email string, otp string, newPassword string) error  // Verify OTP and reset password
 }
 
 // UserService defines the use cases for user operations
@@ -39,6 +57,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	UpdatePassword(ctx context.Context, userID uuid.UUID, oldPassword, newPassword string) error
 	UpdateKYC(ctx context.Context, kyc domain.KYC) error
+	ResetUserPassword(ctx context.Context, userID uuid.UUID, newPassword string) error
 }
 
 // WaitlistService defines the use cases for the waitlist feature
@@ -62,6 +81,7 @@ type EmailSender interface {
 // EmailService defines methods for sending application emails
 type EmailService interface {
 	SendWaitlistConfirmation(ctx context.Context, email, name, referralCode string, position int) error
+	SendPasswordResetEmail(ctx context.Context, email, name, otpCode string) error
 	SendWaitlistInvitation(ctx context.Context, email, name string, inviteLink string) error
 	SendBatchUpdate(ctx context.Context, emails []string, subject, message string) error
 }

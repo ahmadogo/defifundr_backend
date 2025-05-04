@@ -28,6 +28,10 @@ func (r *OTPRepository) CreateOTP(ctx context.Context, otp domain.OTPVerificatio
 		UserID:    pgtype.UUID{Bytes: otp.UserID, Valid: true},
 		OtpCode:   otp.OTPCode,
 		HashedOtp: hashedOtp,
+		Purpose: db.OtpPurpose(otp.Purpose),
+		ExpiresAt: otp.ExpiresAt,
+		AttemptsMade: 0,
+		MaxAttempts:  3,
 	})
 
 	if err != nil {
@@ -90,7 +94,7 @@ func (r *OTPRepository) VerifyOTP(ctx context.Context, id uuid.UUID, code string
 
 	// Check if the OTP has been used
 	if otpData.MaxAttempts <= otpData.AttemptsMade {
-		return errors.New("Max attempts reached")
+		return errors.New("max attempts reached")
 	}
 
 	// Mark the OTP as verified
