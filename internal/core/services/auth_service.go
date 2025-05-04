@@ -16,6 +16,7 @@ import (
 	tokenMaker "github.com/demola234/defifundr/pkg/token_maker"
 	"github.com/google/uuid"
 	"github.com/pquerna/otp/totp"
+	random "github.com/demola234/defifundr/pkg/random"
 )
 
 type authService struct {
@@ -28,6 +29,8 @@ type authService struct {
 	tokenMaker   tokenMaker.Maker
 	config       config.Config
 	logger       logging.Logger
+	otpRepo      ports.OTPRepository
+	userService  ports.UserService 
 }
 
 // SetupMFA sets up multi-factor authentication for a user
@@ -93,6 +96,8 @@ func NewAuthService(
 	tokenMaker tokenMaker.Maker,
 	config config.Config,
 	logger logging.Logger,
+	otpRepo ports.OTPRepository,
+	userService ports.UserService,
 ) ports.AuthService {
 	return &authService{
 		userRepo:     userRepo,
@@ -104,6 +109,8 @@ func NewAuthService(
 		tokenMaker:   tokenMaker,
 		config:       config,
 		logger:       logger,
+		otpRepo:      otpRepo,
+		userService:  userService,
 	}
 }
 
@@ -1237,4 +1244,161 @@ func isValidWalletAddress(address string) bool {
 	}
 
 	return true
+}
+// InitiatePasswordReset starts the password reset process for email-based accounts
+func (a *authService) InitiatePasswordReset(ctx context.Context, email string) error {
+	// Check if email exists and is email-based account
+	user, err := a.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		// Return generic message for security - don't reveal if email exists
+		a.logger.Info("Password reset requested", map[string]interface{}{
+			"email": email,
+		})
+		return nil
+	}
+
+	// Check if account was created with email/password
+	if user.AuthProvider != "email" {
+		a.logger.Info("Password reset attempted for OAuth account", map[string]interface{}{
+			"email": email,
+			"provider": user.AuthProvider,
+		})
+		// Return nil instead of error for security - don't reveal details
+		return nil
+	}
+
+	// Generate OTP
+	otpCode := random.RandomOtp()
+	otp := domain.OTPVerification{
+		ID:           uuid.New(),
+		UserID:       user.ID,
+		Purpose:      domain.OTPPurposePasswordReset,
+		OTPCode:      otpCode,
+		ExpiresAt:    time.Now().Add(15 * time.Minute),
+
+	}
+
+	// Store OTP
+	_, err = a.otpRepo.CreateOTP(ctx, otp)
+	if err != nil {
+		a.logger.Error("Failed to create OTP", err, map[string]interface{}{
+			"email": email,
+		})
+		return nil // Don't reveal internal errors
+	}
+
+	// Send password reset email
+	err = a.emailService.SendPasswordResetEmail(ctx, email, user.FirstName, otp.OTPCode)
+	if err != nil {
+		a.logger.Error("Failed to send password reset email", err, map[string]interface{}{
+			"email": email,
+		})
+		// Email failure shouldn't be exposed to the user
+		return nil
+	}
+
+	// Log security event
+	a.LogSecurityEvent(ctx, "password_reset_initiated", user.ID, map[string]interface{}{
+		"email": email,
+	})
+
+	return nil
+}
+
+// VerifyResetOTP verifies the OTP but doesn't invalidate it
+func (a *authService) VerifyResetOTP(ctx context.Context, email string, code string) error {
+	user, err := a.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return errors.New("invalid email or OTP")
+	}
+
+	// Get OTP
+	otp, err := a.otpRepo.GetOTPByUserIDAndPurpose(ctx, user.ID, domain.OTPPurposePasswordReset)
+	if err != nil {
+		return errors.New("invalid or expired OTP")
+	}
+
+	// Check if OTP is expired
+	if time.Now().After(otp.ExpiresAt) {
+		return errors.New("OTP has expired")
+	}
+
+	// Check attempts
+	if otp.AttemptsMade >= otp.MaxAttempts {
+		return errors.New("maximum attempts exceeded")
+	}
+
+	// Verify code - just check if it's correct without invalidating
+	if otp.OTPCode != code {
+		// Increment attempts on failure
+		a.otpRepo.IncrementAttempts(ctx, otp.ID)
+		return errors.New("invalid OTP")
+	}
+
+	// Log security event for verification success
+	a.LogSecurityEvent(ctx, "password_reset_otp_verified", user.ID, map[string]interface{}{
+		"email": email,
+	})
+
+	return nil
+}
+
+// ResetPassword verifies OTP and resets the user's password in one step
+func (a *authService) ResetPassword(ctx context.Context, email string, code string, newPassword string) error {
+	user, err := a.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return errors.New("invalid email")
+	}
+
+	// Get OTP
+	otp, err := a.otpRepo.GetOTPByUserIDAndPurpose(ctx, user.ID, domain.OTPPurposePasswordReset)
+	if err != nil {
+		return errors.New("invalid or expired OTP")
+	}
+
+	// Check if OTP is expired
+	if time.Now().After(otp.ExpiresAt) {
+		return errors.New("OTP has expired")
+	}
+
+	// Check attempts
+	if otp.AttemptsMade >= otp.MaxAttempts {
+		return errors.New("maximum attempts exceeded")
+	}
+
+	// Verify code
+	if otp.OTPCode != code {
+		// Increment attempts on failure
+		a.otpRepo.IncrementAttempts(ctx, otp.ID)
+		return errors.New("invalid OTP")
+	}
+
+	// Now proceed with password reset
+	err = a.userService.ResetUserPassword(ctx, user.ID, newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to reset password: %w", err)
+	}
+
+	// Invalidate the OTP after successful password reset
+	err = a.otpRepo.VerifyOTP(ctx, otp.ID, code)
+	if err != nil {
+		a.logger.Error("Failed to invalidate OTP after password reset", err, map[string]interface{}{
+			"otp_id": otp.ID,
+		})
+	}
+
+	// Block all user sessions
+	err = a.sessionRepo.BlockAllUserSessions(ctx, user.ID)
+	if err != nil {
+		a.logger.Error("Failed to block user sessions after password reset", err, map[string]interface{}{
+			"user_id": user.ID,
+		})
+	}
+
+	// Log security event
+	a.LogSecurityEvent(ctx, "password_reset_completed", user.ID, map[string]interface{}{
+		"email": user.Email,
+	})
+
+	return nil
 }
